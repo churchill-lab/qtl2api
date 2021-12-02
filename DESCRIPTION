@@ -26,6 +26,5 @@ Imports:
     RSQLite (>= 2.2.7),
     tibble (>= 3.1.6)
 Remotes: 
-    rqtl/qtl2@0.28,
     churchill-lab/intermediate@v.2.5
 RoxygenNote: 7.1.2
