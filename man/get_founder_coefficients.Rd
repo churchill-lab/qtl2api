@@ -7,8 +7,8 @@
 get_founder_coefficients(
   ds,
   id,
-  intcovar,
   chrom,
+  intcovar = NULL,
   blup = FALSE,
   center = TRUE,
   cores = 0
@@ -19,9 +19,9 @@ get_founder_coefficients(
 
 \item{id}{the unique id in the dataset}
 
-\item{intcovar}{the interactive covariate}
-
 \item{chrom}{the chromosome}
+
+\item{intcovar}{the interactive covariate}
 
 \item{blup}{whether or not to perform BLUP}
 
