@@ -44,11 +44,10 @@ get_lod_scan <- function(ds, id, intcovar = NULL, cores = 0,
     if (gtools::invalid(intcovar)) {
         interactive_covariate <- NULL
     } else {
-        if (intcovar %not in% ds$covar.info$sample_column) {
-            stop(sprintf(
-                "intcovar '%s' not found in covar.info in dataset",
-                intcovar
-            ))
+        covar_info <- ds$covar.info %>% janitor::clean_names()
+
+        if (intcovar %not in% covar_info$sample_column) {
+            stop(sprintf("intcovar '%s' not found in covar.info", intcovar))
         }
 
         # grabbing all the columns from covar (covar.matrix) that
@@ -80,17 +79,19 @@ get_lod_scan <- function(ds, id, intcovar = NULL, cores = 0,
         peakdropX  = filter_peak_dropX
     )
 
+    markers_cleaned <- markers %>% janitor::clean_names()
+
     # construct a 2 dimensional array of data with id, chr, pos, lod as columns
     # we perform a left join here to make sure that the number of elements match
     # also convert from type scan1 to numeric
     lod_scores_mod <-
         dplyr::inner_join(
-            tibble::as_tibble(lod_scores, rownames = "marker.id"),
-            markers,
-            by = "marker.id"
+            tibble::as_tibble(lod_scores, rownames = "marker_id"),
+            markers_cleaned,
+            by = "marker_id"
         ) %>%
         dplyr::select(
-            id  = .data$marker.id,
+            id  = .data$marker_id,
             chr = .data$chr,
             pos = .data$pos,
             lod = id
@@ -103,11 +104,11 @@ get_lod_scan <- function(ds, id, intcovar = NULL, cores = 0,
     lod_peaks <-
         dplyr::inner_join(
             lod_peaks,
-            markers,
+            markers_cleaned,
             by = c("chr", "pos")
         ) %>%
         dplyr::select(
-            id  = .data$marker.id,
+            id  = .data$marker_id,
             chr = .data$chr,
             pos = .data$pos,
             lod = .data$lod
@@ -155,20 +156,16 @@ get_lod_scan_by_sample <- function(ds, id, intcovar, chrom, cores = 0) {
 
     # make sure the chromosome data exists
     if (gtools::invalid(K[[chrom]])) {
-        stop(sprintf("Cannot find chromosome '%s' in Kinship matrix", id))
+        stop(sprintf("Cannot find chromosome '%s' in Kinship matrix", chrom))
     }
-
-    # extract the markers just for the chromosome
-    markers_chrom <- markers %>% dplyr::filter(.data$chr == chrom)
 
     # make sure nCores is appropriate
     num_cores <- nvl_int(cores, 0)
 
-    if (intcovar %not in% ds$covar.info$sample_column) {
-        stop(sprintf(
-            "intcovar '%s' not found in covar.info in dataset",
-            intcovar
-        ))
+    covar_info <- ds$covar.info %>% janitor::clean_names()
+
+    if (intcovar %not in% covar_info$sample_column) {
+        stop(sprintf("intcovar '%s' not found in covar.info", intcovar))
     }
 
     # get all the unique values for the interactive.covar and sort them
@@ -189,6 +186,8 @@ get_lod_scan_by_sample <- function(ds, id, intcovar, chrom, cores = 0) {
     # set the rownames so scan1 will work
     rownames(samples) <-
         (samples %>% dplyr::select(dplyr::matches(sample_id_field)))[[1]]
+
+    markers_cleaned <- markers %>% janitor::clean_names()
 
     # ret will be a named list of tibbles with LOD scores
     # each name is a unique sample value
@@ -211,7 +210,7 @@ get_lod_scan_by_sample <- function(ds, id, intcovar, chrom, cores = 0) {
         covar <- get_covar_matrix(ds, id)
 
         # filter by the samples we need
-        covar <- ds$covar.matrix[sample_names, , drop = FALSE]
+        covar <- covar[sample_names, , drop = FALSE]
 
         # exclude covar columns that contain it's name
         # since this is a matrix we cannot use %>% select
@@ -231,12 +230,12 @@ get_lod_scan_by_sample <- function(ds, id, intcovar, chrom, cores = 0) {
         # convert from type scan1 to numeric
         temp <-
             dplyr::inner_join(
-                tibble::as_tibble(temp, rownames = "marker.id"),
-                markers,
-                by = "marker.id"
+                tibble::as_tibble(temp, rownames = "marker_id"),
+                markers_cleaned,
+                by = "marker_id"
             ) %>%
             dplyr::select(
-                id  = .data$marker.id,
+                id  = .data$marker_id,
                 chr = .data$chr,
                 pos = .data$pos,
                 lod = id

@@ -75,6 +75,7 @@ get_snp_assoc_mapping <- function(ds, id, intcovar, chrom, location, db_file,
             tries <- tries + 1
 
             if (tries > 10) {
+                DBI::dbDisconnect(db_snps)
                 stop(sprintf(
                     "Cannot find any snps in region: %s:%f-%f",
                     chrom, window_range_start, window_range_end
@@ -82,6 +83,8 @@ get_snp_assoc_mapping <- function(ds, id, intcovar, chrom, location, db_file,
             }
         }
     }
+
+    DBI::dbDisconnect(db_snps)
 
     colnames(window_snps)[c(1, 3)] <- c("snp", "pos")
     window_snps <- qtl2::index_snps(map = map, window_snps)
@@ -115,10 +118,7 @@ get_snp_assoc_mapping <- function(ds, id, intcovar, chrom, location, db_file,
 
     if (!gtools::invalid(intcovar)) {
         if (intcovar %not in% ds$covar.info$sample_column) {
-            stop(sprintf(
-                "intcovar '%s' not found in covar.info in dataset",
-                intcovar
-            ))
+            stop(sprintf("intcovar '%s' not found in covar.info", intcovar))
         }
 
         # grabbing all the columns from covar (covar.matrix) that

@@ -13,7 +13,7 @@
 #'
 #' @importFrom rlang .data
 #' @export
-get_founder_coefficients <- function(ds, id, intcovar, chrom,
+get_founder_coefficients <- function(ds, id, chrom, intcovar = NULL,
                                      blup = FALSE, center = TRUE, cores = 0) {
     # get the data
     data <- get_data(ds)
