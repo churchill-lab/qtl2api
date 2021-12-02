@@ -249,6 +249,15 @@ get_dataset_info <- function() {
     datasets <- grep('^dataset*', utils::apropos('dataset\\.'), value = TRUE)
     ret <- c()
 
+    ensembl_version <-
+        utils::apropos("^ensembl(.|_)version$", ignore.case = TRUE)
+
+    if (length(ensembl_version) != 0) {
+        ensembl_version <- get(ensembl_version)
+    } else {
+        ensembl_version <- NULL
+    }
+
     for (d in datasets) {
         ds <- get(d)
 
@@ -271,17 +280,33 @@ get_dataset_info <- function() {
 
         covar_info <- ds$covar.info %>% janitor::clean_names()
 
-        temp <- list(id              = d,
-                     annotations     = annotations,
-                     display_name    = nvl(ds$display.name, d),
-                     datatype        = ds$datatype,
-                     covar_info      = covar_info)
+        ds_ensembl_version <- ensembl_version
+
+        temp_ensembl <- grep(
+            "^ensembl(.|_)version$",
+            names(ds),
+            ignore.case = TRUE,
+            value = TRUE
+        )
+
+        if (!gtools::invalid(temp_ensembl)) {
+            ds_ensembl_version <- ds[[temp_ensembl]]
+        }
+
+        temp <- list(
+            id              = d,
+            annotations     = annotations,
+            display_name    = nvl(ds$display.name, d),
+            datatype        = ds$datatype,
+            covar_info      = covar_info,
+            ensembl_version = ds_ensembl_version
+        )
 
         ret <- c(ret, list(temp))
     }
 
     list(datasets        = ret,
-         ensembl_version = nvl(ensembl_version, NA))
+         ensembl_version = nvl(ensembl_version, NULL))
 }
 
 #' Get all "dataset.*" statistics.
