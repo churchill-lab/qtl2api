@@ -16,7 +16,6 @@
 #'
 #' @return `value` if it is valid, `default` otherwise
 #'
-#' @noRd
 #' @export
 nvl <- function(value, default) {
     if (gtools::invalid(value)) {
@@ -34,7 +33,6 @@ nvl <- function(value, default) {
 #'
 #' @return `value` if it is numeric, `default` otherwise
 #'
-#' @noRd
 #' @export
 nvl_int <- function(value, default) {
     tryCatch(
