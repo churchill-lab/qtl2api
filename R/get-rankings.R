@@ -48,7 +48,7 @@ get_rankings <- function(ds, chrom = NULL,
             gene_ids <-
                 ds$annot.mrna %>%
                 janitor::clean_names() %>%
-                dplyr::filter(.data$chrom == chrom)
+                dplyr::filter(.data$chr == chrom)
 
             tmp <- tmp[gene_ids$gene_id]
         }
@@ -73,7 +73,7 @@ get_rankings <- function(ds, chrom = NULL,
             # filter the data to just return the chromosome asked for
             protein_ids <-
                 annot_protein %>%
-                dplyr::filter(.data$chrom == chrom)
+                dplyr::filter(.data$chr == chrom)
 
             tmp <- tmp[protein_ids$protein_id]
         }
