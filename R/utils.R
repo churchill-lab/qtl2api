@@ -111,7 +111,7 @@ get_dataset <- function(ds) {
 #' @param ds a dataset object
 #'
 #' @return `TRUE` if the datatype is phenotype, `FALSE` otherwise
-#'
+#' @export
 is_phenotype <- function(ds) {
     if ("datatype" %in% names(ds)) {
         if (startsWith(tolower(ds$datatype), "pheno")) {
@@ -140,6 +140,7 @@ is_phenotype <- function(ds) {
 #'     data element.
 #'
 #' @return the data element
+#' @export
 get_data <- function(ds, data_name = NULL) {
     ret <- NULL
 
@@ -236,3 +237,86 @@ get_covar_matrix <- function(ds, id = NULL) {
 
     covar
 }
+
+#' Get all "dataset.*" information
+#'
+#' This will return a named list of all datasets and the ensmebl version.
+#'
+#' @return A named list of all the dataset objects, along with the
+#'   ensembl.version.
+#' @export
+get_dataset_info <- function() {
+    datasets <- grep('^dataset*', utils::apropos('dataset\\.'), value = TRUE)
+    ret <- c()
+
+    for (d in datasets) {
+        ds <- get(d)
+
+        annotations <- list()
+
+        if (tolower(ds$datatype) == 'mrna') {
+            annot_mrna <- ds$annot.mrna %>% janitor::clean_names()
+            annotations <- list(ids = annot_mrna$gene_id)
+        } else if(tolower(ds$datatype) == 'protein') {
+            annot_protein <- ds$annot.protein %>% janitor::clean_names()
+            annotations <-
+                list(ids = tibble::tibble(protein_id = annot_protein$protein_id,
+                                          gene_id    = annot_protein$gene_id))
+        } else if(is_phenotype(ds)) {
+            annotations <-
+                ds$annot.phenotype %>%
+                janitor::clean_names() %>%
+                dplyr::filter(.data$omit == FALSE)
+        }
+
+        covar_info <- ds$covar.info %>% janitor::clean_names()
+
+        temp <- list(id              = d,
+                     annotations     = annotations,
+                     display_name    = nvl(ds$display.name, d),
+                     datatype        = ds$datatype,
+                     covar_info      = covar_info)
+
+        ret <- c(ret, list(temp))
+    }
+
+    list(datasets        = ret,
+         ensembl_version = nvl(ensembl_version, NA))
+}
+
+#' Get all "dataset.*" statistics.
+#'
+#' This will return a named list of all datasets and some statistics.
+#'
+#' @return A named list of all the dataset objects.
+#' @export
+get_dataset_stats <- function() {
+    datasets <- grep('^dataset*', utils::apropos('dataset\\.'), value = TRUE)
+    ret <- c()
+
+    for (d in datasets) {
+        ds <- get(d)
+
+        num_annotations <- NA
+
+        if (tolower(ds$datatype) == 'mrna') {
+            num_annotations <- NROW(ds$annot.mrna)
+        } else if(tolower(ds$datatype) == 'protein') {
+            num_annotations <- NROW(ds$annot.protein)
+        } else if(is_phenotype(ds)) {
+            num_annotations <- NROW(ds$annot.phenotype)
+        }
+
+        temp <- list(id              = d,
+                     display_name    = nvl(ds$display.name, d),
+                     datatype        = ds$datatype,
+                     num_annotations = num_annotations,
+                     num_samples     = NROW(ds$annot.samples))
+
+        ret <- c(ret, list(temp))
+    }
+
+    ret
+}
+
+
