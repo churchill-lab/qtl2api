@@ -1,0 +1,30 @@
+Package: qtl2api
+Type: Package
+Title: QTL2 API Library
+Version: 0.1.0
+Author: person("Matthew", "Vincent", email = "mvincent@jax.org",
+  role = c("aut", "cre"))
+Maintainer: Matthew Vincent <mvincent@jax.org>
+Description: Wraps Karl Broman's rqtl/qtl2 package to provide friendlier
+    JSON data structures.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports: 
+    dbplyr (>= 2.1.1),
+    dplyr (>= 1.0.7),
+    gtools (>= 3.9.2),
+    intermediate (>= 0.2.5),
+    janitor (>= 2.1.0),
+    jsonlite (>= 1.7.2),
+    magrittr (>= 2.0.1),
+    missMDA (>= 1.18),
+    pryr (>= 0.1.5),
+    qtl2 (>= 0.28),
+    rlang (>= 0.4.12),
+    RSQLite (>= 2.2.7),
+    tibble (>= 3.1.6)
+Remotes: 
+    rqtl/qtl2@0.28,
+    churchill-lab/intermediate@v.2.5
+RoxygenNote: 7.1.2
