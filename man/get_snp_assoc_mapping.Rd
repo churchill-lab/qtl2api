@@ -7,11 +7,11 @@
 get_snp_assoc_mapping(
   ds,
   id,
-  intcovar,
   chrom,
   location,
   db_file,
   window_size = 5e+05,
+  intcovar = NULL,
   cores = 0
 )
 }
@@ -20,8 +20,6 @@ get_snp_assoc_mapping(
 
 \item{id}{the unique id in the dataset}
 
-\item{intcovar}{the interactive covariate}
-
 \item{chrom}{The chromosome.}
 
 \item{location}{location on chromosome in base pairs}
@@ -29,6 +27,8 @@ get_snp_assoc_mapping(
 \item{db_file}{full path to the sqlite database file}
 
 \item{window_size}{the size of the window to scan before and after location}
+
+\item{intcovar}{the interactive covariate}
 
 \item{cores}{number of cores to use (0=ALL)}
 }

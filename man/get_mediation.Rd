@@ -4,7 +4,7 @@
 \alias{get_mediation}
 \title{Perform mediation}
 \usage{
-get_mediation(ds, id, marker_id, intcovar, ds_mediate = NULL)
+get_mediation(ds, id, marker_id, ds_mediate = NULL)
 }
 \arguments{
 \item{ds}{the dataset object}
@@ -12,8 +12,6 @@ get_mediation(ds, id, marker_id, intcovar, ds_mediate = NULL)
 \item{id}{the unique id in the dataset}
 
 \item{marker_id}{marker identifier}
-
-\item{intcovar}{the interactive covariate}
 
 \item{ds_mediate}{the dataset object to mediate against}
 }

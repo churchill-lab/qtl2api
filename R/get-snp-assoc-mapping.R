@@ -4,11 +4,10 @@
 #' @param ds the dataset object
 #' @param id the unique id in the dataset
 #' @param chrom The chromosome.
-#' @param intcovar the interactive covariate
-#' @param chrom The chromosome.
 #' @param location location on chromosome in base pairs
 #' @param db_file full path to the sqlite database file
 #' @param window_size the size of the window to scan before and after location
+#' @param intcovar the interactive covariate
 #' @param cores number of cores to use (0=ALL)
 #'
 #' @return a `data.frame` with the following columns: snp, chr, pos, alleles,
@@ -16,8 +15,9 @@
 #'
 #' @importFrom rlang .data
 #' @export
-get_snp_assoc_mapping <- function(ds, id, intcovar, chrom, location, db_file,
-                                  window_size = 500000, cores = 0) {
+get_snp_assoc_mapping <- function(ds, id, chrom, location,
+                                  db_file, window_size = 500000,
+                                  intcovar = NULL, cores = 0) {
     # get the data
     data <- get_data(ds)
 
