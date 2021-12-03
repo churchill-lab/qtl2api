@@ -3,7 +3,6 @@
 #' @param ds the dataset object
 #' @param id the unique id in the dataset
 #' @param marker_id marker identifier
-#' @param intcovar the interactive covariate
 #' @param ds_mediate the dataset object to mediate against
 #'
 #' @return A data.frame with the following columns depending on datatype:
@@ -13,8 +12,7 @@
 #'
 #' @importFrom rlang .data
 #' @export
-get_mediation <- function(ds, id, marker_id, intcovar,
-                          ds_mediate = NULL) {
+get_mediation <- function(ds, id, marker_id, ds_mediate = NULL) {
     # get the data
     data <- get_data(ds)
 
@@ -30,7 +28,8 @@ get_mediation <- function(ds, id, marker_id, intcovar,
     }
 
     # get the marker index and check it
-    mrkx <- which(markers$marker.id == marker_id)
+    markers_cleaned <- markers %>% janitor::clean_names()
+    mrkx <- which(markers_cleaned$marker.id == marker_id)
 
     if (gtools::invalid(mrkx)) {
         stop(sprintf("Cannot find marker '%s' in markers", marker_id))
