@@ -1,4 +1,3 @@
-
 #' Get the correlation.
 #'
 #' @param ds the dataset object

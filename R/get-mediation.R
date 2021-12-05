@@ -29,7 +29,7 @@ get_mediation <- function(ds, id, marker_id, ds_mediate = NULL) {
 
     # get the marker index and check it
     markers_cleaned <- markers %>% janitor::clean_names()
-    mrkx <- which(markers_cleaned$marker.id == marker_id)
+    mrkx <- which(markers_cleaned$marker_id == marker_id)
 
     if (gtools::invalid(mrkx)) {
         stop(sprintf("Cannot find marker '%s' in markers", marker_id))

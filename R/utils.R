@@ -135,7 +135,7 @@ is_phenotype <- function(ds) {
 #'     data (if a matrix)
 #'     rz, norm, raw, log, transformed (if a named list).
 #'
-#' @param ds a datase object
+#' @param ds a dataset object
 #' @param data_name A string containing which data element from the dataset's
 #'     data element.
 #'
@@ -181,6 +181,32 @@ get_data <- function(ds, data_name = NULL) {
     }
 
     ret
+}
+
+
+#' Get a random identifier from the dataset.
+#'
+#' @param ds a dataset object
+#'
+#' @return a random identifier
+#' @export
+get_random_id <- function(ds) {
+    if (tolower(ds$datatype) == "mrna") {
+        data <- ds$annot.mrna %>% dplyr::sample_n(1)
+        id <- data$gene_id
+    } else if (tolower(ds$datatype) == "protein") {
+        data <- ds$annot.protein %>% dplyr::sample_n(1)
+        id <- data$protein_id
+    } else if (is_phenotype(ds)) {
+        data <- ds$annot.phenotype %>%
+            dplyr::filter(is_pheno == TRUE) %>%
+            dplyr::sample_n(1)
+        id <- data$data_name
+    } else {
+        stop("Unknown datatype: ", ds$datatype)
+    }
+
+    return(id)
 }
 
 
