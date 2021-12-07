@@ -1,37 +1,31 @@
 #' Validate the dataset to make sure qtl2api can use it.
 #'
-#' @param dataset the dataset as a string identifier
+#' @param dataset_id the dataset_id as a string identifier
 #' @param extensive TRUE to perform scans on random elements in the data
 #'
 #' @export
-validate_dataset <- function(dataset, extensive = FALSE) {
-    cat("\n")
-    cat("qtl2api tries to use gene_id/gene.id, protein_id/protein.id,\n")
-    cat("data_name/data.name along as trying to figure out annotations for\n")
-    cat("mouse_id/mouse.id/sample_id/sample.id\n")
-    cat("\n")
-    cat("Internally, qtl2api uses underscore '_' for variable names and\n")
-    cat("column names\n")
-    cat("\n")
-    cat("If an error is detected, this method will use the '_' version\n")
-    cat("\n")
-
-    cat("\nChecking '", dataset, "' ...\n", sep = '')
+validate_dataset <- function(dataset_id, extensive = FALSE) {
+    cat("\nChecking '", dataset_id, "' ...\n", sep = '')
 
     # get the dataset
-    ds_orig <- get_dataset_by_id(dataset)
+    ds_orig <- get_dataset_by_id(dataset_id)
     ds <- synchronize_dataset(ds_orig)
 
     if (gtools::invalid(ds)) {
-        stop(paste0("dataset not found '", dataset, '"'))
+        stop(paste0("dataset not found '", dataset_id, '"'))
     }
 
+    # dataset should be a list
     if (!is.list(ds_orig)) {
         message(paste0("dataset should be a list, but found '", class(ds_orig), "'"))
     }
 
     if ('datatype' %not in% names(ds_orig)) {
         message("dataset must contain 'datatype'")
+    }
+
+    if ('display.name' %not in% names(ds_orig)) {
+        message("dataset must contain 'display.name'")
     }
 
     datatype = ds[['datatype']]
@@ -46,7 +40,7 @@ validate_dataset <- function(dataset, extensive = FALSE) {
     } else if (is_phenotype(ds)) {
         is_pheno <- TRUE
     } else {
-        message(paste0("datatype is '", datatype, "', but should be mRNA, protein, or phenotype"))
+        message(paste0("datatype is invalid: '", datatype, "'"))
     }
 
     ###########################################################################
@@ -60,7 +54,7 @@ validate_dataset <- function(dataset, extensive = FALSE) {
 
     if (is_mrna) {
         if ('annot.mrna' %not in% names(ds_orig)) {
-            message(paste0("annot.mrna not found in '", dataset, "'"))
+            message(paste0("annot.mrna not found in '", dataset_id, "'"))
         }
 
         if (!tibble::is_tibble(ds_orig$annot.mrna)) {
@@ -74,7 +68,7 @@ validate_dataset <- function(dataset, extensive = FALSE) {
         }
     } else if (is_protein) {
         if ('annot.protein' %not in% names(ds_orig)) {
-            message(paste0("annot.protein not found in '", dataset, "'"))
+            message(paste0("annot.protein not found in '", dataset_id, "'"))
         }
 
         if (!tibble::is_tibble(ds_orig$annot.protein)) {
@@ -88,18 +82,21 @@ validate_dataset <- function(dataset, extensive = FALSE) {
         }
     } else if (is_pheno) {
         if ('annot.phenotype' %not in% names(ds_orig)) {
-            message(paste0("annot.phenotype not found in '", dataset, "'"))
+            message(paste0("annot.phenotype not found in '", dataset_id, "'"))
         }
 
         if (!tibble::is_tibble(ds_orig$annot.pheno)) {
-            message(paste0("annot.phenotype should be a tibble, but found ", class(ds$annot.phenotype)))
+            message(paste0("annot.phenotype should be a tibble, but found ", class(ds_orig$annot.phenotype)))
         }
 
         annots <- ds$annot_phenotype
 
+        dplyr::glimpse(annots)
+
         if (any(duplicated(annots$data_name))) {
             message("There are duplicated data_name annotations in annot.phenotype")
         }
+
     }
 
     if (is_pheno) {
@@ -213,7 +210,6 @@ validate_dataset <- function(dataset, extensive = FALSE) {
     ###########################################################################
     cat("Checking annot.samples\n")
 
-    print(names(ds))
     if ('annot.samples' %not in% names(ds_orig)) {
         message('annot.samples not found')
     }
@@ -222,24 +218,13 @@ validate_dataset <- function(dataset, extensive = FALSE) {
         message(paste0("annot.samples should be a tibble, but found ", class(ds$annot.sample)))
     }
 
-    sample_id_field <- get_sample_id_field(ds_orig)
+    sample_id_field <- ds$sample_id_field
     if (gtools::invalid(sample_id_field)) {
         message('unable to determine sample id field')
     }
 
     if (any(duplicated(ds$annot.sample[sample_id_field]))) {
         message("There are duplicated annotations in annot.samples")
-    }
-
-    ###########################################################################
-    #
-    # display.name
-    #
-    ###########################################################################
-    cat("Checking display.name\n")
-
-    if ('display.name' %not in% names(ds_orig)) {
-        message('display.name not found')
     }
 
     ###########################################################################
@@ -277,11 +262,11 @@ validate_dataset <- function(dataset, extensive = FALSE) {
         message('covar.info$interactive should be logical, not ', class(ds_orig$covar.info$interactive))
     }
 
-    for(i in 1:nrow(covar_info)) {
-        row <- covar_info[i, ]
+    for(i in 1:nrow(ds$covar_info)) {
+        row <- ds$covar_info[i, ]
 
-        if (row$sample_column %not in% colnames(ds$annot.samples)) {
-            message(paste0("covar.info$sample_column ('", row$sample_column, "') is not a column name in annot.samples"))
+        if (row$sample_column %not in% colnames(ds$annot_samples)) {
+            message(paste0("covar.info$sample.column ('", row$sample_column, "') is not a column name in annot.samples"))
         }
 
         if (gtools::invalid(row$display_name)) {
@@ -294,7 +279,7 @@ validate_dataset <- function(dataset, extensive = FALSE) {
                     message("covar.info$interactive is TRUE, but covar.info$lod_peaks is NA")
                 } else {
                     # check for existence of lod_peaks
-                    if (gtools::invalid(ds$lod.peaks[[row$lod_peaks]])) {
+                    if (gtools::invalid(ds_orig$lod.peaks[[row$lod_peaks]])) {
                         message(paste0("covar.info$interactive is TRUE, but covar.info$lod_peaks ('", row$lod_peaks, "') is not in lod.peaks"))
                     }
                 }
@@ -308,8 +293,8 @@ validate_dataset <- function(dataset, extensive = FALSE) {
         }
     }
 
-    if (class(covar_info$primary) == "logical") {
-        if (!any(covar_info$primary)) {
+    if (class(ds$covar_info$primary) == "logical") {
+        if (!any(ds$covar_info$primary)) {
             message("covar.info$primary needs 1 value set to TRUE")
         }
     } else {
@@ -374,15 +359,15 @@ validate_dataset <- function(dataset, extensive = FALSE) {
     ###########################################################################
     cat("Checking lod.peaks\n")
 
-    if ('lod.peaks' %not in% names(ds)) {
+    if ('lod.peaks' %not in% names(ds_orig)) {
         message('lod.peaks not found')
     }
 
-    if (!is.list(ds$lod.peaks)) {
-        message(paste0("lod.peaks should be a list, but found ", class(ds$lod.peaks)))
+    if (!is.list(ds_orig$lod.peaks)) {
+        message(paste0("lod.peaks should be a list, but found ", class(ds_orig$lod.peaks)))
     }
 
-    if ('additive' %not in% names(ds$lod.peaks)) {
+    if ('additive' %not in% names(ds_orig$lod.peaks)) {
         message("additive should be an element in lod.peaks")
     }
 
@@ -391,12 +376,12 @@ validate_dataset <- function(dataset, extensive = FALSE) {
     #
 
     # get the rest
-    for (i in seq(nrow(covar_info))) {
-        cov_inf <- covar_info[i, ]
+    for (i in seq(nrow(ds$covar_info))) {
+        cov_inf <- ds$covar_info[i, ]
 
         # only look at interactive peaks
         if (cov_inf$interactive) {
-            peaks <- ds$lod.peaks[[cov_inf$lod_peaks]]
+            peaks <- ds_orig$lod.peaks[[cov_inf$lod_peaks]]
 
             if (gtools::invalid(peaks)) {
                 message(paste0("Unable to find lod.peaks '", cov_inf$lod_peaks, "'"))
@@ -438,7 +423,7 @@ validate_dataset <- function(dataset, extensive = FALSE) {
     ###########################################################################
     cat("Checking data\n")
 
-    num_annot_samples <- nrow(ds$annot.samples)
+    num_annot_samples <- nrow(ds_orig$annot.samples)
 
     if (is_mrna) {
         annot_ids <- annots$gene_id
@@ -689,6 +674,18 @@ validate_dataset_extensive <- function(dataset) {
 #'
 #' @export
 validate_environment <- function(extensive = FALSE) {
+    cat("\n")
+    cat("qtl2api tries to use gene_id/gene.id, protein_id/protein.id,\n")
+    cat("data_name/data.name along as trying to figure out annotations for\n")
+    cat("mouse_id/mouse.id/sample_id/sample.id\n")
+    cat("\n")
+    cat("Internally, qtl2api uses underscore '_' for variable names and\n")
+    cat("column names\n")
+    cat("\n")
+    cat("If an error is detected, this method will use the '_' version\n")
+    cat("\n")
+
+
     # grab the datasets in the environment
     datasets <- grep('^dataset*', utils::apropos('dataset\\.'), value=TRUE)
 
