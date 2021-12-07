@@ -2,13 +2,13 @@
 % Please edit documentation in R/validate.R
 \name{validate_dataset_extensive}
 \alias{validate_dataset_extensive}
-\title{Perform scans on random data in the datset.}
+\title{Perform scans on random data in the dataset designated by dataset_id.}
 \usage{
-validate_dataset_extensive(dataset)
+validate_dataset_extensive(dataset_id)
 }
 \arguments{
-\item{dataset}{the dataset as a string identifier}
+\item{dataset_id}{the dataset as a string identifier}
 }
 \description{
-Perform scans on random data in the datset.
+Perform scans on random data in the dataset designated by dataset_id.
 }

@@ -1,4 +1,3 @@
-
 # #############################################################################
 #
 # Utility functions
@@ -160,6 +159,11 @@ synchronize_dataset <- function(dataset) {
         stop(paste0("dataset should be a list, but it's a ", class(dataset)))
     }
 
+    if (!gtools::invalid(dataset$is_synchronized)) {
+        # already synchronized
+        return(dataset)
+    }
+
     # TODO: samples can be top level, but not implemented
 
     # synchronize the data element
@@ -202,7 +206,8 @@ synchronize_dataset <- function(dataset) {
         datatype        = dataset$datatype,
         display_name    = dataset$display.name,
         ensembl_version = ensembl_version,
-        sample_id_field = sample_id_field
+        sample_id_field = sample_id_field,
+        is_synchronized = TRUE
     )
 
     if (tolower(dataset$datatype) == 'mrna') {
@@ -211,6 +216,12 @@ synchronize_dataset <- function(dataset) {
         ds$annot_protein <- ds_synch$annots
     } else if (startsWith(tolower(dataset$datatype), "pheno")) {
         ds$annot_phenotype <- ds_synch$annots
+
+        ds$annot_phenotpe_extra <-
+            dataset$annot.phenotype %>%
+            janitor::clean_names() %>%
+            dplyr::filter(.data$omit == FALSE & .data$is_pheno == FALSE)
+
     } else {
         message(paste0("datatype is invalid: '", dataset$datatype, "'"))
     }
@@ -232,6 +243,8 @@ get_dataset_by_id <- function(dataset_id) {
         stop(paste0("dataset_id should be a string, not ", class(dataset_id)))
     }
 
+    dataset <- NULL
+
     if (exists(dataset_id)) {
         dataset <- get(dataset_id)
     } else {
@@ -246,25 +259,6 @@ get_dataset_by_id <- function(dataset_id) {
     }
 
     return(dataset)
-}
-
-
-#' Check dataset to see if the datatype value is "phenotype"
-#'
-#' @param ds a dataset object
-#'
-#' @return `TRUE` if the datatype is phenotype, `FALSE` otherwise
-#' @export
-is_phenotype <- function(ds) {
-    if ("datatype" %in% names(ds)) {
-        if (startsWith(tolower(ds$datatype), "pheno")) {
-            return(TRUE)
-        }
-    } else {
-        message("datatype not found in dataset")
-    }
-
-    FALSE
 }
 
 
@@ -334,26 +328,38 @@ get_data <- function(ds, data_name = NULL) {
 #' @export
 get_random_id <- function(dataset) {
     if (tolower(dataset$datatype) == "mrna") {
-        annot_ids <-
-            ds$annot.mrna %>%
-            janitor::clean_names()
+        if ("annot.mrna" %in% dataset) {
+            annot_ids <-
+                dataset$annot.mrna %>%
+                janitor::clean_names()
+        } else {
+            annot_ids <- dataset$annot_mrna
+        }
 
         annot_ids <- annot_ids$gene_id
     } else if (tolower(dataset$datatype) == "protein") {
-        annot_ids <-
-            ds$annot.protein %>%
-            janitor::clean_names()
+        if ("annot.protein" %in% dataset) {
+            annot_ids <-
+                dataset$annot.protein %>%
+                janitor::clean_names()
+        } else {
+            annot_ids <- dataset$annot_protein
+        }
 
         annot_ids <- annot_ids$protein_id
     } else if (is_phenotype(dataset)) {
-        annot_ids <-
-            dataset$annot.phenotype %>%
-            janitor::clean_names() %>%
-            dplyr::filter(.data$is_pheno == TRUE)
+        if ("annot.phenotype" %in% dataset) {
+            annot_ids <-
+                dataset$annot.phenotype %>%
+                janitor::clean_names() %>%
+                dplyr::filter(.data$is_pheno == TRUE)
+        } else {
+            annot_ids <- dataset$annot_phenotype
+        }
 
         annot_ids <- annot_ids$data_name
     } else {
-        stop("Unknown datatype: ", ds$datatype)
+        stop("Unknown datatype: ", dataset$datatype)
     }
 
     data_ids <- colnames(get_data(dataset))
@@ -369,9 +375,9 @@ get_random_id <- function(dataset) {
 }
 
 
-#' Creaste the covar.matrix element.
+#' Create the covar.matrix element.
 #'
-#' @param dataset the dataset object
+#' @param dataset the dataset object (synchronized)
 #' @param id the phenotype identifier, for phenotype datasets
 #'
 #' @return the covar matrix
@@ -382,7 +388,7 @@ get_covar_matrix <- function(dataset, id = NULL) {
         # get the annot.pheno row to get use.covar variable from the
         # annotations
         pheno <-
-            dataset$annot_pheno %>%
+            dataset$annot_phenotype %>%
             dplyr::filter(.data$data_name == id)
 
         if (gtools::invalid(pheno)) {
@@ -458,7 +464,7 @@ get_dataset_info <- function() {
                     )
                 )
         } else if(is_phenotype(ds)) {
-            # this is tricker, we need to send back the is_pheno = FALSE too
+            # this is trickier, we need to send back the is_pheno = FALSE too
             annotations <-
                 ds$annot.phenotype %>%
                 janitor::clean_names() %>%
@@ -537,10 +543,21 @@ get_dataset_stats <- function() {
 }
 
 
-test <- function(ds, id) {
+#' Check dataset to see if the datatype value is "phenotype"
+#'
+#' @param ds a dataset object
+#'
+#' @return `TRUE` if the datatype is phenotype, `FALSE` otherwise
+#' @export
+is_phenotype <- function(ds) {
+    if ("datatype" %in% names(ds)) {
+        if (startsWith(tolower(ds$datatype), "pheno")) {
+            return(TRUE)
+        }
+    } else {
+        message("datatype not found in dataset")
+    }
 
-    ds$newname = id
-    ds$annot.samples <- ds$annot.samples[1:10, ]
-
+    FALSE
 }
 

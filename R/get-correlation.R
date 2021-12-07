@@ -13,18 +13,18 @@
 get_correlation <- function(dataset, id, dataset_correlate = NULL,
                             intcovar = NULL, use_qr = TRUE) {
     # make sure annotations, data, and samples are synchronized
-    ds <- synchronize_data(ds)
+    ds <- synchronize_dataset(dataset)
 
     # get the dataset we are correlating against
     if (gtools::invalid(dataset_correlate)) {
+        ds_correlate <- ds
+    } else {
         ds_correlate <- synchronize_dataset(dataset_correlate)
     }
 
     # check if id exists
-    idx <- which(colnames(ds$data) == id)
-
-    if (gtools::invalid(idx)) {
-        stop(sprintf("Cannot find data for '%s' in dataset", id))
+    if (id %not in% colnames(ds$data)) {
+        stop(sprintf("Cannot find id '%s' in dataset", id))
     }
 
     # make sure we have the same samples
@@ -41,7 +41,7 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
     covar <- get_covar_matrix(ds, id)
 
     if (gtools::invalid(intcovar)) {
-        pcor <- stats::cor(data[, idx], data_correlate, use = "pair")
+        pcor <- stats::cor(data[, id], data_correlate, use = "pair")
     } else {
         interactive_covariate <-
             colnames(covar)[grepl(intcovar, colnames(covar), ignore.case = T)]
@@ -135,10 +135,12 @@ get_correlation_plot_data <- function(dataset, id,
                                       dataset_correlate, id_correlate,
                                       intcovar = NULL) {
     # make sure samples and annotations are available
-    ds <- synchronize_data(ds)
+    ds <- synchronize_dataset(dataset)
 
-    # get the dataset we are mediating against and the data
+    # get the dataset we are correlating against
     if (gtools::invalid(dataset_correlate)) {
+        ds_correlate <- ds
+    } else {
         ds_correlate <- synchronize_dataset(dataset_correlate)
     }
 
@@ -150,19 +152,13 @@ get_correlation_plot_data <- function(dataset, id,
     }
 
     data <- ds$data[samples, ]
-    data_correlate <- ds$data_correlate[samples, ]
+    data_correlate <- ds_correlate$data[samples, ]
 
-    # check if id exists and get the index
-    idx <- which(colnames(data) == id)
-    idx_correlate <- which(colnames(data_correlate) == id_correlate)
-
-    if (gtools::invalid(idx)) {
-        stop(sprintf("Cannot find data for '%s' in dataset", id))
-    } else if (gtools::invalid(idx_correlate)) {
-        stop(sprintf(
-            "Cannot find data for '%s' in dataset (correlate)",
-            id_correlate
-        ))
+    # check if id exists
+    if (id %not in% colnames(ds$data)) {
+        stop(sprintf("Cannot find id '%s' in dataset", id))
+    } else if (id_correlate %not in% colnames(ds_correlate$data)) {
+        stop(sprintf("Cannot find id '%s' in dataset", id_correlate))
     }
 
     # get the covar matrix
@@ -191,10 +187,10 @@ get_correlation_plot_data <- function(dataset, id,
             )
 
         x <- data[, 1]
-        y <- data_correlate[, idx_correlate]
+        y <- data_correlate[, id_correlate]
     } else {
-        x <- data[, idx]
-        y <- data_correlate[, idx_correlate]
+        x <- data[, id]
+        y <- data_correlate[, id_correlate]
     }
 
     # get the sample id field
@@ -222,19 +218,20 @@ get_correlation_plot_data <- function(dataset, id,
     }
 
     correlation_plot_data <-
-        tibble::as_tibble(data.frame(
-            sample_id = rownames(data),
-            x = x,
-            y = y,
-            sample_info,
-            stringsAsFactors = FALSE
+        tibble::as_tibble(
+            data.frame(
+                sample_id = rownames(data),
+                x         = x,
+                y         = y,
+                sample_info,
+                stringsAsFactors = FALSE
         ))
 
-    # TODO: should we add id to to the datset object (fix_environemnt)
+    # TODO: should we add id to to the dataset object (fix_environemnt)
     list(
         #dataset           = nvl(ds$id, ds$display.name),
-        id                = id,
         #dataset.correlate = nvl(ds_correlate$id, ds_correlate$display.name),
+        id                = id,
         id_correlate      = id_correlate,
         datatypes         = datatypes,
         data              = correlation_plot_data

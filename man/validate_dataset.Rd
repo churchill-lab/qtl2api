@@ -4,10 +4,10 @@
 \alias{validate_dataset}
 \title{Validate the dataset to make sure qtl2api can use it.}
 \usage{
-validate_dataset(dataset, extensive = FALSE)
+validate_dataset(dataset_id, extensive = FALSE)
 }
 \arguments{
-\item{dataset}{the dataset as a string identifier}
+\item{dataset_id}{the dataset_id as a string identifier}
 
 \item{extensive}{TRUE to perform scans on random elements in the data}
 }

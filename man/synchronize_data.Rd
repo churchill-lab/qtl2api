@@ -4,10 +4,10 @@
 \alias{synchronize_data}
 \title{Synchronize data and subset accordingly.}
 \usage{
-synchronize_data(ds)
+synchronize_data(dataset)
 }
 \arguments{
-\item{ds}{the dataset name}
+\item{dataset}{the dataset object}
 }
 \value{
 list with 3 elements: `annots`, `samples` and `data`.

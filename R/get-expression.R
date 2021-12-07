@@ -9,13 +9,11 @@
 #' @export
 get_expression <- function(dataset, id) {
     # make sure annotations, data, and samples are synchronized
-    ds <- synchronize_data(dataset)
+    ds <- synchronize_dataset(dataset)
 
     # check if id exists
-    idx <- which(colnames(ds$data) == id)
-
-    if (gtools::invalid(idx)) {
-        stop(sprintf("Cannot find data for '%s' in dataset", id))
+    if (id %not in% colnames(ds$data)) {
+        stop(sprintf("Cannot find id '%s' in dataset", id))
     }
 
     if (gtools::invalid(ds$covar_info)) {
@@ -49,7 +47,7 @@ get_expression <- function(dataset, id) {
     # bind the data
     expression_temp <- tibble::tibble(
         sample_id  = rownames(ds$data),
-        expression = ds$data[, idx]
+        expression = ds$data[, id]
     )
 
     output <- samples %>%

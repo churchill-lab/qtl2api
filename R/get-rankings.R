@@ -14,7 +14,7 @@ get_rankings <- function(dataset, chrom = NULL,
     }
 
     # make sure annotations, data, and samples are synchronized
-    ds <- synchronize_data(ds)
+    ds <- synchronize_dataset(dataset)
 
     # get the mean for each gene/protein/phenotype
     data_mean <- colMeans(ds$data, na.rm = TRUE)
@@ -32,7 +32,6 @@ get_rankings <- function(dataset, chrom = NULL,
             # filter the data to just return the chromosome asked for
             gene_ids <-
                 ds$annot_mrna %>%
-                janitor::clean_names() %>%
                 dplyr::filter(.data$chr == chrom)
 
             tmp <- tmp[gene_ids$gene_id]

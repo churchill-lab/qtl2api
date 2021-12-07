@@ -14,18 +14,17 @@
 #' @export
 get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
     # make sure annotations, data, and samples are synchronized
-    ds <- synchronize_data(dataset)
-    ds_mediate <- ds
+    ds <- synchronize_dataset(dataset)
 
-    # get the dataset we are mediating against and the data
+    # get the dataset we are mediating against
     if (gtools::invalid(dataset_mediate)) {
+        ds_mediate <- ds
+    } else {
         ds_mediate <- synchronize_dataset(dataset_mediate)
     }
 
     # check if id exists
-    idx <- which(colnames(ds$data) == id)
-
-    if (gtools::invalid(idx)) {
+    if (id %not in% colnames(ds$data)) {
         stop(sprintf("Cannot find id '%s' in dataset", id))
     }
 
@@ -89,7 +88,7 @@ get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
         genoprobs[[chrom]][rownames(ds_mediate$data), , marker_id]
 
     intermediate::mediation.scan(
-        target = ds$data[, idx, drop = FALSE],
+        target = ds$data[, id, drop = FALSE],
         mediator = ds_mediate$data,
         annotation = annot,
         covar = covar,

@@ -6,9 +6,16 @@
 #' @importFrom rlang .data
 get_sample_id_field <- function(dataset) {
     if (is_phenotype(dataset)) {
+        if (gtools::invalid(dataset$is_synchronized)) {
+            sample_id_field <-
+                dataset$annot.phenotype %>%
+                janitor::clean_names()
+        } else {
+            sample_id_field <- dataset$annot_phenotype
+        }
+
         sample_id_field <-
-            dataset$annot.phenotype %>%
-            janitor::clean_names() %>%
+            sample_id_field %>%
             dplyr::filter(.data$is_id == TRUE)
 
         if (NROW(sample_id_field) != 1) {
@@ -17,9 +24,15 @@ get_sample_id_field <- function(dataset) {
 
         sample_id_field <- sample_id_field$data_name
     } else {
+        if (gtools::invalid(dataset$is_synchronized)) {
+            samples <- colnames(dataset$annot.samples)
+        } else {
+            samples <- colnames(dataset$annot_samples)
+        }
+
         sample_id_field <- grep(
             "^mouse(\\.|_)?id$|^sample(\\.|_)?id$",
-            colnames(dataset$annot.samples),
+            samples,
             value = TRUE,
             ignore.case = TRUE
         )

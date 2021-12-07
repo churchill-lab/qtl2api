@@ -19,12 +19,10 @@ get_snp_assoc_mapping <- function(dataset, id, chrom, location,
                                   db_file, window_size = 500000,
                                   intcovar = NULL, cores = 0) {
     # make sure annotations, data, and samples are synchronized
-    ds <- synchronize_data(ds)
+    ds <- synchronize_dataset(dataset)
 
     # check if id exists
-    idx <- which(colnames(ds$data) == id)
-
-    if (gtools::invalid(idx)) {
+    if (id %not in% colnames(ds$data)) {
         stop(sprintf("Cannot find id '%s' in dataset", id))
     }
 
@@ -99,7 +97,7 @@ get_snp_assoc_mapping <- function(dataset, id, chrom, location,
     # - addcovar should always be ALL covars
     # - intcovar should be just the interactive covariate column
     out_snps <- qtl2::scan1(
-        pheno     = ds$data[, idx, drop = FALSE],
+        pheno     = ds$data[, id, drop = FALSE],
         kinship   = K[[chrom]],
         genoprobs = snp_prob,
         addcovar  = covar,
@@ -130,7 +128,7 @@ get_snp_assoc_mapping <- function(dataset, id, chrom, location,
         # - addcovar should always be ALL covars
         # - intcovar should be just the interactive covariate column
         out_snps <- qtl2::scan1(
-            pheno     = ds$data[, idx, drop = FALSE],
+            pheno     = ds$data[, id, drop = FALSE],
             kinship   = K[[chrom]],
             genoprobs = snp_prob,
             addcovar  = covar,

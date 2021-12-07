@@ -24,12 +24,10 @@ get_lod_scan <- function(dataset, id, intcovar = NULL, cores = 0,
                          filter_thresholdX = NULL, filter_peak_dropX = NULL,
                          scan1_output = FALSE) {
     # make sure samples and annotations are available
-    ds <- synchronize_data(dataset)
+    ds <- synchronize_dataset(dataset)
 
     # check if id exists
-    idx <- which(colnames(ds$data) == id)
-
-    if (gtools::invalid(idx)) {
+    if (id %not in% colnames(ds$data)) {
         stop(sprintf("Cannot find id '%s' in dataset", id))
     }
 
@@ -45,7 +43,7 @@ get_lod_scan <- function(dataset, id, intcovar = NULL, cores = 0,
         interactive_covariate <- NULL
     } else {
         if (intcovar %not in% ds$covar_info$sample_column) {
-            stop(sprintf("intcovar '%s' not found in covar.info", intcovar))
+            stop(sprintf("intcovar '%s' not found in covar_info", intcovar))
         }
 
         # grabbing all the columns from covar (covar.matrix) that
@@ -143,12 +141,10 @@ get_lod_scan <- function(dataset, id, intcovar = NULL, cores = 0,
 #' @export
 get_lod_scan_by_sample <- function(dataset, id, intcovar, chrom, cores = 0) {
     # make sure annotations, data, and samples are synchronized
-    ds <- synchronize_data(dataset)
+    ds <- synchronize_dataset(dataset)
 
     # check if id exists
-    idx <- which(colnames(ds$data) == id)
-
-    if (gtools::invalid(idx)) {
+    if (id %not in% colnames(ds$data)) {
         stop(sprintf("Cannot find id '%s' in dataset", id))
     }
 
@@ -161,7 +157,7 @@ get_lod_scan_by_sample <- function(dataset, id, intcovar, chrom, cores = 0) {
     num_cores <- nvl_int(cores, 0)
 
     if (intcovar %not in% ds$covar_info$sample_column) {
-        stop(sprintf("intcovar '%s' not found in covar.info", intcovar))
+        stop(sprintf("intcovar '%s' not found in covar_info", intcovar))
     }
 
     # get all the unique values for the interactive.covar and sort them

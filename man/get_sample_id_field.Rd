@@ -4,10 +4,10 @@
 \alias{get_sample_id_field}
 \title{Get the sample id field.}
 \usage{
-get_sample_id_field(ds)
+get_sample_id_field(dataset)
 }
 \arguments{
-\item{ds}{the dataset object}
+\item{dataset}{the dataset object}
 }
 \value{
 the name of the sample id field

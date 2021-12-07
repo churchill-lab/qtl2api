@@ -4,10 +4,10 @@
 \alias{get_random_id}
 \title{Get a random identifier from the dataset.}
 \usage{
-get_random_id(ds)
+get_random_id(dataset)
 }
 \arguments{
-\item{ds}{a dataset object}
+\item{dataset}{a dataset object}
 }
 \value{
 a random identifier

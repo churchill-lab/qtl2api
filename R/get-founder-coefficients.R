@@ -16,13 +16,11 @@
 get_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
                                      blup = FALSE, center = TRUE, cores = 0) {
     # make sure annotations, data, and samples are synchronized
-    ds <- synchronize_data(dataset)
+    ds <- synchronize_dataset(dataset)
 
     # check if id exists
-    idx <- which(colnames(ds$data) == id)
-
-    if (gtools::invalid(idx)) {
-        stop(sprintf("Cannot find data for '%s' in dataset", id))
+    if (id %not in% colnames(ds$data)) {
+        stop(sprintf("Cannot find id '%s' in dataset", id))
     }
 
     # make sure the chromosome data exists
@@ -46,7 +44,7 @@ get_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
         if (blup) {
             temp <- qtl2::scan1blup(
                 genoprobs = genoprobs[, chrom],
-                pheno     = ds$data[, idx, drop = FALSE],
+                pheno     = ds$data[, id, drop = FALSE],
                 kinship   = K[[chrom]],
                 addcovar  = covar,
                 cores     = num_cores
@@ -54,7 +52,7 @@ get_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
         } else {
             temp <- qtl2::scan1coef(
                 genoprobs = genoprobs[, chrom],
-                pheno     = ds$data[, idx, drop = FALSE],
+                pheno     = ds$data[, id, drop = FALSE],
                 kinship   = K[[chrom]],
                 addcovar  = covar
             )
@@ -127,7 +125,7 @@ get_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
             if (blup) {
                 temp <- qtl2::scan1blup(
                     genoprobs = genoprobs[sample_names, chrom],
-                    pheno     = ds$data[sample_names, idx, drop = FALSE],
+                    pheno     = ds$data[sample_names, id, drop = FALSE],
                     kinship   = K[[chrom]][sample_names, sample_names],
                     addcovar  = covar_subset,
                     cores     = num_cores
@@ -135,13 +133,11 @@ get_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
             } else {
                 temp <- qtl2::scan1coef(
                     genoprobs = genoprobs[sample_names, chrom],
-                    pheno     = ds$data[sample_names, idx, drop = FALSE],
+                    pheno     = ds$data[sample_names, id, drop = FALSE],
                     kinship   = K[[chrom]][sample_names, sample_names],
                     addcovar  = covar_subset
                 )
             }
-
-            print(temp)
 
             if (center) {
                 a2h <- LETTERS[1:8]
