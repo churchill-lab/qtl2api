@@ -5,28 +5,29 @@
 #'
 #' @export
 validate_dataset <- function(dataset_id, extensive = FALSE) {
-    cat("\nChecking '", dataset_id, "' ...\n", sep = '')
+    cat("\nSTATUS  : Checking '", dataset_id, "' ...\n")
 
     # get the dataset
     ds_orig <- get_dataset_by_id(dataset_id)
     ds <- synchronize_dataset(ds_orig)
 
     if (gtools::invalid(ds)) {
-        message(paste0("ERROR: dataset not found: ", dataset_id))
+        message("ERROR   : dataset not found: ", dataset_id)
         return()
     }
 
     # dataset should be a list
     if (!is.list(ds_orig)) {
-        message(paste0("ERROR: dataset should be a list, but found: ", class(ds_orig)))
+        message("ERROR   : dataset should be a list, but found: ", class(ds_orig))
+        return()
     }
 
     if ('datatype' %not in% names(ds_orig)) {
-        message("ERROR: dataset must contain 'datatype'")
+        message("ERROR   : dataset must contain 'datatype'")
     }
 
     if ('display.name' %not in% names(ds_orig)) {
-        message("ERROR: dataset must contain 'display.name'")
+        message("ERROR   : dataset must contain 'display.name'")
     }
 
     datatype = ds[['datatype']]
@@ -41,7 +42,7 @@ validate_dataset <- function(dataset_id, extensive = FALSE) {
     } else if (is_phenotype(ds)) {
         is_pheno <- TRUE
     } else {
-        message(paste0("ERROR: datatype is invalid: ", datatype))
+        message("ERROR   : datatype is invalid: ", datatype)
     }
 
     validate_annotations(dataset_id)
@@ -59,13 +60,14 @@ validate_dataset <- function(dataset_id, extensive = FALSE) {
     }
 }
 
+
 #' Perform scans on random data in the dataset designated by dataset_id.
 #'
 #' @param dataset_id the dataset as a string identifier
 #'
 #' @export
 validate_dataset_extensive <- function(dataset_id) {
-    # get the dataset
+    cat("STATUS  : Checking qtl2api operations...\n")
     dataset <- NA
 
     if (exists(dataset_id)) {
@@ -74,15 +76,26 @@ validate_dataset_extensive <- function(dataset_id) {
 
     ds <- synchronize_dataset(dataset)
 
-
     datatype = ds[['datatype']]
     id <- get_random_id(ds)
 
-    covar_temp <-
-        ds$covar_info
-        dplyr::filter(.data$primary == TRUE)
+    intcovar <- NULL
 
-    intcovar <- covar_temp$sample_column
+    tryCatch(
+        {
+            covar_temp <-
+                ds$covar_info
+                dplyr::filter(.data$primary == TRUE)
+
+            intcovar <- covar_temp$sample_column
+        },
+        error = function(cond) {
+        },
+        warning = function(cond) {
+        },
+        finally = {
+        }
+    )
 
     chrom <- sample(names(K), 1)
 
@@ -91,27 +104,32 @@ validate_dataset_extensive <- function(dataset_id) {
 
     marker <- markers_temp$marker.id
 
-    cat("Checking get_peaks_all\n")
+    cat("STATUS  : Checking qtl2api::get_lod_peaks_all\n")
     tryCatch(
         {
-            temp <- get_lod_peaks_all(ds)
+            # NOTE: dataset instead of ds
+            temp <- get_lod_peaks_all(dataset)
         },
         error = function(cond) {
-            message(cond$message)
+            print('error')
+            dplyr::glimpse(cond)
+            #message(paste0("WARNING : ", cond$message))
         },
         warning = function(cond) {
+            print('warning')
+            #message(paste0("WARNING : ", cond$message))
         },
         finally = {
         }
     )
 
-    cat(paste0("Checking get_lod_scan ", id, "\n"))
+    cat(paste0("STATUS  : Checking qtl2api::get_lod_scan ", id, "\n"))
     tryCatch(
         {
             temp <- get_lod_scan(ds, id)
         },
         error = function(cond) {
-            message(cond$message)
+            message(paste0("WARNING : ", cond$message))
         },
         warning = function(cond) {
         },
@@ -119,28 +137,31 @@ validate_dataset_extensive <- function(dataset_id) {
         }
     )
 
+    if (gtools::invalid(intcovar)) {
+        cat("WARNING : unable to test qtl2api::get_lod_scan with intcovar\n")
+    } else {
+        cat(paste0("STATUS  : Checking qtl2api::get_lod_scan: ", id, " intcovar: ", intcovar, "\n"))
+        tryCatch(
+            {
+                temp <- get_lod_scan(ds, id, intcovar)
+            },
+            error = function(cond) {
+                message(paste0("WARNING : ", cond$message))
+            },
+            warning = function(cond) {
+            },
+            finally = {
+            }
+        )
+    }
 
-    cat(paste0("Checking get_lod_scan ", id, " intcovar: ", intcovar, "\n"))
-    tryCatch(
-        {
-            temp <- get_lod_scan(ds, id, intcovar)
-        },
-        error = function(cond) {
-            message(cond$message)
-        },
-        warning = function(cond) {
-        },
-        finally = {
-        }
-    )
-
-    cat(paste0("Checking get_expression ", id, "\n"))
+    cat(paste0("STATUS  : Checking qtl2api::get_expression: ", id, "\n"))
     tryCatch(
         {
             temp <- get_expression(ds, id)
         },
         error = function(cond) {
-            message(cond$message)
+            message(paste0("WARNING : ", cond$message))
         },
         warning = function(cond) {
         },
@@ -148,13 +169,13 @@ validate_dataset_extensive <- function(dataset_id) {
         }
     )
 
-    cat(paste0("Checking get_founder_coefficients ", id, " chrom: ", chrom, "\n"))
+    cat(paste0("STATUS  : Checking qtl2api::get_founder_coefficients: ", id, " chrom: ", chrom, "\n"))
     tryCatch(
         {
             temp <- get_founder_coefficients(ds, id, chrom)
         },
         error = function(cond) {
-            message(cond$message)
+            message(paste0("WARNING : ", cond$message))
         },
         warning = function(cond) {
         },
@@ -162,28 +183,32 @@ validate_dataset_extensive <- function(dataset_id) {
         }
     )
 
-    cat(paste0("Checking get_founder_coefficients ", id, " chrom: ", chrom, ", intcovar: ", intcovar, "\n"))
-    tryCatch(
-        {
-            temp <- get_founder_coefficients(ds, id, chrom, intcovar = intcovar)
-        },
-        error = function(cond) {
-            message(cond$message)
-        },
-        warning = function(cond) {
-        },
-        finally = {
-        }
-    )
+    if (gtools::invalid(intcovar)) {
+        cat("WARNING : unable to test qtl2api::get_founder_coefficients with intcovar\n")
+    } else {
+        cat(paste0("STATUS  : Checking qtl2api::get_founder_coefficients: ", id, " chrom: ", chrom, ", intcovar: ", intcovar, "\n"))
+        tryCatch(
+            {
+                temp <- get_founder_coefficients(ds, id, chrom, intcovar = intcovar)
+            },
+            error = function(cond) {
+                message(paste0("WARNING : ", cond$message))
+            },
+            warning = function(cond) {
+            },
+            finally = {
+            }
+        )
+    }
 
     if (!is_phenotype(ds)) {
-        cat(paste0("Checking get_mediation ", id, " marker: ", marker, "\n"))
+        cat(paste0("STATUS  : Checking get_mediation ", id, " marker: ", marker, "\n"))
         tryCatch(
             {
                 temp <- get_mediation(ds, id, marker)
             },
             error = function(cond) {
-                message(cond$message)
+                message(paste0("WARNING : ", cond$message))
             },
             warning = function(cond) {
             },
@@ -267,7 +292,7 @@ validate_environment <- function(extensive = FALSE) {
 #'
 #' @export
 validate_annotations <- function(dataset_id) {
-    cat("Checking annotations\n")
+    cat("STATUS  : Checking annotations\n")
 
     # get the dataset
     ds_orig <- get_dataset_by_id(dataset_id)
@@ -278,51 +303,51 @@ validate_annotations <- function(dataset_id) {
 
     if (tolower(ds$datatype) == "mrna") {
         if ('annot.mrna' %not in% names(ds_orig)) {
-            message("ERROR: annot.mrna not found in dataset")
+            message("ERROR   : annot.mrna not found in dataset")
+            return()
         }
 
         if (!tibble::is_tibble(ds_orig$annot.mrna)) {
-            message("ERROR: annot.mrna should be a tibble, but found: ", class(ds$annot.mrna))
+            message("ERROR   : annot.mrna should be a tibble, but found: ", class(ds$annot.mrna))
         }
 
         annots <- ds$annot_mrna
         annots_orig <- ds_orig$annot.mrna
 
         if (any(duplicated(annots$gene_id))) {
-            message("ERROR: There are duplicated gene identifiers in annot.mrna")
+            message("ERROR   : There are duplicated gene identifiers in annot.mrna")
         }
     } else if (tolower(ds$datatype) == "protein") {
         if ('annot.protein' %not in% names(ds_orig)) {
-            message("ERROR: annot.protein not found in dataset")
+            message("ERROR   : annot.protein not found in dataset")
         }
 
         if (!tibble::is_tibble(ds_orig$annot.protein)) {
-            message(paste0("ERROR: annot.protein should be a tibble, but found: ", class(ds$annot.protein)))
+            message("ERROR   : annot.protein should be a tibble, but found: ", class(ds$annot.protein))
         }
 
         annots <- ds$annot_protein
         annots_orig <- ds_orig$annot.protein
 
         if (any(duplicated(annots$protein_id))) {
-            message("ERROR: There are duplicated protein identifiers in annot.protein")
+            message("ERROR   : There are duplicated protein identifiers in annot.protein")
         }
     } else if (is_phenotype(ds)) {
         if ('annot.phenotype' %not in% names(ds_orig)) {
-            message("ERROR: annot.phenotype not found in dataset")
+            message("ERROR   : annot.phenotype not found in dataset")
         }
 
         if (!tibble::is_tibble(ds_orig$annot.pheno)) {
-            message(paste0("ERROR: annot.phenotype should be a tibble, but found ", class(ds_orig$annot.phenotype)))
+            message("ERROR   : annot.phenotype should be a tibble, but found ", class(ds_orig$annot.phenotype))
         }
 
         annots <- ds$annot_phenotype
         annots_orig <- ds_orig$annot.phenotype
 
         if (any(duplicated(annots$data_name))) {
-            message("ERROR: There are duplicated data_name annotations in annot.phenotype")
+            message("ERROR   : There are duplicated data_name annotations in annot.phenotype")
         }
     }
-
 
     if (is_phenotype(ds)) {
         expected_names <- c('data_name', 'short_name', 'description', 'is_id',
@@ -331,7 +356,7 @@ validate_annotations <- function(dataset_id) {
 
         for (n in expected_names) {
             if (n %not in% names(annots)) {
-                message(paste0("ERROR:", n, "not found in annot_phenotype"))
+                message("ERROR   :", n, "not found in annot_phenotype")
             }
         }
 
@@ -340,7 +365,7 @@ validate_annotations <- function(dataset_id) {
 
         for (n in expected_logical) {
             if(!is.logical(annots[[n]])) {
-                message(paste0("ERROR: annot_phenotype$", n, " should be logical, not ", class(annots[[n]])))
+                message("ERROR   : annot_phenotype$", n, " should be logical, not ", class(annots[[n]]))
             }
         }
 
@@ -349,7 +374,7 @@ validate_annotations <- function(dataset_id) {
             theID <- annots[which(annots$is_id == TRUE),]$data_name
 
             if(length(theID) != 1) {
-                message('ERROR: annot_phenotype$is_id should have 1 and only 1 row set to TRUE')
+                message("ERROR   : annot_phenotype$is_id should have 1 and only 1 row set to TRUE")
             }
         }
     } else {
@@ -359,26 +384,27 @@ validate_annotations <- function(dataset_id) {
             annot_name <- 'annot_protein'
 
             if ('protein_id' %not in% names(annots)) {
-                message("ERROR: protein_id not found in annot_protein")
+                message("ERROR   : protein_id not found in annot_protein")
             }
         } else {
-            annot_name <- 'annot_mrna'
+            annot_name <- "annot_mrna"
         }
 
         expected_names <-  c('gene_id', 'symbol', 'chr', 'start', 'end',
                              'strand', 'middle', 'nearest_marker_id')
+
         for (n in expected_names) {
             if (n %not in% names(annots)) {
-                message(paste0("ERROR:", n, "not found in", annot_name))
+                message("ERROR   :", n, "not found in", annot_name)
             }
         }
 
         if (any(annots$start > 10000.0)) {
-            message(paste0(annot_name, '$start should be in Mbp not bp', sep=''))
+            message(annot_name, '$start should be in Mbp not bp')
         } else if (any(annots$end > 10000.0)) {
-            message(paste0(annot_name, '$end should be in Mbp not bp', sep=''))
+            message(annot_name, '$end should be in Mbp not bp')
         } else if (any(annots$middle > 10000.0)) {
-            message(paste0(annot_name, '$middle should be in Mbp not bp', sep=''))
+            message(annot_name, '$middle should be in Mbp not bp')
         }
     }
 
@@ -386,7 +412,7 @@ validate_annotations <- function(dataset_id) {
     num_annots_synch <- NROW(annots)
 
     if (num_annots_orig != num_annots_synch) {
-        cat("WARNING: synchronizing annotations, # samples changed from", num_annots_orig, "to", num_annots_synch, "\n")
+        cat("WARNING : synchronizing annotations, # samples changed from", num_annots_orig, "to", num_annots_synch, "\n")
     }
 }
 
@@ -397,34 +423,35 @@ validate_annotations <- function(dataset_id) {
 #'
 #' @export
 validate_samples <- function(dataset_id) {
-    cat("Checking samples\n")
+    cat("STATUS  : Checking samples\n")
 
     # get the dataset
     ds_orig <- get_dataset_by_id(dataset_id)
     ds <- synchronize_dataset(ds_orig)
 
     if ('annot.samples' %not in% names(ds_orig)) {
-        message('ERROR: annot.samples not found')
+        message('ERROR   : annot.samples not found')
+        return()
     }
 
     if (!tibble::is_tibble(ds_orig$annot.sample)) {
-        message(paste0("ERROR: annot.samples should be a tibble, but found ", class(ds$annot.sample)))
+        message(paste0("ERROR   : annot.samples should be a tibble, but found ", class(ds$annot.sample)))
     }
 
     sample_id_field <- ds$sample_id_field
     if (gtools::invalid(sample_id_field)) {
-        message('ERROR: unable to determine sample id field')
+        message('ERROR   : unable to determine sample id field')
     }
 
     if (any(duplicated(ds$annot.sample[sample_id_field]))) {
-        message("ERROR: there are duplicated annotations in annot.samples")
+        message("ERROR   : there are duplicated annotations in annot.samples")
     }
 
     num_annots_orig <- NROW(ds_orig$annot.samples)
     num_annots_synch <- NROW(ds$annot_samples)
 
     if (num_annots_orig != num_annots_synch) {
-        cat("WARNING: synchronizing samples, # samples changed from", num_annots_orig, "to", num_annots_synch, "\n")
+        cat("WARNING : synchronizing samples, # samples changed from", num_annots_orig, "to", num_annots_synch, "\n")
     }
 }
 
@@ -435,80 +462,81 @@ validate_samples <- function(dataset_id) {
 #'
 #' @export
 validate_covar_info <- function(dataset_id) {
-    cat("Checking covar.info\n")
+    cat("STATUS  : Checking covar.info\n")
 
     # get the dataset
     ds_orig <- get_dataset_by_id(dataset_id)
     ds <- synchronize_dataset(ds_orig)
 
     if ('covar.info' %not in% names(ds_orig)) {
-        message('covar.info not found')
+        message("ERROR   : covar.info not found")
+        return()
     }
 
     if (!tibble::is_tibble(ds_orig$covar.info)) {
-        message(paste0("covar.info should be a tibble, but found '", class(ds_orig$covar.info), "'"))
+        message("covar.info should be a tibble, but found '", class(ds_orig$covar.info), "'")
     }
 
     if ('sample.column' %not in% names(ds_orig$covar.info)) {
-        message('sample.column not found in covar.info')
+        message("ERROR   : sample.column not found in covar.info")
     } else if ('display.name' %not in% names(ds_orig$covar.info)) {
-        message('display.name not found in covar.info')
+        message("ERROR   : display.name not found in covar.info")
     } else if ('interactive' %not in% names(ds_orig$covar.info)) {
-        message('interactive not found in covar.info')
+        message("ERROR   : interactive not found in covar.info")
     } else if ('primary' %not in% names(ds_orig$covar.info)) {
-        message('primary not found in covar.info')
+        message("ERROR   : primary not found in covar.info")
     } else if ('lod.peaks' %not in% names(ds_orig$covar.info)) {
-        message('lod.peaks not found in covar.info')
+        message("ERROR   : lod.peaks not found in covar.info")
     }
 
     if(!is.logical(ds_orig$covar.info$primary)) {
-        message('covar.info$primary should be logical, not ', class(ds_orig$covar.info$primary))
+        message('ERROR   : covar.info$primary should be logical, not ', class(ds_orig$covar.info$primary))
     }
 
     if(!is.logical(ds_orig$covar.info$interactive)) {
-        message('covar.info$interactive should be logical, not ', class(ds_orig$covar.info$interactive))
+        message('ERROR   : covar.info$interactive should be logical, not ', class(ds_orig$covar.info$interactive))
     }
 
     for(i in 1:nrow(ds$covar_info)) {
         row <- ds$covar_info[i, ]
 
         if (row$sample_column %not in% colnames(ds$annot_samples)) {
-            message(paste0("covar.info$sample.column ('", row$sample_column, "') is not a column name in annot.samples"))
+            message("ERROR   : covar.info$sample.column ('", row$sample_column, "') is not a column name in annot.samples")
         }
 
         if (gtools::invalid(row$display_name)) {
-            message("covar.info$display_name needs to have a value")
+            message("ERROR   : covar.info$display_name needs to have a value")
         }
 
         if (class(row$interactive) == 'logical') {
             if (row$interactive) {
                 if (gtools::invalid(row$lod_peaks)) {
-                    message("covar.info$interactive is TRUE, but covar.info$lod_peaks is NA")
+                    message("ERROR   : covar.info$interactive is TRUE, but covar.info$lod_peaks is NA")
                 } else {
                     # check for existence of lod_peaks
                     if (gtools::invalid(ds_orig$lod.peaks[[row$lod_peaks]])) {
-                        message(paste0("covar.info$interactive is TRUE, but covar.info$lod_peaks ('", row$lod_peaks, "') is not in lod.peaks"))
+                        message("ERROR   : covar.info$interactive is TRUE, but covar.info$lod_peaks ('", row$lod_peaks, "') is not in lod.peaks")
                     }
                 }
             } else {
                 if (!gtools::invalid(row$lod_peaks)) {
-                    message(paste0("covar.info$interactive is FALSE, but covar.info$lod_peaks ('", row$lod_peaks, "') is set"))
+                    message("ERROR   : covar.info$interactive is FALSE, but covar.info$lod_peaks ('", row$lod_peaks, "') is set")
                 }
             }
         } else {
-            message("covar.info$interactive is INVALID, please set correctly")
+            message("ERROR   : covar.info$interactive is INVALID, please set correctly")
         }
     }
 
     if (class(ds$covar_info$primary) == "logical") {
         if (!any(ds$covar_info$primary)) {
-            message("covar.info$primary needs 1 value set to TRUE")
+            message("ERROR   : covar.info$primary needs 1 value set to TRUE")
         }
     } else {
-        message("covar.info$primary class is not logical (TRUE or FALSE), please set correctly")
+        message("ERROR   : covar.info$primary class is not logical (TRUE or FALSE), please set correctly")
     }
 
-    cat("Checking covar.matrix\n")
+    cat("STATUS  : Checking covar.matrix\n")
 
     if (is_phenotype(ds)) {
         phenos <- ds$annot_phenotype %>% dplyr::filter(.data$is_pheno == TRUE)
@@ -520,13 +548,13 @@ validate_covar_info <- function(dataset_id) {
             tryCatch(
                 {
                     if (i %% 500 == 0) {
-                        cat("... completed", i, "checks out of", length(phenos), "\n")
+                        cat("STATUS  : ... completed", i, "checks out of", length(phenos), "\n")
                     }
                     temp <- get_covar_matrix(ds, x)
                 },
                 error = function(cond) {
-                    message('Check phenotype ', x)
-                    message('Unable to generate covar.matrix, check covar.info')
+                    message('ERROR   : Check phenotype ', x)
+                    message('ERROR   : Unable to generate covar.matrix, check covar.info')
                     message(cond$message)
                 },
                 warning = function(cond) {
@@ -542,7 +570,7 @@ validate_covar_info <- function(dataset_id) {
                 temp <- get_covar_matrix(ds)
             },
             error = function(cond) {
-                message('Unable to generate covar.matrix, check covar.info')
+                message('ERROR   : Unable to generate covar.matrix, check covar.info')
                 message(cond$message)
             },
             warning = function(cond) {
@@ -560,22 +588,23 @@ validate_covar_info <- function(dataset_id) {
 #'
 #' @export
 validate_lod_peaks <- function(dataset_id) {
-    cat("Checking lod.peaks\n")
+    cat("STATUS  : Checking lod.peaks\n")
 
     # get the dataset
     ds_orig <- get_dataset_by_id(dataset_id)
     ds <- synchronize_dataset(ds_orig)
 
-    if ('lod.peaks' %not in% names(ds_orig)) {
-        message('lod.peaks not found')
+    if ("lod.peaks" %not in% names(ds_orig)) {
+        message("ERROR   : lod.peaks not found")
+        return()
     }
 
     if (!is.list(ds_orig$lod.peaks)) {
-        message(paste0("lod.peaks should be a list, but found ", class(ds_orig$lod.peaks)))
+        message("ERROR   : lod.peaks should be a list, but found ", class(ds_orig$lod.peaks))
     }
 
     if ('additive' %not in% names(ds_orig$lod.peaks)) {
-        message("additive should be an element in lod.peaks")
+        message("ERROR   : additive should be an element in lod.peaks")
     }
 
     # get the rest
@@ -587,32 +616,31 @@ validate_lod_peaks <- function(dataset_id) {
             peaks <- ds_orig$lod.peaks[[cov_inf$lod_peaks]]
 
             if (gtools::invalid(peaks)) {
-                message(paste0("Unable to find lod.peaks '", cov_inf$lod_peaks, "'"))
+                message("ERROR   : Unable to find lod.peaks '", cov_inf$lod_peaks, "'")
             } else {
 
                 peaks <- peaks %>%
                     janitor::clean_names()
 
-
                 if (tolower(ds$datatype) == "protein") {
                     if (length(setdiff(peaks$protein_id, ds$annot_protein$protein_id))) {
-                        message(paste0('not all lod.peaks$protein_id are in annot.protein$protein_id'))
+                        cat("WARNING : not all lod.peaks$protein_id are in annot.protein$protein_id\n")
                     }
 
                     if (length(setdiff(peaks$marker_id, markers$marker.id))) {
-                        message(paste0('not all lod.peaks$marker_id are in markers'))
+                        cat("WARNING : not all lod.peaks$marker_id are in markers\n")
                     }
                 } else if (tolower(ds$datatype) == "mrna") {
                     if (length(setdiff(peaks$gene_id, ds$annot_mrna$gene_id))) {
-                        message(paste0('not all lod.peaks$gene_id are in annot.mrna$gene_id'))
+                        cat("WARNING : not all lod.peaks$gene_id are in annot.mrna$gene_id\n")
                     }
 
                     if (length(setdiff(peaks$marker_id, markers$marker.id))) {
-                        message(paste0('not all lod.peaks$marker_id are in markers'))
+                        cat("WARNING : not all lod.peaks$marker_id are in markers\n")
                     }
                 } else {
                     if (length(setdiff(peaks$data_name, ds$annot_phenotype$data_name))) {
-                        message(paste0('not all lod.peaks["', cov_inf$sample_column, '"]$data_name are in annot.phenotype$data_name'))
+                        cat("WARNING : not all lod.peaks['", cov_inf$sample_column, "']$data_name are in annot.phenotype$data_name\n")
                     }
                 }
             }
@@ -626,7 +654,7 @@ validate_lod_peaks <- function(dataset_id) {
 #'
 #' @export
 validate_data <- function(dataset_id) {
-    cat("Checking data\n")
+    cat("STATUS  : Checking data\n")
 
     # get the dataset
     ds_orig <- get_dataset_by_id(dataset_id)
@@ -648,37 +676,37 @@ validate_data <- function(dataset_id) {
         annot_ids <- annots_temp$data_name
     }
 
-    if ('data' %not in% names(ds)) {
-        message('data not found')
+    if ("data" %not in% names(ds)) {
+        message("ERROR   : data not found")
+        return()
     }
 
     if (is.matrix(ds$data)) {
         # check if the data is numeric
         if (!is.numeric(ds$data)) {
-            message(paste0(dataset_id, '$data matrix is not numeric'))
+            message("ERROR   :", dataset_id, "$data matrix is not numeric")
+            return()
         }
 
         if (num_annot_samples != nrow(ds$data)) {
-            cat(paste0('WRANING: number of samples (', num_annot_samples, ') != ',
-                           'number of data rows (', nrow(ds$data), ')'))
+            cat("WARNING : number of samples (", num_annot_samples, ") != ",
+                "number of data rows (", nrow(ds$data), ")\n")
         }
 
 
         if (NCOL(ds$data) != NROW(annot_ids)) {
-            cat(paste0('WARNING: number of annotations (', NROW(annot_ids), ') != ',
-                           'number of data cols (', NCOL(ds$data), ')'))
+            cat('WARNING : number of annotations (', NROW(annot_ids), ') != ',
+                'number of data cols (', NCOL(ds$data), ")\n")
 
             x <- setdiff(annot_ids, colnames(ds$data))
             y <- setdiff(colnames(ds$data), annot_ids)
 
             if (length(x) > 0) {
-                cat("WARNING: annotations with no data:")
-                cat(paste(x, sep = ",", collapse = ","))
+                cat("WARNING : annotations with no data:", paste(x, sep = ",", collapse = ","), "\n")
             }
 
             if (length(y) > 0) {
-                cat("WARNING: data with no annotations:")
-                cat(paste(y, sep = ",", collapse = ","))
+                cat("WARNING : data with no annotations:", paste(y, sep = ",", collapse = ","), "\n")
             }
         }
 
@@ -690,7 +718,7 @@ validate_data <- function(dataset_id) {
         }
 
         if (!data.found) {
-            message("ERROR: 'rz','norm','log','transformed', OR 'raw' NOT found in data, must be ONE of them")
+            message("ERROR   : 'rz','norm','log','transformed', OR 'raw' NOT found in data, must be ONE of them")
         }
 
         data_list <- get('data', ds)
@@ -704,31 +732,25 @@ validate_data <- function(dataset_id) {
             }
 
             if (num_annot_samples != nrow(temp_data)) {
-                cat(paste0('number of samples (', num_annot_samples, ') != ',
-                               'number of data["', data_names[i], '"] rows (', nrow(temp_data), ')'))
+                cat('WARNING : number of samples (', num_annot_samples, ') != ',
+                    'number of data["', data_names[i], '"] rows (', nrow(temp_data), ')\n')
             }
 
             if (NCOL(temp_data) != NROW(annot_ids)) {
-                cat(paste0('number of annotations (', NROW(annot_ids), ') != ',
-                               'number of data["', data_names[i], '"] cols (', NCOL(temp_data), ')'))
+                cat('WARNING : number of annotations (', NROW(annot_ids), ') != ',
+                               'number of data["', data_names[i], '"] cols (', NCOL(temp_data), ')\n')
 
                 x <- setdiff(annot_ids, colnames(temp_data))
                 y <- setdiff(colnames(temp_data), annot_ids)
 
                 if (length(x) > 0) {
-                    cat("WARNING: annotations with no data:")
-                    cat(paste(x, sep = ",", collapse = ","))
+                    cat("WARNING : annotations with no data:", paste(x, sep = ",", collapse = ","), "\n")
                 }
 
                 if (length(y) > 0) {
-                    cat("data with no annotations:")
-                    cat(paste(y, sep = ",", collapse = ","))
+                    cat("WARNING : data with no annotations:", paste(y, sep = ",", collapse = ","), "\n")
                 }
-
             }
-
-
-            rm(temp_data)
         }
     }
 }
