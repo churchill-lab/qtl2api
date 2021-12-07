@@ -5,7 +5,7 @@
 \title{Perform a LOD scan.}
 \usage{
 get_lod_scan(
-  ds,
+  dataset,
   id,
   intcovar = NULL,
   cores = 0,
@@ -17,7 +17,7 @@ get_lod_scan(
 )
 }
 \arguments{
-\item{ds}{the dataset object}
+\item{dataset}{the dataset object}
 
 \item{id}{the unique id in the dataset}
 

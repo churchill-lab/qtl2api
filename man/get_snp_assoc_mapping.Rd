@@ -5,7 +5,7 @@
 \title{Get the SNP association mapping}
 \usage{
 get_snp_assoc_mapping(
-  ds,
+  dataset,
   id,
   chrom,
   location,
@@ -16,7 +16,7 @@ get_snp_assoc_mapping(
 )
 }
 \arguments{
-\item{ds}{the dataset object}
+\item{dataset}{the dataset object}
 
 \item{id}{the unique id in the dataset}
 

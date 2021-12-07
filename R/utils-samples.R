@@ -1,13 +1,13 @@
 #' Get the sample id field.
 #'
-#' @param ds the dataset object
+#' @param dataset the dataset object
 #' @return the name of the sample id field
 #'
 #' @importFrom rlang .data
-get_sample_id_field <- function(ds) {
-    if (is_phenotype(ds)) {
+get_sample_id_field <- function(dataset) {
+    if (is_phenotype(dataset)) {
         sample_id_field <-
-            ds$annot.phenotype %>%
+            dataset$annot.phenotype %>%
             janitor::clean_names() %>%
             dplyr::filter(.data$is_id == TRUE)
 
@@ -19,13 +19,13 @@ get_sample_id_field <- function(ds) {
     } else {
         sample_id_field <- grep(
             "^mouse(\\.|_)?id$|^sample(\\.|_)?id$",
-            colnames(ds$annot.samples),
+            colnames(dataset$annot.samples),
             value = TRUE,
             ignore.case = TRUE
         )
 
         if (length(sample_id_field) != 1) {
-            stop("Unable to find a sample id field in annot.samples")
+            stop("unable to find a sample id field in annot.samples")
         }
     }
 
@@ -76,4 +76,3 @@ synchronize_samples <- function(pheno, probs, expr, covar = NULL) {
         covar = covar
     )
 }
-

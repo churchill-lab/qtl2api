@@ -1,8 +1,8 @@
 #' Get the correlation.
 #'
-#' @param ds the dataset object
+#' @param dataset the dataset object
 #' @param id the unique id in the dataset
-#' @param ds_correlate the dataset to correlate against, ds if INVALID
+#' @param dataset_correlate the dataset to correlate against, ds if INVALID
 #' @param intcovar the interactive covariate
 #' @param use_qr `TRUE` to use QR decomposition (FASTER)
 #'
@@ -10,31 +10,32 @@
 #'
 #' @importFrom rlang .data
 #' @export
-get_correlation <- function(ds, id, ds_correlate = NULL, intcovar = NULL,
-                            use_qr = TRUE) {
-    # get the data
-    data <- get_data(ds)
+get_correlation <- function(dataset, id, dataset_correlate = NULL,
+                            intcovar = NULL, use_qr = TRUE) {
+    # make sure annotations, data, and samples are synchronized
+    ds <- synchronize_data(ds)
 
-    # get the dataset we are correlating against and the data
-    ds_correlate <- nvl(ds_correlate, ds)
-    data_correlate <- get_data(ds_correlate)
+    # get the dataset we are correlating against
+    if (gtools::invalid(dataset_correlate)) {
+        ds_correlate <- synchronize_dataset(dataset_correlate)
+    }
 
     # check if id exists
-    idx <- which(colnames(data) == id)
+    idx <- which(colnames(ds$data) == id)
 
     if (gtools::invalid(idx)) {
         stop(sprintf("Cannot find data for '%s' in dataset", id))
     }
 
     # make sure we have the same samples
-    samples <- intersect(rownames(data), rownames(data_correlate))
+    samples <- intersect(rownames(ds$data), rownames(ds_correlate$data))
 
     if (length(samples) == 0) {
         stop("No matching samples for correlation")
     }
 
-    data <- data[samples, ]
-    data_correlate <- data_correlate[samples, ]
+    data <- ds$data[samples, ]
+    data_correlate <- ds_correlate$data[samples, ]
 
     # get the covar data
     covar <- get_covar_matrix(ds, id)
@@ -82,7 +83,7 @@ get_correlation <- function(ds, id, ds_correlate = NULL, intcovar = NULL,
 
     if (tolower(ds_correlate$datatype) == "mrna") {
         # get the indices into the annotype data
-        annot_mrna <- ds_correlate$annot.mrna %>% janitor::clean_names()
+        annot_mrna <- ds_correlate$annot_mrna
         idxs <- match(names(pcor), annot_mrna$gene_id)
 
         ret <- tibble::tibble(
@@ -95,7 +96,7 @@ get_correlation <- function(ds, id, ds_correlate = NULL, intcovar = NULL,
         )
     } else if (tolower(ds_correlate$datatype) == "protein") {
         # get the indices into the annotype data
-        annot_protein <- ds_correlate$annot.protein %>% janitor::clean_names()
+        annot_protein <- ds_correlate$annot_protein
         idxs <- match(names(pcor), annot_protein$protein_id)
 
         ret <- tibble::tibble(
@@ -120,9 +121,9 @@ get_correlation <- function(ds, id, ds_correlate = NULL, intcovar = NULL,
 
 #' Get the correlation data for plotting.
 #'
-#' @param ds the dataset object
+#' @param dataset the dataset object
 #' @param id the unique id in the dataset
-#' @param ds_correlate the dataset to correlate to
+#' @param dataset_correlate the dataset to correlate to
 #' @param id_correlate the identifier from the correlate dataset
 #' @param intcovar the interactive covariate
 #'
@@ -130,25 +131,26 @@ get_correlation <- function(ds, id, ds_correlate = NULL, intcovar = NULL,
 #'
 #' @importFrom rlang .data
 #' @export
-get_correlation_plot_data <- function(ds, id,
-                                      ds_correlate, id_correlate,
+get_correlation_plot_data <- function(dataset, id,
+                                      dataset_correlate, id_correlate,
                                       intcovar = NULL) {
-    # get the data
-    data <- get_data(ds)
+    # make sure samples and annotations are available
+    ds <- synchronize_data(ds)
 
-    # get the correlation dataset and data
-    ds_correlate <- nvl(ds_correlate, ds)
-    data_correlate <- get_data(ds_correlate)
+    # get the dataset we are mediating against and the data
+    if (gtools::invalid(dataset_correlate)) {
+        ds_correlate <- synchronize_dataset(dataset_correlate)
+    }
 
     # make sure we have the same samples
-    samples <- intersect(rownames(data), rownames(data_correlate))
+    samples <- intersect(rownames(ds$data), rownames(ds_correlate$data))
 
     if (length(samples) == 0) {
         stop("No matching samples to correlate")
     }
 
-    data <- data[samples, ]
-    data_correlate <- data_correlate[samples, ]
+    data <- ds$data[samples, ]
+    data_correlate <- ds$data_correlate[samples, ]
 
     # check if id exists and get the index
     idx <- which(colnames(data) == id)
@@ -200,23 +202,22 @@ get_correlation_plot_data <- function(ds, id,
 
     # get the intersecting samples and indices
     samples <- intersect(rownames(data), rownames(data_correlate))
-    samples_idx <- which(ds$annot.samples[[sample_id_field]] %in% samples)
+    samples_idx <- which(ds$annot_samples[[sample_id_field]] %in% samples)
 
     # get the covar factors and their data levels
     sample_info <- list()
     datatypes <- list()
-    covar_info <- ds$covar.info %>% janitor::clean_names()
 
-    for (s in covar_info$sample_column) {
-        stopifnot(!is.null(ds$annot.samples[[s]]))
-        sample_info[[toString(s)]] <- ds$annot.samples[samples_idx, ][[s]]
+    for (s in ds$covar_info$sample_column) {
+        stopifnot(!is.null(ds$annot_samples[[s]]))
+        sample_info[[toString(s)]] <- ds$annot_samples[samples_idx, ][[s]]
 
-        if (is.factor(ds$annot.samples[[s]])) {
+        if (is.factor(ds$annot_samples[[s]])) {
             datatypes[[toString(s)]] <-
-                gtools::mixedsort(levels(ds$annot.samples[[s]]))
+                gtools::mixedsort(levels(ds$annot_samples[[s]]))
         } else {
             datatypes[[toString(s)]] <-
-                gtools::mixedsort(unique(ds$annot.samples[[s]]))
+                gtools::mixedsort(unique(ds$annot_samples[[s]]))
         }
     }
 

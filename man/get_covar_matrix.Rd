@@ -2,12 +2,12 @@
 % Please edit documentation in R/utils.R
 \name{get_covar_matrix}
 \alias{get_covar_matrix}
-\title{Use the existing covar.matrix or create it.}
+\title{Creaste the covar.matrix element.}
 \usage{
-get_covar_matrix(ds, id = NULL)
+get_covar_matrix(dataset, id = NULL)
 }
 \arguments{
-\item{ds}{the dataset object}
+\item{dataset}{the dataset object}
 
 \item{id}{the phenotype identifier, for phenotype datasets}
 }
@@ -15,5 +15,5 @@ get_covar_matrix(ds, id = NULL)
 the covar matrix
 }
 \description{
-Use the existing covar.matrix or create it.
+Creaste the covar.matrix element.
 }

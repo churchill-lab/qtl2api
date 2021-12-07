@@ -5,7 +5,7 @@
 \title{Get the founder coefficients}
 \usage{
 get_founder_coefficients(
-  ds,
+  dataset,
   id,
   chrom,
   intcovar = NULL,
@@ -15,7 +15,7 @@ get_founder_coefficients(
 )
 }
 \arguments{
-\item{ds}{the dataset object}
+\item{dataset}{the dataset object}
 
 \item{id}{the unique id in the dataset}
 

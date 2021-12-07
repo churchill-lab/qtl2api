@@ -4,16 +4,16 @@
 \alias{get_mediation}
 \title{Perform mediation}
 \usage{
-get_mediation(ds, id, marker_id, ds_mediate = NULL)
+get_mediation(dataset, id, marker_id, dataset_mediate = NULL)
 }
 \arguments{
-\item{ds}{the dataset object}
+\item{dataset}{the dataset object}
 
 \item{id}{the unique id in the dataset}
 
 \item{marker_id}{marker identifier}
 
-\item{ds_mediate}{the dataset object to mediate against}
+\item{dataset_mediate}{the dataset object to mediate against}
 }
 \value{
 A data.frame with the following columns depending on datatype:

@@ -1,7 +1,7 @@
 
 #' Perform a LOD scan.
 #'
-#' @param ds the dataset object
+#' @param dataset the dataset object
 #' @param id the unique id in the dataset
 #' @param intcovar the interactive covariate
 #' @param cores number of cores to use (0=ALL)
@@ -19,15 +19,15 @@
 #'
 #' @importFrom rlang .data
 #' @export
-get_lod_scan <- function(ds, id, intcovar = NULL, cores = 0,
+get_lod_scan <- function(dataset, id, intcovar = NULL, cores = 0,
                          filter_threshold = 6.0, filter_peak_drop = Inf,
                          filter_thresholdX = NULL, filter_peak_dropX = NULL,
                          scan1_output = FALSE) {
-    # get the data
-    data <- get_data(ds)
+    # make sure samples and annotations are available
+    ds <- synchronize_data(dataset)
 
     # check if id exists
-    idx <- which(colnames(data) == id)
+    idx <- which(colnames(ds$data) == id)
 
     if (gtools::invalid(idx)) {
         stop(sprintf("Cannot find id '%s' in dataset", id))
@@ -44,9 +44,7 @@ get_lod_scan <- function(ds, id, intcovar = NULL, cores = 0,
     if (gtools::invalid(intcovar)) {
         interactive_covariate <- NULL
     } else {
-        covar_info <- ds$covar.info %>% janitor::clean_names()
-
-        if (intcovar %not in% covar_info$sample_column) {
+        if (intcovar %not in% ds$covar_info$sample_column) {
             stop(sprintf("intcovar '%s' not found in covar.info", intcovar))
         }
 
@@ -62,7 +60,7 @@ get_lod_scan <- function(ds, id, intcovar = NULL, cores = 0,
     lod_scores <- qtl2::scan1(
         genoprobs = genoprobs,
         kinship   = K,
-        pheno     = data[, id, drop = FALSE],
+        pheno     = ds$data[, id, drop = FALSE],
         addcovar  = covar,
         intcovar  = interactive_covariate,
         cores     = num_cores,
@@ -132,23 +130,23 @@ get_lod_scan <- function(ds, id, intcovar = NULL, cores = 0,
 
 #' Perform the LOD scan for each "value" of the interactive covariate.
 #'
-#' @param ds the dataset object
+#' @param dataset the dataset object
 #' @param id the unique id in the dataset
 #' @param intcovar the interactive covariate
 #' @param chrom The chromosome.
-#' @param cores number of cores to use (0=ALL)
+#' @param cores number of cores to $se (0=ALL)
 #'
 #' @return A named list with each name a "sample value" and the element is a
 #'   tibble with the following columns: id, chr, pos, lod.
 #'
 #' @importFrom rlang .data
 #' @export
-get_lod_scan_by_sample <- function(ds, id, intcovar, chrom, cores = 0) {
-    # get the data
-    data <- get_data(ds)
+get_lod_scan_by_sample <- function(dataset, id, intcovar, chrom, cores = 0) {
+    # make sure annotations, data, and samples are synchronized
+    ds <- synchronize_data(dataset)
 
     # check if id exists
-    idx <- which(colnames(data) == id)
+    idx <- which(colnames(ds$data) == id)
 
     if (gtools::invalid(idx)) {
         stop(sprintf("Cannot find id '%s' in dataset", id))
@@ -162,23 +160,21 @@ get_lod_scan_by_sample <- function(ds, id, intcovar, chrom, cores = 0) {
     # make sure nCores is appropriate
     num_cores <- nvl_int(cores, 0)
 
-    covar_info <- ds$covar.info %>% janitor::clean_names()
-
-    if (intcovar %not in% covar_info$sample_column) {
+    if (intcovar %not in% ds$covar_info$sample_column) {
         stop(sprintf("intcovar '%s' not found in covar.info", intcovar))
     }
 
     # get all the unique values for the interactive.covar and sort them
-    if (is.factor(ds$annot.samples[[intcovar]])) {
-        covar_unique <- gtools::mixedsort(levels(ds$annot.samples[[intcovar]]))
+    if (is.factor(ds$annot_samples[[intcovar]])) {
+        covar_unique <- gtools::mixedsort(levels(ds$annot_samples[[intcovar]]))
     } else {
-        covar_unique <- gtools::mixedsort(unique(ds$annot.samples[[intcovar]]))
+        covar_unique <- gtools::mixedsort(unique(ds$annot_samples[[intcovar]]))
     }
 
     # convert samples to data.frame because QTL2 relies heavily
     # on rownames and colnames, rownames currently are or will
     # soon be deprecated in tibbles
-    samples <- as.data.frame(ds$annot.samples)
+    samples <- as.data.frame(ds$annot_samples)
 
     # get the sample id field
     sample_id_field <- get_sample_id_field(ds)
@@ -200,7 +196,7 @@ get_lod_scan_by_sample <- function(ds, id, intcovar, chrom, cores = 0) {
         # filter rows by value, i.e. sex = "F"
         # select just the sample id field  column
         sample_names <-
-            ds$annot.samples %>%
+            ds$annot_samples %>%
             dplyr::filter(!!as.name(intcovar) == u) %>%
             dplyr::select(dplyr::matches(sample_id_field))
 
@@ -220,7 +216,7 @@ get_lod_scan_by_sample <- function(ds, id, intcovar, chrom, cores = 0) {
         temp <- qtl2::scan1(
             genoprobs = genoprobs[sample_names, chrom],
             kinship   = K[[chrom]][sample_names, sample_names],
-            pheno     = data[sample_names, id, drop = FALSE],
+            pheno     = ds$data[sample_names, id, drop = FALSE],
             addcovar  = covar,
             cores     = num_cores,
             reml      = TRUE

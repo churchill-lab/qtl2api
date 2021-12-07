@@ -1,7 +1,7 @@
 
 #' Get the SNP association mapping
 #'
-#' @param ds the dataset object
+#' @param dataset the dataset object
 #' @param id the unique id in the dataset
 #' @param chrom The chromosome.
 #' @param location location on chromosome in base pairs
@@ -15,14 +15,14 @@
 #'
 #' @importFrom rlang .data
 #' @export
-get_snp_assoc_mapping <- function(ds, id, chrom, location,
+get_snp_assoc_mapping <- function(dataset, id, chrom, location,
                                   db_file, window_size = 500000,
                                   intcovar = NULL, cores = 0) {
-    # get the data
-    data <- get_data(ds)
+    # make sure annotations, data, and samples are synchronized
+    ds <- synchronize_data(ds)
 
     # check if id exists
-    idx <- which(colnames(data) == id)
+    idx <- which(colnames(ds$data) == id)
 
     if (gtools::invalid(idx)) {
         stop(sprintf("Cannot find id '%s' in dataset", id))
@@ -99,7 +99,7 @@ get_snp_assoc_mapping <- function(ds, id, chrom, location,
     # - addcovar should always be ALL covars
     # - intcovar should be just the interactive covariate column
     out_snps <- qtl2::scan1(
-        pheno     = data[, idx, drop = FALSE],
+        pheno     = ds$data[, idx, drop = FALSE],
         kinship   = K[[chrom]],
         genoprobs = snp_prob,
         addcovar  = covar,
@@ -117,7 +117,7 @@ get_snp_assoc_mapping <- function(ds, id, chrom, location,
     interactive_covariate <- NULL
 
     if (!gtools::invalid(intcovar)) {
-        if (intcovar %not in% ds$covar.info$sample_column) {
+        if (intcovar %not in% ds$covar_info$sample_column) {
             stop(sprintf("intcovar '%s' not found in covar.info", intcovar))
         }
 
@@ -130,7 +130,7 @@ get_snp_assoc_mapping <- function(ds, id, chrom, location,
         # - addcovar should always be ALL covars
         # - intcovar should be just the interactive covariate column
         out_snps <- qtl2::scan1(
-            pheno     = data[, idx, drop = FALSE],
+            pheno     = ds$data[, idx, drop = FALSE],
             kinship   = K[[chrom]],
             genoprobs = snp_prob,
             addcovar  = covar,

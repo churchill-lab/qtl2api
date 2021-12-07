@@ -4,10 +4,10 @@
 \alias{get_expression}
 \title{Get the expression data.}
 \usage{
-get_expression(ds, id)
+get_expression(dataset, id)
 }
 \arguments{
-\item{ds}{the dataset object}
+\item{dataset}{the dataset object}
 
 \item{id}{the unique id in the dataset}
 }

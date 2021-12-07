@@ -7,10 +7,10 @@
 get_data(ds, data_name = NULL)
 }
 \arguments{
-\item{ds}{a datase object}
+\item{ds}{a dataset object}
 
 \item{data_name}{A string containing which data element from the dataset's
-data element.}
+data element}
 }
 \value{
 the data element

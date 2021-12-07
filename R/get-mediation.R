@@ -1,9 +1,9 @@
 #' Perform mediation
 #'
-#' @param ds the dataset object
+#' @param dataset the dataset object
 #' @param id the unique id in the dataset
 #' @param marker_id marker identifier
-#' @param ds_mediate the dataset object to mediate against
+#' @param dataset_mediate the dataset object to mediate against
 #'
 #' @return A data.frame with the following columns depending on datatype:
 #'         mRNA = gene_id, symbol, chr, pos, LOD
@@ -12,16 +12,18 @@
 #'
 #' @importFrom rlang .data
 #' @export
-get_mediation <- function(ds, id, marker_id, ds_mediate = NULL) {
-    # get the data
-    data <- get_data(ds)
+get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
+    # make sure annotations, data, and samples are synchronized
+    ds <- synchronize_data(dataset)
+    ds_mediate <- ds
 
     # get the dataset we are mediating against and the data
-    ds_mediate <- nvl(ds_mediate, ds)
-    data_mediate <- get_data(ds_mediate)
+    if (gtools::invalid(dataset_mediate)) {
+        ds_mediate <- synchronize_dataset(dataset_mediate)
+    }
 
     # check if id exists
-    idx <- which(colnames(data) == id)
+    idx <- which(colnames(ds$data) == id)
 
     if (gtools::invalid(idx)) {
         stop(sprintf("Cannot find id '%s' in dataset", id))
@@ -39,10 +41,9 @@ get_mediation <- function(ds, id, marker_id, ds_mediate = NULL) {
     if (tolower(ds_mediate$datatype) == "mrna") {
         # grab the annotations, create middle_point, and select what is needed
         annot <-
-            ds_mediate$annot.mrna %>%
-            janitor::clean_names() %>%
+            ds_mediate$annot_mrna %>%
             dplyr::inner_join(
-                tibble::enframe(colnames(data_mediate), name = NULL),
+                tibble::enframe(colnames(ds_mediate$data), name = NULL),
                 by = c("gene_id" = "value")
             ) %>%
             dplyr::mutate(
@@ -57,10 +58,10 @@ get_mediation <- function(ds, id, marker_id, ds_mediate = NULL) {
     } else if (tolower(ds_mediate$datatype) == "protein") {
         # grab the annotations, create middle_point, and select what is needed
         annot <-
-            ds_mediate$annot.protein %>%
+            ds_mediate$annot_protein %>%
             janitor::clean_names() %>%
             dplyr::inner_join(
-                tibble::enframe(colnames(data_mediate), name = NULL),
+                tibble::enframe(colnames(ds_mediate$data), name = NULL),
                 by = c("protein_id" = "value")
             ) %>%
             dplyr::mutate(
@@ -85,11 +86,11 @@ get_mediation <- function(ds, id, marker_id, ds_mediate = NULL) {
     chrom <- as.character(markers[mrkx, "chr"])
 
     filtered_genoprobs <-
-        genoprobs[[chrom]][rownames(data_mediate), , marker_id]
+        genoprobs[[chrom]][rownames(ds_mediate$data), , marker_id]
 
     intermediate::mediation.scan(
-        target = data[, idx, drop = FALSE],
-        mediator = data_mediate,
+        target = ds$data[, idx, drop = FALSE],
+        mediator = ds_mediate$data,
         annotation = annot,
         covar = covar,
         qtl.geno = filtered_genoprobs,

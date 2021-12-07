@@ -1,37 +1,37 @@
 #' Get the expression data.
 #'
-#' @param ds the dataset object
+#' @param dataset the dataset object
 #' @param id the unique id in the dataset
 #'
 #' @return a `list` with elements of tibble and list of the datatypes.
 #'
 #' @importFrom rlang .data
 #' @export
-get_expression <- function(ds, id) {
-    # get the data
-    data <- get_data(ds)
+get_expression <- function(dataset, id) {
+    # make sure annotations, data, and samples are synchronized
+    ds <- synchronize_data(dataset)
 
     # check if id exists
-    idx <- which(colnames(data) == id)
+    idx <- which(colnames(ds$data) == id)
 
     if (gtools::invalid(idx)) {
         stop(sprintf("Cannot find data for '%s' in dataset", id))
     }
 
-    if (gtools::invalid(ds$covar.info)) {
+    if (gtools::invalid(ds$covar_info)) {
         datatypes <- NULL
     } else {
         datatypes <- list()
-        covar_info <- ds$covar.info %>% janitor::clean_names()
+        for (i in ds$covar_info$sample_column) {
 
-        for (i in covar_info$sample_column) {
-            stopifnot(!is.null(ds$annot.samples[[i]]))
-            if (is.factor(ds$annot.samples[[i]])) {
+            stopifnot(!is.null(ds$annot_samples[[i]]))
+
+            if (is.factor(ds$annot_samples[[i]])) {
                 datatypes[[i]] <-
-                    gtools::mixedsort(levels(ds$annot.samples[[i]]))
+                    gtools::mixedsort(levels(ds$annot_samples[[i]]))
             } else {
                 datatypes[[i]] <-
-                    gtools::mixedsort(unique(ds$annot.samples[[i]]))
+                    gtools::mixedsort(unique(ds$annot_samples[[i]]))
             }
         }
     }
@@ -40,7 +40,7 @@ get_expression <- function(ds, id) {
     sample_id_field <- get_sample_id_field(ds)
 
     # only pass back the columns we need
-    samples <- ds$annot.samples %>%
+    samples <- ds$annot_samples %>%
         dplyr::select(
             sample_id = sample_id_field,
             dplyr::all_of(names(datatypes))
@@ -48,8 +48,8 @@ get_expression <- function(ds, id) {
 
     # bind the data
     expression_temp <- tibble::tibble(
-        sample_id  = rownames(data),
-        expression = data[, idx]
+        sample_id  = rownames(ds$data),
+        expression = ds$data[, idx]
     )
 
     output <- samples %>%
@@ -63,3 +63,4 @@ get_expression <- function(ds, id) {
         datatypes = datatypes
     )
 }
+

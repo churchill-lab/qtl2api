@@ -4,10 +4,10 @@
 \alias{get_rankings}
 \title{Calculate the rankings for which gene/protein should be shown.}
 \usage{
-get_rankings(ds, chrom = NULL, min_value = 100, max_value = 1000)
+get_rankings(dataset, chrom = NULL, min_value = 100, max_value = 1000)
 }
 \arguments{
-\item{ds}{the dataset object}
+\item{dataset}{the dataset object}
 
 \item{chrom}{the chromosome to filter on}
 

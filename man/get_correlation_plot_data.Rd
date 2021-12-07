@@ -4,14 +4,20 @@
 \alias{get_correlation_plot_data}
 \title{Get the correlation data for plotting.}
 \usage{
-get_correlation_plot_data(ds, id, ds_correlate, id_correlate, intcovar = NULL)
+get_correlation_plot_data(
+  dataset,
+  id,
+  dataset_correlate,
+  id_correlate,
+  intcovar = NULL
+)
 }
 \arguments{
-\item{ds}{the dataset object}
+\item{dataset}{the dataset object}
 
 \item{id}{the unique id in the dataset}
 
-\item{ds_correlate}{the dataset to correlate to}
+\item{dataset_correlate}{the dataset to correlate to}
 
 \item{id_correlate}{the identifier from the correlate dataset}
 

@@ -61,50 +61,105 @@ nvl_int <- function(value, default) {
 # #############################################################################
 
 
+#' Get the dataset that is altered to be better use in the environment.
+#'
+#' @param dataset the dataset element
+#'
+#' @return the altered dataset element
+#'
+#' @export
+synchronize_dataset <- function(dataset) {
+    if (gtools::invalid(dataset)) {
+        stop("invalid dataset object")
+    } else if (class(dataset) != "list") {
+        stop(paste0("dataset should be a list, but it's a ", class(dataset)))
+    }
+
+    # TODO: samples can be top level, but not implemented
+
+    # synchronize the data element
+    ds_synch <- synchronize_data(dataset)
+
+    # fix the covar.info names
+    covar_info <-
+        dataset$covar.info %>%
+        janitor::clean_names()
+
+    # fix the ensembl version
+    ensembl_version <-
+        utils::apropos("^ensembl(.|_)version$", ignore.case = TRUE)
+
+    if (gtools::invalid(ensembl_version)) {
+        ensembl_version <- get(ensembl_version)
+    } else {
+        ensembl_version <- NULL
+    }
+
+    ds_ensembl_version <- ensembl_version
+
+    temp_ensembl <- grep(
+        "^ensembl(.|_)version$",
+        names(dataset),
+        ignore.case = TRUE,
+        value = TRUE
+    )
+
+    if (!gtools::invalid(temp_ensembl)) {
+        ds_ensembl_version <- ds[[temp_ensembl]]
+    }
+
+    ds <- list(
+        annot_samples   = ds_synch$samples,
+        covar_info      = covar_info,
+        data            = ds_synch$data,
+        datatype        = dataset$datatype,
+        display_name    = dataset$display.name,
+        ensembl_version = ensembl_version
+    )
+
+    if (tolower(dataset$datatype) == 'mrna') {
+        ds$annot_mrna <- ds_synch$annots
+    } else if (tolower(dataset$datatype) == 'protein') {
+        ds$annot_protein <- ds_synch$annots
+    } else if (startsWith(tolower(dataset$datatype), "pheno")) {
+        ds$annot_phenotype <- ds_synch$annots <- TRUE
+    } else {
+        message(paste0("datatype is '", dataset$datatype, "', but should be mRNA, protein, or phenotype"))
+    }
+
+    return(ds)
+}
+
+
 #' Get the dataset by id (a string).  annot.samples can be used at the top level
 #' to share sample annotations among other datasets.
 #'
-#' @param ds a string, either 'dataset.name' or just 'name'
+#' @param dataset_id a string, either 'dataset.name' or just 'name'
 #'
 #' @return the dataset element
 #'
 #' @export
-get_dataset <- function(ds) {
-    dataset <- NULL
-
-    if (!is.character(ds)) {
-        stop(sprintf("ds should be a string, but it's a '%s'", class(ds)))
+get_dataset_by_id <- function(dataset_id) {
+    if (!is.character(dataset_id)) {
+        stop(paste0("dataset_id should be a string, not ", class(dataset_id)))
     }
 
-    if (exists(ds)) {
-        dataset <- get(ds)
+    if (exists(dataset_id)) {
+        dataset <- get(dataset_id)
     } else {
-        expanded <- sprintf("dataset.%s", ds)
+        expanded <- sprintf("dataset.%s", dataset_id)
         if (exists(expanded)) {
             dataset <- get(expanded)
         }
     }
 
     if (gtools::invalid(dataset)) {
-        stop(sprintf("'%s' does not exist", ds))
+        stop(sprintf("'%s' does not exist", dataset_id))
     }
-
-    samples <- NULL
-
-    if (exists('annot.samples', dataset)) {
-        samples <- dataset$annot.samples
-    } else if (exists('annot.samples')) {
-        samples <- get('annot.samples')
-    }
-
-    if (gtools::invalid(samples)) {
-        stop(stop("Unable to find annot.samples"))
-    }
-
-    dataset$annot.samples <- samples
 
     return(dataset)
 }
+
 
 #' Check dataset to see if the datatype value is "phenotype"
 #'
@@ -125,7 +180,6 @@ is_phenotype <- function(ds) {
 }
 
 
-
 #' Get the data from a data from the dataset.
 #'
 #' The data element in the dataset list should either be a matrix or a named
@@ -137,7 +191,7 @@ is_phenotype <- function(ds) {
 #'
 #' @param ds a dataset object
 #' @param data_name A string containing which data element from the dataset's
-#'     data element.
+#'     data element
 #'
 #' @return the data element
 #' @export
@@ -192,77 +246,92 @@ get_data <- function(ds, data_name = NULL) {
 #' @export
 get_random_id <- function(ds) {
     if (tolower(ds$datatype) == "mrna") {
-        data <- ds$annot.mrna %>% dplyr::sample_n(1)
-        id <- data$gene_id
+        annot_ids <-
+            ds$annot.mrna %>%
+            janitor::clean_names()
+
+        annot_ids <- annot_ids$gene_id
     } else if (tolower(ds$datatype) == "protein") {
-        data <- ds$annot.protein %>% dplyr::sample_n(1)
-        id <- data$protein_id
+        annot_ids <-
+            ds$annot.protein %>%
+            janitor::clean_names()
+
+        annot_ids <- annot_ids$protein_id
     } else if (is_phenotype(ds)) {
-        data <- ds$annot.phenotype %>%
-            dplyr::filter(is_pheno == TRUE) %>%
-            dplyr::sample_n(1)
-        id <- data$data_name
+        annot_ids <-
+            ds$annot.phenotype %>%
+            janitor::clean_names() %>%
+            dplyr::filter(.data$is_pheno == TRUE)
+
+        annot_ids <- annot_ids$data_name
     } else {
         stop("Unknown datatype: ", ds$datatype)
     }
 
-    return(id)
+    data_ids <- colnames(get_data(ds))
+
+    # invalid_ids <- union(
+    #     setdiff(data_ids, annot_ids),
+    #     setdiff(annot_ids, data_ids)
+    # )
+
+    valid_ids <- intersect(annot_ids, data_ids)
+
+    return(sample(valid_ids, 1))
 }
 
 
-#' Use the existing covar.matrix or create it.
+#' Creaste the covar.matrix element.
 #'
-#' @param ds the dataset object
+#' @param dataset the dataset object
 #' @param id the phenotype identifier, for phenotype datasets
 #'
 #' @return the covar matrix
 #'
 #' @importFrom rlang .data
-get_covar_matrix <- function(ds, id = NULL) {
-    if (exists('covar.matrix', ds)) {
-        covar <- ds$covar.matrix
-    } else {
-        # we can generate covar.matrix if it doesn't exist
-        if (is_phenotype(ds)) {
-            # get the annot.pheno row to get use.covar variable from the
-            # annotations
-            pheno <- ds$annot.pheno %>% dplyr::filter(.data$data_name == id)
+get_covar_matrix <- function(dataset, id = NULL) {
+    ds<- synchronize_dataset(dataset)
 
-            if (gtools::invalid(pheno)) {
-                stop(sprintf("Cannot find phenotype '%s' in dataset", id))
-            }
+    if (is_phenotype(ds)) {
+        # get the annot.pheno row to get use.covar variable from the
+        # annotations
+        pheno <-
+            ds$annot_pheno %>%
+            dplyr::filter(.data$data_name == id)
 
-            # create a string (model formula) from the use.covar column
-            formula_str <- paste0("~", gsub(":", "+", pheno$use_covar))
-        } else {
-            formula_str <- paste0(ds$covar.info$sample_column, collapse="+")
-            formula_str <- paste0("~", formula_str)
+        if (gtools::invalid(pheno)) {
+            stop(sprintf("Cannot find phenotype '%s' in dataset", id))
         }
 
-        # get the sample id field
-        sample_id_field <- get_sample_id_field(ds)
-
-        # convert samples to data.frame because QTL2 relies heavily
-        # on rownames and colnames, rownames currently are or will
-        # soon be deprecated in tibbles
-        samples <- as.data.frame(ds$annot.samples)
-
-        # set the rownames so scan1 will work
-        rownames(samples) <-
-            (samples %>%  dplyr::select(dplyr::matches(sample_id_field)))[[1]]
-
-        # [, -1, drop = FALSE] will drop the (Intercept) column
-        covar <- stats::model.matrix.lm(
-            stats::as.formula(formula_str),
-            data = samples,
-            na.action = stats::na.pass
-        )
-
-        covar <- covar[, -1, drop = FALSE]
+        # create a string (model formula) from the use.covar column
+        formula_str <- paste0("~", gsub(":", "+", pheno$use_covar))
+    } else {
+        formula_str <- paste0(ds$covar_info$sample_column, collapse="+")
+        formula_str <- paste0("~", formula_str)
     }
 
-    covar
+    # get the sample id field
+    sample_id_field <- get_sample_id_field(ds)
+
+    # convert samples to data.frame because QTL2 relies heavily
+    # on rownames and colnames, rownames currently are or will
+    # soon be deprecated in tibbles
+    samples <- as.data.frame(ds$samples)
+
+    # set the rownames so scan1 will work
+    rownames(samples) <-
+        (samples %>%  dplyr::select(dplyr::matches(sample_id_field)))[[1]]
+
+    # [, -1, drop = FALSE] will drop the (Intercept) column
+    covar <- stats::model.matrix.lm(
+        stats::as.formula(formula_str),
+        data = samples,
+        na.action = stats::na.pass
+    )
+
+    return(covar[, -1, drop = FALSE])
 }
+
 
 #' Get all "dataset.*" information
 #'
@@ -287,21 +356,32 @@ get_dataset_info <- function() {
     for (d in datasets) {
         ds <- get(d)
 
+        # make sure samples and annotations are available
+        ds_synchronized <- synchronize_data(ds)
+
         annotations <- list()
 
         if (tolower(ds$datatype) == 'mrna') {
-            annot_mrna <- ds$annot.mrna %>% janitor::clean_names()
-            annotations <- list(ids = annot_mrna$gene_id)
+            annotations <- list(ids = ds_synchronized$annots$gene_id)
         } else if(tolower(ds$datatype) == 'protein') {
-            annot_protein <- ds$annot.protein %>% janitor::clean_names()
             annotations <-
-                list(ids = tibble::tibble(protein_id = annot_protein$protein_id,
-                                          gene_id    = annot_protein$gene_id))
+                list(
+                    ids = tibble::tibble(
+                        protein_id = ds_synchronized$annots$protein_id,
+                        gene_id    = ds_synchronized$annots$gene_id
+                    )
+                )
         } else if(is_phenotype(ds)) {
+            # this is tricker, we need to send back the is_pheno = FALSE too
             annotations <-
                 ds$annot.phenotype %>%
                 janitor::clean_names() %>%
-                dplyr::filter(.data$omit == FALSE)
+                dplyr::filter(.data$omit == FALSE & .data$is_pheno == FALSE)
+
+            annotations <- dplyr::bind_rows(
+                annotations,
+                ds_synchronized$annots
+            )
         }
 
         covar_info <- ds$covar.info %>% janitor::clean_names()
@@ -370,4 +450,107 @@ get_dataset_stats <- function() {
     ret
 }
 
+#' Synchronize data and subset accordingly.
+#'
+#' @param ds the dataset name
+#'
+#' @return list with 3 elements: `annots`, `samples` and `data`.
+#'
+#' @export
+synchronize_data <- function(ds) {
+    # first thing is to get the annotation ids
+    if (tolower(ds$datatype) == 'mrna') {
+        annots <-
+            ds$annot.mrna %>%
+            janitor::clean_names()
+
+        annot_ids <- annots$gene_id
+    } else if (tolower(ds$datatype) == 'protein') {
+        annots <-
+            ds$annot.protein %>%
+            janitor::clean_names()
+
+        annot_ids <- annots$protein_id
+    } else if (is_phenotype(ds)) {
+        annots <-
+            ds$annot.phenotype %>%
+            janitor::clean_names() %>%
+            dplyr::filter(.data$omit == FALSE, .data$is_pheno == TRUE)
+
+        annot_ids <- annots$data_name
+    } else {
+        message(paste0("datatype is '", ds$datatype, "', but should be mRNA, protein, or phenotype"))
+    }
+
+    # grab the data, rown ames are sample ids, column names are annotation ids
+    data <- get_data(ds, data_name = NULL)
+
+    # get the intersecting sample ids
+    sample_id_field <- get_sample_id_field(ds)
+
+    sample_ids <- intersect(
+        rownames(data),
+        ds$annot.samples[[sample_id_field]]
+    )
+
+    if (length(sample_ids) == 0) {
+        message("There are no samples in common")
+    }
+
+    # get the intersecting annotation ids
+    annot_ids <- intersect(
+        colnames(data),
+        annot_ids
+    )
+
+    if (length(annot_ids) == 0) {
+        message("There are no annotations in common")
+    }
+
+    # sort the ids to make sure the come back in order
+    sample_ids <- sort(sample_ids)
+    annot_ids <- sort(annot_ids)
+
+    # filter the samples
+    samples <-
+        ds$annot.samples %>%
+        dplyr::filter(!!as.name(sample_id_field) %in% sample_ids)
+
+    # filter the data
+    data <- data[sample_ids, annot_ids, drop = FALSE]
+
+    if (tolower(ds$datatype) == 'mrna') {
+        annots <-
+            ds$annot.mrna %>%
+            janitor::clean_names() %>%
+            dplyr::filter(.data$gene_id %in% annot_ids)
+    } else if (tolower(ds$datatype) == 'protein') {
+        annots <-
+            ds$annot.mrna %>%
+            janitor::clean_names() %>%
+            dplyr::filter(.data$protein %in% annot_ids)
+    } else if (is_phenotype(ds)) {
+        annots <-
+            ds$annot.phenotype %>%
+            janitor::clean_names() %>%
+            dplyr::filter(.data$data_name %in% annot_ids)
+    } else {
+        message(paste0("datatype is '", ds$datatype, "', but should be mRNA, protein, or phenotype"))
+    }
+
+    list(
+        annots  = annots,
+        samples = samples,
+        data    = data
+    )
+}
+
+
+
+test <- function(ds, id) {
+
+    ds$newname = id
+    ds$annot.samples <- ds$annot.samples[1:10, ]
+
+}
 

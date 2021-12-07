@@ -1,6 +1,6 @@
 #' Get the founder coefficients
 #'
-#' @param ds the dataset object
+#' @param dataset the dataset object
 #' @param id the unique id in the dataset
 #' @param chrom the chromosome
 #' @param intcovar the interactive covariate
@@ -13,13 +13,13 @@
 #'
 #' @importFrom rlang .data
 #' @export
-get_founder_coefficients <- function(ds, id, chrom, intcovar = NULL,
+get_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
                                      blup = FALSE, center = TRUE, cores = 0) {
-    # get the data
-    data <- get_data(ds)
+    # make sure annotations, data, and samples are synchronized
+    ds <- synchronize_data(dataset)
 
     # check if id exists
-    idx <- which(colnames(data) == id)
+    idx <- which(colnames(ds$data) == id)
 
     if (gtools::invalid(idx)) {
         stop(sprintf("Cannot find data for '%s' in dataset", id))
@@ -46,7 +46,7 @@ get_founder_coefficients <- function(ds, id, chrom, intcovar = NULL,
         if (blup) {
             temp <- qtl2::scan1blup(
                 genoprobs = genoprobs[, chrom],
-                pheno     = data[, idx, drop = FALSE],
+                pheno     = ds$data[, idx, drop = FALSE],
                 kinship   = K[[chrom]],
                 addcovar  = covar,
                 cores     = num_cores
@@ -54,7 +54,7 @@ get_founder_coefficients <- function(ds, id, chrom, intcovar = NULL,
         } else {
             temp <- qtl2::scan1coef(
                 genoprobs = genoprobs[, chrom],
-                pheno     = data[, idx, drop = FALSE],
+                pheno     = ds$data[, idx, drop = FALSE],
                 kinship   = K[[chrom]],
                 addcovar  = covar
             )
@@ -79,25 +79,23 @@ get_founder_coefficients <- function(ds, id, chrom, intcovar = NULL,
             ) %>%
             dplyr::mutate_at(dplyr::vars(-c("id", "chr", "pos")), as.numeric)
     } else {
-        covar_info <- ds$covar.info %>% janitor::clean_names()
-
-        if (intcovar %not in% covar_info$sample_column) {
+        if (intcovar %not in% ds$covar_info$sample_column) {
             stop(sprintf("intcovar '%s' not found in covar.info", intcovar))
         }
 
         # get all the unique values for the intcovar and sort them
-        if (is.factor(ds$annot.samples[[intcovar]])) {
+        if (is.factor(ds$annot_samples[[intcovar]])) {
             covar_unique <-
-                gtools::mixedsort(levels(ds$annot.samples[[intcovar]]))
+                gtools::mixedsort(levels(ds$annot_samples[[intcovar]]))
         } else {
             covar_unique <-
-                gtools::mixedsort(unique(ds$annot.samples[[intcovar]]))
+                gtools::mixedsort(unique(ds$annot_samples[[intcovar]]))
         }
 
         # convert samples to data.frame because QTL2 relies heavily
         # on rownames and colnames, rownames currently are or will
         # soon be deprecated in tibbles
-        samples <- as.data.frame(ds$annot.samples)
+        samples <- as.data.frame(ds$annot_samples)
 
         # get the sample id field
         sample_id_field <- get_sample_id_field(ds)
@@ -129,7 +127,7 @@ get_founder_coefficients <- function(ds, id, chrom, intcovar = NULL,
             if (blup) {
                 temp <- qtl2::scan1blup(
                     genoprobs = genoprobs[sample_names, chrom],
-                    pheno     = data[sample_names, idx, drop = FALSE],
+                    pheno     = ds$data[sample_names, idx, drop = FALSE],
                     kinship   = K[[chrom]][sample_names, sample_names],
                     addcovar  = covar_subset,
                     cores     = num_cores
@@ -137,11 +135,13 @@ get_founder_coefficients <- function(ds, id, chrom, intcovar = NULL,
             } else {
                 temp <- qtl2::scan1coef(
                     genoprobs = genoprobs[sample_names, chrom],
-                    pheno     = data[sample_names, idx, drop = FALSE],
+                    pheno     = ds$data[sample_names, idx, drop = FALSE],
                     kinship   = K[[chrom]][sample_names, sample_names],
                     addcovar  = covar_subset
                 )
             }
+
+            print(temp)
 
             if (center) {
                 a2h <- LETTERS[1:8]

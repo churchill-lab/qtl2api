@@ -4,10 +4,10 @@
 \alias{get_lod_scan_by_sample}
 \title{Perform the LOD scan for each "value" of the interactive covariate.}
 \usage{
-get_lod_scan_by_sample(ds, id, intcovar, chrom, cores = 0)
+get_lod_scan_by_sample(dataset, id, intcovar, chrom, cores = 0)
 }
 \arguments{
-\item{ds}{the dataset object}
+\item{dataset}{the dataset object}
 
 \item{id}{the unique id in the dataset}
 
@@ -15,7 +15,7 @@ get_lod_scan_by_sample(ds, id, intcovar, chrom, cores = 0)
 
 \item{chrom}{The chromosome.}
 
-\item{cores}{number of cores to use (0=ALL)}
+\item{cores}{number of cores to $se (0=ALL)}
 }
 \value{
 A named list with each name a "sample value" and the element is a

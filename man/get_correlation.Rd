@@ -4,14 +4,20 @@
 \alias{get_correlation}
 \title{Get the correlation.}
 \usage{
-get_correlation(ds, id, ds_correlate = NULL, intcovar = NULL, use_qr = TRUE)
+get_correlation(
+  dataset,
+  id,
+  dataset_correlate = NULL,
+  intcovar = NULL,
+  use_qr = TRUE
+)
 }
 \arguments{
-\item{ds}{the dataset object}
+\item{dataset}{the dataset object}
 
 \item{id}{the unique id in the dataset}
 
-\item{ds_correlate}{the dataset to correlate against, ds if INVALID}
+\item{dataset_correlate}{the dataset to correlate against, ds if INVALID}
 
 \item{intcovar}{the interactive covariate}
 
