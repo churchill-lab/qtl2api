@@ -124,7 +124,7 @@ synchronize_data <- function(dataset) {
     if (tolower(dataset$datatype) == 'mrna') {
         annots <- annots %>% dplyr::filter(.data$gene_id %in% annot_ids)
     } else if (tolower(dataset$datatype) == 'protein') {
-        annots <- annots %>% dplyr::filter(.data$protein %in% annot_ids)
+        annots <- annots %>% dplyr::filter(.data$protein_id %in% annot_ids)
     } else if (is_phenotype(dataset)) {
         annots <- annots %>% dplyr::filter(.data$data_name %in% annot_ids)
     }

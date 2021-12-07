@@ -130,8 +130,8 @@ get_lod_scan <- function(dataset, id, intcovar = NULL, cores = 0,
 #'
 #' @param dataset the dataset object
 #' @param id the unique id in the dataset
-#' @param intcovar the interactive covariate
 #' @param chrom The chromosome.
+#' @param intcovar the interactive covariate
 #' @param cores number of cores to $se (0=ALL)
 #'
 #' @return A named list with each name a "sample value" and the element is a
@@ -139,7 +139,7 @@ get_lod_scan <- function(dataset, id, intcovar = NULL, cores = 0,
 #'
 #' @importFrom rlang .data
 #' @export
-get_lod_scan_by_sample <- function(dataset, id, intcovar, chrom, cores = 0) {
+get_lod_scan_by_sample <- function(dataset, id, chrom, intcovar, cores = 0) {
     # make sure annotations, data, and samples are synchronized
     ds <- synchronize_dataset(dataset)
 
