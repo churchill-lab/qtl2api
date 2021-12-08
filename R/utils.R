@@ -417,8 +417,8 @@ get_covar_matrix <- function(dataset, id = NULL) {
     # [, -1, drop = FALSE] will drop the (Intercept) column
     covar <- stats::model.matrix.lm(
         stats::as.formula(formula_str),
-        data = samples,
-        na.action = stats::na.pass
+        data = samples
+        #na.action = stats::na.pass
     )
 
     return(covar[, -1, drop = FALSE])
@@ -465,15 +465,18 @@ get_dataset_info <- function() {
                 )
         } else if(is_phenotype(ds)) {
             # this is trickier, we need to send back the is_pheno = FALSE too
-            annotations <-
-                ds$annot.phenotype %>%
-                janitor::clean_names() %>%
-                dplyr::filter(.data$omit == FALSE & .data$is_pheno == FALSE)
-
-            annotations <- dplyr::bind_rows(
-                annotations,
-                ds_synchronized$annots
-            )
+            # TODO: Rethink this, do we need is_pheno == FALSE?
+            #
+            # annotations <-
+            #     ds$annot.phenotype %>%
+            #     janitor::clean_names() %>%
+            #     dplyr::filter(.data$omit == FALSE & .data$is_pheno == FALSE)
+            #
+            # annotations <- dplyr::bind_rows(
+            #     annotations,
+            #     ds_synchronized$annots
+            # )
+            annotaions <- ds_synchronized$annots
         }
 
         covar_info <- ds$covar.info %>% janitor::clean_names()

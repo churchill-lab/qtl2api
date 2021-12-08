@@ -84,7 +84,7 @@ validate_dataset_extensive <- function(dataset_id) {
     tryCatch(
         {
             covar_temp <-
-                ds$covar_info
+                ds$covar_info %>%
                 dplyr::filter(.data$primary == TRUE)
 
             intcovar <- covar_temp$sample_column
@@ -111,13 +111,10 @@ validate_dataset_extensive <- function(dataset_id) {
             temp <- get_lod_peaks_all(dataset)
         },
         error = function(cond) {
-            print('error')
-            dplyr::glimpse(cond)
-            #message(paste0("WARNING : ", cond$message))
+            message("ERROR   : ", cond$message)
         },
         warning = function(cond) {
-            print('warning')
-            #message(paste0("WARNING : ", cond$message))
+            message("ERROR   : ", cond$message)
         },
         finally = {
         }
@@ -129,7 +126,7 @@ validate_dataset_extensive <- function(dataset_id) {
             temp <- get_lod_scan(ds, id)
         },
         error = function(cond) {
-            message(paste0("WARNING : ", cond$message))
+            message("ERROR   : ", cond$message)
         },
         warning = function(cond) {
         },
@@ -146,7 +143,25 @@ validate_dataset_extensive <- function(dataset_id) {
                 temp <- get_lod_scan(ds, id, intcovar)
             },
             error = function(cond) {
-                message(paste0("WARNING : ", cond$message))
+                message("ERROR   : ", cond$message)
+            },
+            warning = function(cond) {
+            },
+            finally = {
+            }
+        )
+    }
+
+    if (gtools::invalid(intcovar)) {
+        cat("WARNING : unable to test qtl2api::get_lod_scan_by_sample with intcovar\n")
+    } else {
+        cat(paste0("STATUS  : Checking qtl2api::get_lod_scan_by_sample: ", id, " chrom: ", chrom, " intcovar: ", intcovar, "\n"))
+        tryCatch(
+            {
+                temp <- get_lod_scan_by_sample(ds, id, chrom, intcovar)
+            },
+            error = function(cond) {
+                message("ERROR   : ", cond$message)
             },
             warning = function(cond) {
             },
@@ -161,7 +176,7 @@ validate_dataset_extensive <- function(dataset_id) {
             temp <- get_expression(ds, id)
         },
         error = function(cond) {
-            message(paste0("WARNING : ", cond$message))
+            message("ERROR   : ", cond$message)
         },
         warning = function(cond) {
         },
@@ -175,7 +190,7 @@ validate_dataset_extensive <- function(dataset_id) {
             temp <- get_founder_coefficients(ds, id, chrom)
         },
         error = function(cond) {
-            message(paste0("WARNING : ", cond$message))
+            message("ERROR   : ", cond$message)
         },
         warning = function(cond) {
         },
@@ -192,7 +207,7 @@ validate_dataset_extensive <- function(dataset_id) {
                 temp <- get_founder_coefficients(ds, id, chrom, intcovar = intcovar)
             },
             error = function(cond) {
-                message(paste0("WARNING : ", cond$message))
+                message("ERROR   : ", cond$message)
             },
             warning = function(cond) {
             },
@@ -208,7 +223,7 @@ validate_dataset_extensive <- function(dataset_id) {
                 temp <- get_mediation(ds, id, marker)
             },
             error = function(cond) {
-                message(paste0("WARNING : ", cond$message))
+                message("ERROR   : ", cond$message)
             },
             warning = function(cond) {
             },
@@ -243,41 +258,42 @@ validate_environment <- function(extensive = FALSE) {
     datasets <- grep('^dataset*', utils::apropos('dataset\\.'), value=TRUE)
 
     if (gtools::invalid(datasets)) {
-        message("No datasets found!")
+        message("ERROR   : No datasets found!")
+        return()
     }
 
     if (!exists('ensembl.version')) {
-        message("ensembl.version does not exist")
+        message("ERROR   : ensembl.version does not exist")
     }
 
     # Check genoprobs and K.
     if(length(genoprobs) != length(K)) {
-        message(paste0("genoprobs (", length(genoprobs), ") and K (", length(K), ") do not have the same length."))
+        message("ERROR   : genoprobs (", length(genoprobs), ") and K (", length(K), ") do not have the same length.")
     } else {
         if(any(names(genoprobs) != names(K))) {
-            message("names of genoprobs and K do not match.")
+            message("ERROR   : names of genoprobs and K do not match.")
         }
 
         rownames.eq <- mapply(function(x, y) { all(rownames(x) == rownames(y)) }, genoprobs, K)
         if(any(rownames.eq == FALSE)) {
-            message("sample IDs do not match between genoprobs and K.")
+            message("ERROR   : sample IDs do not match between genoprobs and K.")
         }
     }
 
     # Check Marker IDs for genoprobs and map
     if(length(genoprobs) != length(map)) {
-        message(paste0("genoprobs (", length(genoprobs), ") and map (", length(map), ") do not have the same length."))
+        message("ERROR   : genoprobs (", length(genoprobs), ") and map (", length(map), ") do not have the same length.")
     } else {
         rownames.eq <- mapply(function(x, y) { all(dimnames(x)[[3]] == names(y)) }, genoprobs, map)
         if(any(rownames.eq == FALSE)) {
-            message("marker names do not match between genoprobs and map.")
+            message("ERROR   : marker names do not match between genoprobs and map")
         }
     }
 
     # Check dimensions of markers and map.
     map.length = sum(sapply(map, length))
     if(map.length != nrow(markers)) {
-        message(paste("Number of rows in markers (", nrow(markers), ") does not equal the number of markers in map (", map.length, ")"))
+        message("ERROR   : number of rows in markers (", nrow(markers), ") does not equal the number of markers in map (", map.length, ")")
     }
 
     for (ds in datasets) {
@@ -369,9 +385,9 @@ validate_annotations <- function(dataset_id) {
             }
         }
 
-        if(is.logical(annots$is_id)) {
+        if(is.logical(annots_orig$is.id)) {
             # one and only 1 ID
-            theID <- annots[which(annots$is_id == TRUE),]$data_name
+            theID <- annots_orig[which(annots_orig$is.id == TRUE),]$data.name
 
             if(length(theID) != 1) {
                 message("ERROR   : annot_phenotype$is_id should have 1 and only 1 row set to TRUE")

@@ -172,12 +172,9 @@ get_lod_scan_by_sample <- function(dataset, id, chrom, intcovar, cores = 0) {
     # soon be deprecated in tibbles
     samples <- as.data.frame(ds$annot_samples)
 
-    # get the sample id field
-    sample_id_field <- get_sample_id_field(ds)
-
     # set the rownames so scan1 will work
     rownames(samples) <-
-        (samples %>% dplyr::select(dplyr::matches(sample_id_field)))[[1]]
+        (samples %>% dplyr::select(dplyr::matches(ds$sample_id_field)))[[1]]
 
     markers_cleaned <- markers %>% janitor::clean_names()
 
@@ -194,7 +191,7 @@ get_lod_scan_by_sample <- function(dataset, id, chrom, intcovar, cores = 0) {
         sample_names <-
             ds$annot_samples %>%
             dplyr::filter(!!as.name(intcovar) == u) %>%
-            dplyr::select(dplyr::matches(sample_id_field))
+            dplyr::select(dplyr::matches(ds$sample_id_field))
 
         sample_names <- c(sample_names[[1]])
 

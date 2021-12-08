@@ -2,7 +2,7 @@
 #'
 #' @param ds the dataset object
 #' @param intcovar the interactive covariate
-
+#'
 #' @return a `data.frame` with the following columns: marker, chr, pos
 #' and depending upons dataset$dataType the following columns:
 #' mRNA = gene_id, symbol, gene_chrom, middle, lod

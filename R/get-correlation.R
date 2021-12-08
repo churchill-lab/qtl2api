@@ -193,12 +193,9 @@ get_correlation_plot_data <- function(dataset, id,
         y <- data_correlate[, id_correlate]
     }
 
-    # get the sample id field
-    sample_id_field <- get_sample_id_field(ds)
-
     # get the intersecting samples and indices
     samples <- intersect(rownames(data), rownames(data_correlate))
-    samples_idx <- which(ds$annot_samples[[sample_id_field]] %in% samples)
+    samples_idx <- which(ds$annot_samples[[ds$sample_id_field]] %in% samples)
 
     # get the covar factors and their data levels
     sample_info <- list()

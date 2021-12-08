@@ -34,13 +34,10 @@ get_expression <- function(dataset, id) {
         }
     }
 
-    # get the sample id field
-    sample_id_field <- get_sample_id_field(ds)
-
     # only pass back the columns we need
     samples <- ds$annot_samples %>%
         dplyr::select(
-            sample_id = sample_id_field,
+            sample_id = ds$sample_id_field,
             dplyr::all_of(names(datatypes))
         )
 
