@@ -217,10 +217,10 @@ synchronize_dataset <- function(dataset) {
     } else if (startsWith(tolower(dataset$datatype), "pheno")) {
         ds$annot_phenotype <- ds_synch$annots
 
-        ds$annot_phenotpe_extra <-
-            dataset$annot.phenotype %>%
-            janitor::clean_names() %>%
-            dplyr::filter(.data$omit == FALSE & .data$is_pheno == FALSE)
+        #ds$annot_phenotpe_extra <-
+        #    dataset$annot.phenotype %>%
+        #    janitor::clean_names() %>%
+        #    dplyr::filter(.data$omit == FALSE & .data$is_pheno == FALSE)
 
     } else {
         message(paste0("datatype is invalid: '", dataset$datatype, "'"))
@@ -454,14 +454,12 @@ get_dataset_info <- function() {
         annotations <- list()
 
         if (tolower(ds$datatype) == 'mrna') {
-            annotations <- list(ids = ds_synchronized$annots$gene_id)
+            annotations <- ds_synchronized$annots$gene_id
         } else if(tolower(ds$datatype) == 'protein') {
             annotations <-
-                list(
-                    ids = tibble::tibble(
-                        protein_id = ds_synchronized$annots$protein_id,
-                        gene_id    = ds_synchronized$annots$gene_id
-                    )
+                tibble::tibble(
+                    protein_id = ds_synchronized$annots$protein_id,
+                    gene_id    = ds_synchronized$annots$gene_id
                 )
         } else if(is_phenotype(ds)) {
             # this is trickier, we need to send back the is_pheno = FALSE too
@@ -476,7 +474,7 @@ get_dataset_info <- function() {
             #     annotations,
             #     ds_synchronized$annots
             # )
-            annotaions <- ds_synchronized$annots
+            annotations <- ds_synchronized$annots
         }
 
         covar_info <- ds$covar.info %>% janitor::clean_names()
