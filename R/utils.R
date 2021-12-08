@@ -454,7 +454,10 @@ get_dataset_info <- function() {
         annotations <- list()
 
         if (tolower(ds$datatype) == 'mrna') {
-            annotations <- ds_synchronized$annots$gene_id
+            annotations <-
+                tibble::tibble(
+                    gene_id    = ds_synchronized$annots$gene_id
+                )
         } else if(tolower(ds$datatype) == 'protein') {
             annotations <-
                 tibble::tibble(
