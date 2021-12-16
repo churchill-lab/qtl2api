@@ -772,7 +772,6 @@ validate_data <- function(dataset_id) {
                 "number of data rows (", nrow(ds$data), ")\n")
         }
 
-
         if (NCOL(ds$data) != NROW(annot_ids)) {
             cat('WARNING : number of annotations (', NROW(annot_ids), ') != ',
                 'number of data cols (', NCOL(ds$data), ")\n")
@@ -789,8 +788,19 @@ validate_data <- function(dataset_id) {
             }
         }
 
+        #perc_missing = (sum(is.na(ds_orig$data)) * 100) / prod(dim(ds_orig$data))
+        #cat("STATUS  : Percentage of missing original data: ", perc_missing, "\n")
+
+        perc_missing = (sum(is.na(ds$data)) * 100) / prod(dim(ds$data))
+        if (perc_missing >= 10) {
+            cat("WARNING : Percentage of missing synchronized data: ", perc_missing, "\n")
+        } else {
+            cat("STATUS  : Percentage of missing synchronized data: ", perc_missing, "\n")
+        }
 
     } else if (is.list(ds$data)) {
+        # TODO: this won't happenon a synchronized dataset
+        # no list, just a matrix for data
         data.found <- FALSE
         if (any(c('rz','norm','log','transformed','raw') %in% tolower(names(ds$data)))) {
             data.found <- TRUE
@@ -804,6 +814,7 @@ validate_data <- function(dataset_id) {
         data_names <- ls(data_list)
 
         for (i in 1:length(data_names)) {
+            cat('checking ', datanames[i])
             data_to_check <- paste0(dataset_id, '$data$', data_names[i])
             temp_data <- get(data_names[i], data_list)
             if (!is.numeric(temp_data)) {
@@ -830,6 +841,14 @@ validate_data <- function(dataset_id) {
                     cat("WARNING : data with no annotations:", paste(y, sep = ",", collapse = ","), "\n")
                 }
             }
+
+
+            #perc_missing = (sum(is.na(ds_orig$data[data_names[i]])) * 100) / prod(dim(ds_orig$data[data_names[i]]))
+            #cat("STATUS  : Percentage of missing original data: ", perc_missing, "\n")
+
+            perc_missing = (sum(is.na(temp_data)) * 100) / prod(dim(temp_data))
+            cat("STATUS  : Percentage of missing synchronized data: ", perc_missing, "\n")
+
         }
     }
 }
