@@ -2,7 +2,7 @@
 #'
 #' @param dataset the dataset object
 #' @param id the unique id in the dataset
-#' @param dataset_correlate the dataset to correlate against, ds if INVALID
+#' @param dataset_correlate the dataset to correlate against, dataset if INVALID
 #' @param intcovar the interactive covariate
 #' @param use_qr `TRUE` to use QR decomposition (FASTER)
 #'
@@ -266,13 +266,14 @@ calc_residual_matrix <- function(variable_matrix,
 
         X_0 <- stats::model.matrix.lm(
             stats::as.formula(formula_str),
-            data = data,
-            na.action = stats::na.pass
+            data = data
+            #na.action = stats::na.pass
         )
 
         X_0 <- X_0[samples, ]
 
         y_data <- data[samples, variables_interest, drop = FALSE]
+
         colnames(y_data) <- variables_interest
 
         if (impute) {

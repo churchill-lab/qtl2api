@@ -17,7 +17,7 @@ get_correlation(
 
 \item{id}{the unique id in the dataset}
 
-\item{dataset_correlate}{the dataset to correlate against, ds if INVALID}
+\item{dataset_correlate}{the dataset to correlate against, dataset if INVALID}
 
 \item{intcovar}{the interactive covariate}
 

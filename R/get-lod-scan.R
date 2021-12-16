@@ -198,6 +198,9 @@ get_lod_scan_by_sample <- function(dataset, id, chrom, intcovar, cores = 0) {
         # get the covar data
         covar <- get_covar_matrix(ds, id)
 
+        # subset to the intersecting data
+        sample_names <- intersect(sample_names, rownames(covar))
+
         # filter by the samples we need
         covar <- covar[sample_names, , drop = FALSE]
 

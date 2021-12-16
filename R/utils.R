@@ -178,7 +178,7 @@ synchronize_dataset <- function(dataset) {
     ensembl_version <-
         utils::apropos("^ensembl(.|_)version$", ignore.case = TRUE)
 
-    if (gtools::invalid(ensembl_version)) {
+    if (!gtools::invalid(ensembl_version)) {
         ensembl_version <- get(ensembl_version)
     } else {
         ensembl_version <- NULL
@@ -328,7 +328,7 @@ get_data <- function(ds, data_name = NULL) {
 #' @export
 get_random_id <- function(dataset) {
     if (tolower(dataset$datatype) == "mrna") {
-        if ("annot.mrna" %in% dataset) {
+        if ("annot.mrna" %in% names(dataset)) {
             annot_ids <-
                 dataset$annot.mrna %>%
                 janitor::clean_names()
@@ -338,7 +338,7 @@ get_random_id <- function(dataset) {
 
         annot_ids <- annot_ids$gene_id
     } else if (tolower(dataset$datatype) == "protein") {
-        if ("annot.protein" %in% dataset) {
+        if ("annot.protein" %in% names(dataset)) {
             annot_ids <-
                 dataset$annot.protein %>%
                 janitor::clean_names()
@@ -348,7 +348,7 @@ get_random_id <- function(dataset) {
 
         annot_ids <- annot_ids$protein_id
     } else if (is_phenotype(dataset)) {
-        if ("annot.phenotype" %in% dataset) {
+        if ("annot.phenotype" %in% names(dataset)) {
             annot_ids <-
                 dataset$annot.phenotype %>%
                 janitor::clean_names() %>%

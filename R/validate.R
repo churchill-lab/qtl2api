@@ -216,8 +216,73 @@ validate_dataset_extensive <- function(dataset_id) {
         )
     }
 
+    cat(paste0("STATUS  : Checking qtl2api::get_correlation ", id, "\n"))
+    tryCatch(
+        {
+            temp <- get_correlation(ds, id)
+        },
+        error = function(cond) {
+            message("ERROR   : ", cond$message)
+        },
+        warning = function(cond) {
+        },
+        finally = {
+        }
+    )
+
+    if (gtools::invalid(intcovar)) {
+        cat("WARNING : unable to test qtl2api::get_correlation with intcovar\n")
+    } else {
+        cat(paste0("STATUS  : Checking qtl2api::get_correlation ", id, " intcovar: ", intcovar, "\n"))
+        tryCatch(
+            {
+                temp <- get_correlation(ds, id, intcovar = intcovar)
+            },
+            error = function(cond) {
+                message("ERROR   : ", cond$message)
+            },
+            warning = function(cond) {
+            },
+            finally = {
+            }
+        )
+    }
+
+    id_correlate <- get_random_id(ds)
+    cat(paste0("STATUS  : Checking qtl2api::get_correlation_plot_data ", id, " id_correlate: ", id_correlate, "\n"))
+    tryCatch(
+        {
+            temp <- get_correlation_plot_data(ds, id, ds, id_correlate)
+        },
+        error = function(cond) {
+            message("ERROR   : ", cond$message)
+        },
+        warning = function(cond) {
+        },
+        finally = {
+        }
+    )
+
+    if (gtools::invalid(intcovar)) {
+        cat("WARNING : unable to test qtl2api::get_correlation_plot_data with intcovar\n")
+    } else {
+        cat(paste0("STATUS  : Checking qtl2api::get_correlation_plot_data ", id, "id_correlate: ", id_correlate, " intcovar: ", intcovar, "\n"))
+        tryCatch(
+            {
+                temp <- get_correlation_plot_data(ds, id, ds, id_correlate, intcovar = intcovar)
+            },
+            error = function(cond) {
+                message("ERROR   : ", cond$message)
+            },
+            warning = function(cond) {
+            },
+            finally = {
+            }
+        )
+    }
+
     if (!is_phenotype(ds)) {
-        cat(paste0("STATUS  : Checking get_mediation ", id, " marker: ", marker, "\n"))
+        cat(paste0("STATUS  : Checking qtl2api::get_mediation ", id, " marker: ", marker, "\n"))
         tryCatch(
             {
                 temp <- get_mediation(ds, id, marker)
@@ -231,8 +296,6 @@ validate_dataset_extensive <- function(dataset_id) {
             }
         )
     }
-
-
 }
 
 

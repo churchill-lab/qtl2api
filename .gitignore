@@ -3,7 +3,7 @@ data
 packrat
 .Rhistory
 .Rproj*
-temp
+temp/
 packrat/lib*/
 .Rproj.user
 renv/

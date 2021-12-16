@@ -112,6 +112,9 @@ get_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
 
             sample_names <- c(sample_names[[1]])
 
+            # subset to the intersecting data
+            sample_names <- intersect(sample_names, rownames(covar))
+
             # exclude covar columns that contain it's name
             covar_subset <-
                 covar[
