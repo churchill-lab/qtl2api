@@ -4,14 +4,13 @@
 #' @param id the unique id in the dataset
 #' @param dataset_correlate the dataset to correlate against, dataset if INVALID
 #' @param intcovar the interactive covariate
-#' @param use_qr `TRUE` to use QR decomposition (FASTER)
 #'
 #' @return a `tibble` with the correlation and annotations
 #'
 #' @importFrom rlang .data
 #' @export
 get_correlation <- function(dataset, id, dataset_correlate = NULL,
-                            intcovar = NULL, use_qr = TRUE) {
+                            intcovar = NULL) {
     # make sure annotations, data, and samples are synchronized
     ds <- synchronize_dataset(dataset)
 
@@ -51,8 +50,7 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
                 variable_matrix    = data,
                 adjust_matrix      = covar,
                 variables_interest = c(id),
-                variables_compare  = interactive_covariate,
-                use_qr             = use_qr
+                variables_compare  = interactive_covariate
             )
 
         residual_matrix <-
@@ -60,18 +58,12 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
                 variable_matrix    = data_correlate,
                 adjust_matrix      = covar,
                 variables_interest = colnames(data_correlate),
-                variables_compare  = interactive_covariate,
-                use_qr             = use_qr
+                variables_compare  = interactive_covariate
             )
 
-        resid_samples <- intersect(
-            rownames(id_residual_matrix),
-            rownames(residual_matrix)
-        )
-
         pcor <- stats::cor(
-            id_residual_matrix[resid_samples, ],
-            residual_matrix[resid_samples, ],
+            id_residual_matrix,
+            residual_matrix,
             use = "pair"
         )
     }
@@ -173,8 +165,7 @@ get_correlation_plot_data <- function(dataset, id,
                 variable_matrix    = data,
                 adjust_matrix      = covar,
                 variables_interest = c(id),
-                variables_compare  = interactive_covariate,
-                use_qr             = TRUE
+                variables_compare  = interactive_covariate
             )
 
         data_correlate <-
@@ -182,8 +173,7 @@ get_correlation_plot_data <- function(dataset, id,
                 variable_matrix    = data_correlate,
                 adjust_matrix      = covar,
                 variables_interest = colnames(data_correlate),
-                variables_compare  = interactive_covariate,
-                use_qr             = TRUE
+                variables_compare  = interactive_covariate
             )
 
         x <- data[, 1]
@@ -241,17 +231,13 @@ get_correlation_plot_data <- function(dataset, id,
 #' @param adjust_matrix The data matrix for the second set.
 #' @param variables_interest List of variables of interest.
 #' @param variables_compare List of variables to compare.
-#' @param use_qr TRUE to use QR decomposition (FASTER).
-#' @param impute TRUE to impute NA data.
 #'
 #' @return residual matrix
 #'
 calc_residual_matrix <- function(variable_matrix,
                                  adjust_matrix,
                                  variables_interest,
-                                 variables_compare,
-                                 use_qr = TRUE,
-                                 impute = TRUE) {
+                                 variables_compare) {
     # make sure we have the same samples
     samples <- intersect(rownames(variable_matrix), rownames(adjust_matrix))
 
@@ -259,54 +245,57 @@ calc_residual_matrix <- function(variable_matrix,
     data <- cbind(variable_matrix[samples, ], adjust_matrix[samples, ])
     data <- as.data.frame(data)
 
-    if (use_qr) {
-        # Fast, but can't handle NAs in y??
-        formula_str <-
-            paste("~ + 1 +", paste(variables_compare, collapse = " + "))
+    residual_matrix <- NULL
 
-        X_0 <- stats::model.matrix.lm(
-            stats::as.formula(formula_str),
-            data = data
-            #na.action = stats::na.pass
-        )
+    tryCatch(
+        {
+            # Fast, but can't handle NAs in y??
+            formula_str <-
+                paste("~ + 1 +", paste(variables_compare, collapse = " + "))
 
-        X_0 <- X_0[samples, ]
+            X_0 <- stats::model.matrix.lm(
+                stats::as.formula(formula_str),
+                data = data,
+                na.action = stats::na.exclude
+            )
 
-        y_data <- data[samples, variables_interest, drop = FALSE]
+            X_0 <- X_0[samples, ]
 
-        colnames(y_data) <- variables_interest
+            y_data <- data[samples, variables_interest, drop = FALSE]
 
-        if (impute) {
-            if (any(is.na(X_0))) {
-                X_0 <- missMDA::imputeFAMD(X = X_0)$completeObs
-            }
+            colnames(y_data) <- variables_interest
 
-            if (any(is.na(y_data))) {
-                y_data <- missMDA::imputeFAMD(X = y_data)$completeObs
-            }
+            qr_0 <- qr(X_0)
+
+            residual_matrix <- sapply(seq(variables_interest), function(i) {
+                d <- y_data[, variables_interest[i]]
+                return(qr.resid(qr_0, d))
+            }, simplify = TRUE)
+
+            rownames(residual_matrix) <- samples
+            colnames(residual_matrix) <- variables_interest
+        },
+        error = function(cond) {
+        },
+        warning = function(cond) {
+        },
+        finally = {
         }
+    )
 
-        qr_0 <- qr(X_0)
-
-        residual_matrix <- sapply(seq(variables_interest), function(i) {
-            d <- y_data[, variables_interest[i]]
-            return(qr.resid(qr_0, d))
-        }, simplify = TRUE)
-
-        rownames(residual_matrix) <- samples
-    } else {
-        ## Way too slow, use QR trick
+    if (is.null(residual_matrix)) {
+        ## Way too slow
         residual_matrix <- sapply(seq(variables_interest), function(i) {
             formula_str <- paste(
                 variables_interest[i],
                 "~",
                 paste(variables_compare, collapse = " + ")
             )
-            fit <- stats::lm(stats::formula(formula_str), data = data)
+            fit <- stats::lm(stats::formula(formula_str), data = data, na.action = na.exclude)
             return(fit$residuals[samples])
         }, simplify = TRUE)
+        colnames(residual_matrix) <- variables_interest
     }
 
-    colnames(residual_matrix) <- variables_interest
     residual_matrix
 }
