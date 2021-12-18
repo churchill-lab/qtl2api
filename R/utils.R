@@ -546,6 +546,35 @@ get_dataset_stats <- function() {
     ret
 }
 
+#' Check if id exists and has data in dataset.
+#'
+#' @param id the id to check
+#' @param ds a dataset object
+#'
+#' @return `TRUE` if id contains data, `FALSE` otherwise
+#' @export
+id_exists <- function(id, ds = NULL) {
+    if (gtools::invalid(ds)) {
+        # check all datasets
+        datasets <- grep('^dataset*', utils::apropos('dataset\\.'), value = TRUE)
+
+        for (d in datasets) {
+            dataset <- synchronize_dataset(get_dataset_by_id(d))
+            if (id %in% colnames(dataset$data)) {
+                return(TRUE)
+            }
+        }
+    } else {
+        dataset <- synchronize_dataset(ds)
+        if (id %in% colnames(dataset$data)) {
+            return(TRUE)
+        }
+    }
+
+    FALSE
+}
+
+
 
 #' Check dataset to see if the datatype value is "phenotype"
 #'

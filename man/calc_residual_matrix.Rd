@@ -8,9 +8,7 @@ calc_residual_matrix(
   variable_matrix,
   adjust_matrix,
   variables_interest,
-  variables_compare,
-  use_qr = TRUE,
-  impute = TRUE
+  variables_compare
 )
 }
 \arguments{
@@ -21,10 +19,6 @@ calc_residual_matrix(
 \item{variables_interest}{List of variables of interest.}
 
 \item{variables_compare}{List of variables to compare.}
-
-\item{use_qr}{TRUE to use QR decomposition (FASTER).}
-
-\item{impute}{TRUE to impute NA data.}
 }
 \value{
 residual matrix

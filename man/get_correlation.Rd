@@ -4,13 +4,7 @@
 \alias{get_correlation}
 \title{Get the correlation.}
 \usage{
-get_correlation(
-  dataset,
-  id,
-  dataset_correlate = NULL,
-  intcovar = NULL,
-  use_qr = TRUE
-)
+get_correlation(dataset, id, dataset_correlate = NULL, intcovar = NULL)
 }
 \arguments{
 \item{dataset}{the dataset object}
@@ -20,8 +14,6 @@ get_correlation(
 \item{dataset_correlate}{the dataset to correlate against, dataset if INVALID}
 
 \item{intcovar}{the interactive covariate}
-
-\item{use_qr}{`TRUE` to use QR decomposition (FASTER)}
 }
 \value{
 a `tibble` with the correlation and annotations
