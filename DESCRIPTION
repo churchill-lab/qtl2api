@@ -19,7 +19,6 @@ Imports:
     janitor (>= 2.1.0),
     jsonlite (>= 1.7.2),
     magrittr (>= 2.0.1),
-    missMDA (>= 1.18),
     pryr (>= 0.1.5),
     qtl2 (>= 0.28),
     rlang (>= 0.4.12),
