@@ -291,7 +291,11 @@ calc_residual_matrix <- function(variable_matrix,
                 "~",
                 paste(variables_compare, collapse = " + ")
             )
-            fit <- stats::lm(stats::formula(formula_str), data = data, na.action = na.exclude)
+            fit <- stats::lm(
+                stats::formula(formula_str),
+                data = data,
+                na.action = stats::na.exclude
+            )
             return(fit$residuals[samples])
         }, simplify = TRUE)
         colnames(residual_matrix) <- variables_interest

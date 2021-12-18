@@ -814,7 +814,7 @@ validate_data <- function(dataset_id) {
         data_names <- ls(data_list)
 
         for (i in 1:length(data_names)) {
-            cat('checking ', datanames[i])
+            cat('checking ', data_names[i])
             data_to_check <- paste0(dataset_id, '$data$', data_names[i])
             temp_data <- get(data_names[i], data_list)
             if (!is.numeric(temp_data)) {
