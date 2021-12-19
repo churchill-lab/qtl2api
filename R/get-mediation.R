@@ -113,18 +113,6 @@ get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
 #' @param covar A matrix with additive covariates
 #' @param method A method to handle missing cases
 #' @param verbose If TRUE display information about the progress
-#'
-#' @seealso \code{\link{plot.mediation}}, \code{\link{kplot}}
-#'
-#' @examples
-#' data(Tmem68)
-#' med <- mediation.scan(target = Tmem68$target,
-#'                       mediator = Tmem68$mediator,
-#'                       annotation = Tmem68$annotation,
-#'                       covar = Tmem68$covar,
-#'                       qtl.geno = Tmem68$qtl.geno,
-#'                       method = "double-lod-diff")
-#' plot(med)
 mediation.scan <- function(target,
                            mediator,
                            annotation,
