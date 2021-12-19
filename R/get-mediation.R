@@ -125,7 +125,6 @@ get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
 #'                       qtl.geno = Tmem68$qtl.geno,
 #'                       method = "double-lod-diff")
 #' plot(med)
-#' @export
 mediation.scan <- function(target,
                            mediator,
                            annotation,
