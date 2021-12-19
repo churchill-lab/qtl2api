@@ -24,6 +24,4 @@ Imports:
     rlang (>= 0.4.12),
     RSQLite (>= 2.2.7),
     tibble (>= 3.1.6)
-Remotes: 
-    churchill-lab/intermediate@v.2.5
 RoxygenNote: 7.1.2
