@@ -7,7 +7,7 @@
 get_lod_peaks_all(ds)
 }
 \arguments{
-\item{ds}{the dataset object}
+\item{ds}{the dataset object (not synchronized)}
 }
 \value{
 a data.frame with the following columns: marker, chr, pos

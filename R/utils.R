@@ -8,6 +8,17 @@
 `%not in%` <- function(x, table) match(x, table, nomatch = 0L) == 0L
 
 
+#' Get the version on qtl2api.
+#'
+#' @return version of qtl2api.
+#'
+#' @export
+version <- function() {
+    v <- unlist(utils::packageVersion("qtl2api"))
+    paste(v, collapse=".")
+}
+
+
 #' Check value for validity and return it or a default
 #'
 #' @param value value to check
@@ -211,8 +222,24 @@ synchronize_dataset <- function(dataset) {
     )
 
     if (tolower(dataset$datatype) == 'mrna') {
+        if (all(ds_synch$annots$start < 1000)) {
+            ds_synch$annots$start <- ds_synch$annots$start * 1000000
+        }
+
+        if (all(ds_synch$annots$end < 1000)) {
+            ds_synch$annots$end <- ds_synch$annots$end * 1000000
+        }
+
         ds$annot_mrna <- ds_synch$annots
     } else if (tolower(dataset$datatype) == 'protein') {
+        if (all(ds_synch$annots$start < 1000)) {
+            ds_synch$annots$start <- ds_synch$annots$start * 1000000
+        }
+
+        if (all(ds_synch$annots$end < 1000)) {
+            ds_synch$annots$end <- ds_synch$annots$end * 1000000
+        }
+
         ds$annot_protein <- ds_synch$annots
     } else if (startsWith(tolower(dataset$datatype), "pheno")) {
         ds$annot_phenotype <- ds_synch$annots
@@ -271,7 +298,7 @@ get_dataset_by_id <- function(dataset_id) {
 #'     data (if a matrix)
 #'     rz, norm, raw, log, transformed (if a named list).
 #'
-#' @param ds a dataset object
+#' @param ds a dataset object (synchronized or not)
 #' @param data_name A string containing which data element from the dataset's
 #'     data element
 #'
@@ -573,7 +600,6 @@ id_exists <- function(id, ds = NULL) {
 
     FALSE
 }
-
 
 
 #' Check dataset to see if the datatype value is "phenotype"

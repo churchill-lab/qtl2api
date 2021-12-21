@@ -2,8 +2,6 @@
 #'
 #' @param dataset the dataset object
 #' @return the name of the sample id field
-#'
-#' @importFrom rlang .data
 get_sample_id_field <- function(dataset) {
     if (!gtools::invalid(dataset$is_synchronized)) {
         return(dataset$sample_id_field)

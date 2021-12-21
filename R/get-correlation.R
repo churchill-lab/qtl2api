@@ -7,7 +7,6 @@
 #'
 #' @return a `tibble` with the correlation and annotations
 #'
-#' @importFrom rlang .data
 #' @export
 get_correlation <- function(dataset, id, dataset_correlate = NULL,
                             intcovar = NULL) {
@@ -125,7 +124,6 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
 #'
 #' @return a named `list` with the data to plot
 #'
-#' @importFrom rlang .data
 #' @export
 get_correlation_plot_data <- function(dataset, id,
                                       dataset_correlate, id_correlate,
@@ -236,7 +234,6 @@ get_correlation_plot_data <- function(dataset, id,
 #' @param use_qr qr decomposition
 #'
 #' @return residual matrix
-#'
 calc_residual_matrix <- function(variable_matrix,
                                  adjust_matrix,
                                  variables_interest,

@@ -13,7 +13,6 @@
 #' @return a `data.frame` with the following columns: snp, chr, pos, alleles,
 #'   sdp, ensembl_gene, csq, index, interval, on_map, lod.
 #'
-#' @importFrom rlang .data
 #' @export
 get_snp_assoc_mapping <- function(dataset, id, chrom, location,
                                   db_file, window_size = 500000,

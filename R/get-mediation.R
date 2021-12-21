@@ -46,7 +46,7 @@ get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
                 by = c("gene_id" = "value")
             ) %>%
             dplyr::mutate(
-                mid_point = (.data$start + .data$end) / 2
+                mid_point = round((.data$start + .data$end) / 2)
             ) %>%
             dplyr::select(
                 gene_id      = .data$gene_id,
@@ -64,7 +64,7 @@ get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
                 by = c("protein_id" = "value")
             ) %>%
             dplyr::mutate(
-                mid_point = (.data$start + .data$end) / 2
+                mid_point = round((.data$start + .data$end) / 2)
             ) %>%
             dplyr::select(
                 protein_id   = .data$protein_id,

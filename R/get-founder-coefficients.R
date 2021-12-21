@@ -11,7 +11,6 @@
 #' @return a named `list` with each element being a tibble with the following
 #'         columns: id, chr, pos, and A-H
 #'
-#' @importFrom rlang .data
 #' @export
 get_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
                                      blup = FALSE, center = TRUE, cores = 0) {

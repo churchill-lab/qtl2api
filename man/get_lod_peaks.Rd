@@ -12,8 +12,8 @@ get_lod_peaks(ds, intcovar = NULL)
 \item{intcovar}{the interactive covariate}
 }
 \value{
-a `data.frame` with the following columns: marker, chr, pos
-and depending upons dataset$dataType the following columns:
+a `data.frame` with the following columns: marker, chr, bp
+and depending upon dataset$dataType the following columns:
 mRNA = gene_id, symbol, gene_chrom, middle, lod
 protein = protein_id, gene_id, symbol, gene_chrom, middle, lod
 phenotype = data_name, short_name, description, lod

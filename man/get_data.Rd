@@ -7,7 +7,7 @@
 get_data(ds, data_name = NULL)
 }
 \arguments{
-\item{ds}{a dataset object}
+\item{ds}{a dataset object (synchronized or not)}
 
 \item{data_name}{A string containing which data element from the dataset's
 data element}

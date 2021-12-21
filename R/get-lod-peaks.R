@@ -3,15 +3,19 @@
 #' @param ds the dataset object
 #' @param intcovar the interactive covariate
 #'
-#' @return a `data.frame` with the following columns: marker, chr, pos
-#' and depending upons dataset$dataType the following columns:
+#' @return a `data.frame` with the following columns: marker, chr, bp
+#' and depending upon dataset$dataType the following columns:
 #' mRNA = gene_id, symbol, gene_chrom, middle, lod
 #' protein = protein_id, gene_id, symbol, gene_chrom, middle, lod
 #' phenotype = data_name, short_name, description, lod
 #'
-#' @importFrom rlang .data
 #' @export
 get_lod_peaks <- function(ds, intcovar = NULL) {
+    # these functions should not be synchronized
+    if (!gtools::invalid(ds$is_synchronized)) {
+        stop("dataset should not be synchronized")
+    }
+
     peaks <- NULL
 
     if (is.null(intcovar)) {
@@ -32,12 +36,26 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
 
     # this is a little extra work because we are trying to be nice for users
     # who separate with '.' or '_'
-    markers_cleaned <- markers %>% janitor::clean_names()
     peaks %<>% janitor::clean_names()
+    markers_cleaned <- markers %>% janitor::clean_names()
+
+    # convert from Mbp to bp
+    if (all(markers_cleaned$pos < 1000)) {
+        markers_cleaned$pos <- markers_cleaned$pos * 1000000
+    }
 
     if (tolower(ds$datatype) == "mrna") {
-        ret <- ds$annot.mrna %>%
-            janitor::clean_names() %>%
+        annots <- ds$annot.mrna %>% janitor::clean_names()
+
+        if (all(annots$start < 1000)) {
+            annots$start <- annots$start * 1000000
+        }
+
+        if (all(annots$end < 1000)) {
+            annots$end <- annots$end * 1000000
+        }
+
+        ret <- annots %>%
             dplyr::inner_join(
                 peaks,
                 by = "gene_id"
@@ -52,7 +70,7 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
                 lod        = .data$lod
             ) %>%
             dplyr::mutate(
-                gene_pos = (.data$start + .data$end) / 2.0
+                gene_pos = round((.data$start + .data$end) / 2)
             ) %>%
             dplyr::inner_join(
                 markers_cleaned,
@@ -82,8 +100,17 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
                 )
         }
     } else if (tolower(ds$datatype) == "protein") {
-        ret <- ds$annot.protein %>%
-            janitor::clean_names() %>%
+        annots <- ds$annot.protein %>% janitor::clean_names()
+
+        if (all(annots$start < 1000)) {
+            annots$start <- annots$start * 1000000
+        }
+
+        if (all(annots$end < 1000)) {
+            annots$end <- annots$end * 1000000
+        }
+
+        ret <- annots %>%
             dplyr::inner_join(
                 peaks,
                 by = "protein_id"
@@ -99,7 +126,7 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
                 lod        = .data$lod
             ) %>%
             dplyr::mutate(
-                gene_pos = (.data$start + .data$end) / 2.0
+                gene_pos = round((.data$start + .data$end) / 2)
             ) %>%
             dplyr::inner_join(
                 markers_cleaned,
@@ -179,7 +206,7 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
 
 #' Get the LOD peaks for additive and all covariates.
 #'
-#' @param ds the dataset object
+#' @param ds the dataset object (not synchronized)
 #'
 #' @return a data.frame with the following columns: marker, chr, pos
 #' and depending upons dataset$dataType the following columns:
@@ -189,6 +216,11 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
 #'
 #' @export
 get_lod_peaks_all <- function(ds) {
+    # these functions should not be synchronized
+    if (!gtools::invalid(ds$is_synchronized)) {
+        stop("dataset should not be synchronized")
+    }
+
     # get the additive LOD peaks
     peaks <- list(additive = get_lod_peaks(ds))
 

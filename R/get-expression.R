@@ -5,7 +5,6 @@
 #'
 #' @return a `list` with elements of tibble and list of the datatypes.
 #'
-#' @importFrom rlang .data
 #' @export
 get_expression <- function(dataset, id) {
     # make sure annotations, data, and samples are synchronized
