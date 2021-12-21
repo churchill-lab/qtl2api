@@ -433,7 +433,7 @@ get_covar_matrix <- function(dataset, id = NULL) {
 #'   ensembl.version.
 #' @export
 get_dataset_info <- function() {
-    datasets <- grep('^dataset*', utils::apropos('dataset\\.'), value = TRUE)
+    datasets <- utils::apropos('^dataset\\.*', ignore.case = TRUE)
     ret <- c()
 
     ensembl_version <-
@@ -518,7 +518,7 @@ get_dataset_info <- function() {
 #' @return A named list of all the dataset objects.
 #' @export
 get_dataset_stats <- function() {
-    datasets <- grep('^dataset*', utils::apropos('dataset\\.'), value = TRUE)
+    datasets <- utils::apropos('^dataset\\.*', ignore.case = TRUE)
     ret <- c()
 
     for (d in datasets) {
@@ -556,17 +556,17 @@ get_dataset_stats <- function() {
 id_exists <- function(id, ds = NULL) {
     if (gtools::invalid(ds)) {
         # check all datasets
-        datasets <- grep('^dataset*', utils::apropos('dataset\\.'), value = TRUE)
+        datasets <- utils::apropos('^dataset\\.*', ignore.case = TRUE)
 
         for (d in datasets) {
             dataset <- synchronize_dataset(get_dataset_by_id(d))
-            if (id %in% colnames(dataset$data)) {
+            if (any(id == colnames(dataset$data))) {
                 return(TRUE)
             }
         }
     } else {
         dataset <- synchronize_dataset(ds)
-        if (id %in% colnames(dataset$data)) {
+        if (any(id == colnames(dataset$data))) {
             return(TRUE)
         }
     }
@@ -583,7 +583,7 @@ id_exists <- function(id, ds = NULL) {
 #' @return `TRUE` if the datatype is phenotype, `FALSE` otherwise
 #' @export
 is_phenotype <- function(ds) {
-    if ("datatype" %in% names(ds)) {
+    if (any("datatype" == names(ds))) {
         if (startsWith(tolower(ds$datatype), "pheno")) {
             return(TRUE)
         }

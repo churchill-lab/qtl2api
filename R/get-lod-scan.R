@@ -27,7 +27,7 @@ get_lod_scan <- function(dataset, id, intcovar = NULL, cores = 0,
     ds <- synchronize_dataset(dataset)
 
     # check if id exists
-    if (id %not in% colnames(ds$data)) {
+    if (!any(id == colnames(ds$data))) {
         stop(sprintf("Cannot find id '%s' in dataset", id))
     }
 
@@ -39,10 +39,10 @@ get_lod_scan <- function(dataset, id, intcovar = NULL, cores = 0,
 
     # set the interactive.covariate, to be used in scan1
     # as scan1(intcovar=interactive_covariate)
-    if (gtools::invalid(intcovar)) {
+    if (is.null(intcovar)) {
         interactive_covariate <- NULL
     } else {
-        if (intcovar %not in% ds$covar_info$sample_column) {
+        if (!any(intcovar == ds$covar_info$sample_column)) {
             stop(sprintf("intcovar '%s' not found in covar_info", intcovar))
         }
 
@@ -144,19 +144,19 @@ get_lod_scan_by_sample <- function(dataset, id, chrom, intcovar, cores = 0) {
     ds <- synchronize_dataset(dataset)
 
     # check if id exists
-    if (id %not in% colnames(ds$data)) {
+    if (!any(id == colnames(ds$data))) {
         stop(sprintf("Cannot find id '%s' in dataset", id))
     }
 
     # make sure the chromosome data exists
-    if (gtools::invalid(K[[chrom]])) {
+    if (!any(chrom == names(K))) {
         stop(sprintf("Cannot find chromosome '%s' in Kinship matrix", chrom))
     }
 
     # make sure nCores is appropriate
     num_cores <- nvl_int(cores, 0)
 
-    if (intcovar %not in% ds$covar_info$sample_column) {
+    if (!any(intcovar == ds$covar_info$sample_column)) {
         stop(sprintf("intcovar '%s' not found in covar_info", intcovar))
     }
 

@@ -8,7 +8,8 @@ calc_residual_matrix(
   variable_matrix,
   adjust_matrix,
   variables_interest,
-  variables_compare
+  variables_compare,
+  use_qr = TRUE
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ calc_residual_matrix(
 \item{variables_interest}{List of variables of interest.}
 
 \item{variables_compare}{List of variables to compare.}
+
+\item{use_qr}{qr decomposition}
 }
 \value{
 residual matrix

@@ -22,7 +22,7 @@ get_snp_assoc_mapping <- function(dataset, id, chrom, location,
     ds <- synchronize_dataset(dataset)
 
     # check if id exists
-    if (id %not in% colnames(ds$data)) {
+    if (!any(id == colnames(ds$data))) {
         stop(sprintf("Cannot find id '%s' in dataset", id))
     }
 
@@ -114,8 +114,8 @@ get_snp_assoc_mapping <- function(dataset, id, chrom, location,
     # as scan1(intcovar=interactive.covariate)
     interactive_covariate <- NULL
 
-    if (!gtools::invalid(intcovar)) {
-        if (intcovar %not in% ds$covar_info$sample_column) {
+    if (!is.null(intcovar)) {
+        if (!any(intcovar == ds$covar_info$sample_column)) {
             stop(sprintf("intcovar '%s' not found in covar.info", intcovar))
         }
 

@@ -19,13 +19,13 @@ get_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
     ds <- synchronize_dataset(dataset)
 
     # check if id exists
-    if (id %not in% colnames(ds$data)) {
+    if (!any(id == colnames(ds$data))) {
         stop(sprintf("Cannot find id '%s' in dataset", id))
     }
 
     # make sure the chromosome data exists
-    if (gtools::invalid(K[[chrom]])) {
-        stop(sprintf("Cannot find chromosome '%s' in Kinship matrix", id))
+    if (!any(chrom == names(K))) {
+        stop(sprintf("Cannot find chromosome '%s' in Kinship matrix", chrom))
     }
 
     # make sure ncores is appropriate

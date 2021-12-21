@@ -266,7 +266,7 @@ validate_dataset_extensive <- function(dataset_id) {
     if (gtools::invalid(intcovar)) {
         cat("WARNING : unable to test qtl2api::get_correlation_plot_data with intcovar\n")
     } else {
-        cat(paste0("STATUS  : Checking qtl2api::get_correlation_plot_data ", id, "id_correlate: ", id_correlate, " intcovar: ", intcovar, "\n"))
+        cat(paste0("STATUS  : Checking qtl2api::get_correlation_plot_data ", id, " id_correlate: ", id_correlate, " intcovar: ", intcovar, "\n"))
         tryCatch(
             {
                 temp <- get_correlation_plot_data(ds, id, ds, id_correlate, intcovar = intcovar)

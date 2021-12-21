@@ -12,7 +12,7 @@ get_expression <- function(dataset, id) {
     ds <- synchronize_dataset(dataset)
 
     # check if id exists
-    if (id %not in% colnames(ds$data)) {
+    if (!any(id == colnames(ds$data))) {
         stop(sprintf("Cannot find id '%s' in dataset", id))
     }
 

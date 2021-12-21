@@ -17,14 +17,14 @@ get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
     ds <- synchronize_dataset(dataset)
 
     # get the dataset we are mediating against
-    if (gtools::invalid(dataset_mediate)) {
+    if (is.null(dataset_mediate)) {
         ds_mediate <- ds
     } else {
         ds_mediate <- synchronize_dataset(dataset_mediate)
     }
 
     # check if id exists
-    if (id %not in% colnames(ds$data)) {
+    if (!any(id == colnames(ds$data))) {
         stop(sprintf("Cannot find id '%s' in dataset", id))
     }
 
@@ -32,7 +32,7 @@ get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
     markers_cleaned <- markers %>% janitor::clean_names()
     mrkx <- which(markers_cleaned$marker_id == marker_id)
 
-    if (gtools::invalid(mrkx)) {
+    if (!any(mrkx)) {
         stop(sprintf("Cannot find marker '%s' in markers", marker_id))
     }
 

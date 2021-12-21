@@ -14,13 +14,13 @@
 get_lod_peaks <- function(ds, intcovar = NULL) {
     peaks <- NULL
 
-    if (gtools::invalid(intcovar)) {
+    if (is.null(intcovar)) {
         peaks <- ds$lod.peaks$additive
     } else {
         # find the covar and get the name of the lod peaks
         covar_info <- ds$covar.info %>% janitor::clean_names()
 
-        if (intcovar %in% covar_info$sample_column) {
+        if (any(intcovar == covar_info$sample_column)) {
             n <- covar_info[covar_info$sample_column == intcovar, ]
             peaks <- ds$lod.peaks[[n$lod_peaks]]
         }
