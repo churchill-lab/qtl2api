@@ -169,7 +169,8 @@ get_correlation_plot_data <- function(dataset, id,
                 variable_matrix    = data,
                 adjust_matrix      = covar,
                 variables_interest = c(id),
-                variables_compare  = interactive_covariate
+                variables_compare  = interactive_covariate,
+                use_qr             = FALSE
             )
 
         data_correlate <-
@@ -177,7 +178,8 @@ get_correlation_plot_data <- function(dataset, id,
                 variable_matrix    = data_correlate,
                 adjust_matrix      = covar,
                 variables_interest = colnames(data_correlate),
-                variables_compare  = interactive_covariate
+                variables_compare  = interactive_covariate,
+                use_qr             = TRUE
             )
 
         x <- data[, 1]
@@ -211,19 +213,15 @@ get_correlation_plot_data <- function(dataset, id,
     correlation_plot_data <-
         tibble::as_tibble(
             data.frame(
-                sample_id = rownames(data),
-                x         = x,
-                y         = y,
+                sample_id = rownames(data)[samples_idx],
+                x         = x[samples_idx],
+                y         = y[samples_idx],
                 sample_info,
                 stringsAsFactors = FALSE
         ))
 
     # TODO: should we add id to to the dataset object (fix_environemnt)
     list(
-        #dataset           = nvl(ds$id, ds$display.name),
-        #dataset.correlate = nvl(ds_correlate$id, ds_correlate$display.name),
-        id                = id,
-        id_correlate      = id_correlate,
         datatypes         = datatypes,
         data              = correlation_plot_data
     )
