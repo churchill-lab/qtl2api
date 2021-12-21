@@ -141,6 +141,10 @@ get_snp_assoc_mapping <- function(dataset, id, chrom, location,
         ret$lod_intcovar <- tmp$lod[, 1]
     }
 
+    if (all(ret$pos < 1000)) {
+        ret$pos <- ret$pos * 1000000
+    }
+
     ret
 }
 
