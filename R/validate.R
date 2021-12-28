@@ -478,13 +478,11 @@ validate_annotations <- function(dataset_id) {
             }
         }
 
-        if (any(annots$start > 10000.0)) {
-            message(annot_name, '$start should be in Mbp not bp')
-        } else if (any(annots$end > 10000.0)) {
-            message(annot_name, '$end should be in Mbp not bp')
-        } else if (any(annots$middle > 10000.0)) {
-            message(annot_name, '$middle should be in Mbp not bp')
-        }
+        #if (any(annots$start > 10000.0)) {
+        #    message(annot_name, '$start should be in Mbp not bp')
+        #} else if (any(annots$end > 10000.0)) {
+        #    message(annot_name, '$end should be in Mbp not bp')
+        #}
     }
 
     num_annots_orig <- NROW(annots_orig)
