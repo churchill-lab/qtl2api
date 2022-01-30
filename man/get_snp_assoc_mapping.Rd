@@ -2,7 +2,7 @@
 % Please edit documentation in R/get-snp-assoc-mapping.R
 \name{get_snp_assoc_mapping}
 \alias{get_snp_assoc_mapping}
-\title{Get the SNP association mapping}
+\title{Get the SNP association mapping from foundersnps database.}
 \usage{
 get_snp_assoc_mapping(
   dataset,
@@ -37,5 +37,5 @@ a `data.frame` with the following columns: snp, chr, pos, alleles,
   sdp, ensembl_gene, csq, index, interval, on_map, lod.
 }
 \description{
-Get the SNP association mapping
+Get the SNP association mapping from foundersnps database.
 }
