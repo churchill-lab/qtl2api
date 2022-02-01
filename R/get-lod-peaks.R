@@ -230,7 +230,7 @@ get_lod_peaks_all <- function(ds) {
     for (i in seq(nrow(covar_info))) {
         cov_inf <- covar_info[i, ]
 
-        if (cov_inf$interactive) {
+        if (cov_inf$interactive == TRUE) {
             peaks[[cov_inf$sample_column]] <-
                 get_lod_peaks(ds, cov_inf$sample_column)
         }
