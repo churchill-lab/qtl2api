@@ -262,13 +262,8 @@ get_lod_peaks_for_annot <- function(dataset, id,
     # make sure samples and annotations are available
     ds <- synchronize_dataset(dataset)
 
-    # convert the numeric index into a string id
-    if (class(id) ==  "numeric") {
-        id <- colnames(ds$data)[id]
-    }
-
     # get the lod scan
-    lods_additive <- qtl2api::get_lod_scan(
+    lods_additive <- get_lod_scan(
         ds, id,
         intcovar          = NULL,
         cores             = n_cores,
@@ -311,7 +306,7 @@ get_lod_peaks_for_annot <- function(dataset, id,
         inf <- ds$covar_info[i, ]
         if (inf$interactive) {
 
-            lods_covar <- qtl2api::get_lod_scan(
+            lods_covar <- get_lod_scan(
                 ds, id,
                 intcovar          = inf$sample_column,
                 cores             = n_cores,
