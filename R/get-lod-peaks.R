@@ -267,8 +267,6 @@ get_lod_peaks_for_annot <- function(dataset, id,
         id <- colnames(ds$data)[id]
     }
 
-    message('GetLODScan: ', dataset, ', ', id)
-
     # get the lod scan
     lods_additive <- qtl2api::get_lod_scan(
         ds, id,
@@ -313,7 +311,6 @@ get_lod_peaks_for_annot <- function(dataset, id,
         inf <- ds$covar_info[i, ]
         if (inf$interactive) {
 
-            message('GetLODScan: ', dataset, ', ', id, ', ', inf$sample_column)
             lods_covar <- qtl2api::get_lod_scan(
                 ds, id,
                 intcovar          = inf$sample_column,
