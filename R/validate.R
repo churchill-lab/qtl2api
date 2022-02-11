@@ -47,9 +47,9 @@ validate_dataset <- function(dataset_id, extensive = FALSE) {
 
     validate_annotations(dataset_id)
 
-    validate_samples(dataset_id)
-
     validate_covar_info(dataset_id)
+
+    validate_samples(dataset_id)
 
     validate_lod_peaks(dataset_id)
 
@@ -529,6 +529,18 @@ validate_samples <- function(dataset_id) {
 
     if (num_annots_orig != num_annots_synch) {
         cat("WARNING : synchronizing samples, # samples changed from", num_annots_orig, "to", num_annots_synch, "\n")
+    }
+
+    # let's see which columns are not FACTORS, but should be
+    for (x in ds$covar_info$sample_column) {
+        n <- length(unique(ds$annot_samples[[x]]))
+        if (is.factor(ds$annot_samples[[x]])) {
+            if (n == 1) {
+                cat("WARNING : ", x, "is listed as a covar and a factor class, but only 1 unique value (remove from covar info?)\n")
+            }
+        } else {
+            cat("WARNING : ", x, "is listed as a covar, not factor class,", n, "unique values found (change to factor?)\n")
+        }
     }
 }
 

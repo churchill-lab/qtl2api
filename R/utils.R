@@ -411,11 +411,15 @@ get_random_id <- function(dataset) {
 #'
 #' @importFrom rlang .data
 get_covar_matrix <- function(dataset, id = NULL) {
-    if (is_phenotype(dataset)) {
+
+    # make sure samples and annotations are available
+    ds <- synchronize_dataset(dataset)
+
+    if (is_phenotype(ds)) {
         # get the annot.pheno row to get use.covar variable from the
         # annotations
         pheno <-
-            dataset$annot_phenotype %>%
+            ds$annot_phenotype %>%
             dplyr::filter(.data$data_name == id)
 
         if (gtools::invalid(pheno)) {
@@ -425,21 +429,17 @@ get_covar_matrix <- function(dataset, id = NULL) {
         # create a string (model formula) from the use.covar column
         formula_str <- paste0("~", gsub(":", "+", pheno$use_covar))
     } else {
-        formula_str <- paste0(dataset$covar_info$sample_column, collapse="+")
+        formula_str <- paste0(ds$covar_info$sample_column, collapse="+")
         formula_str <- paste0("~", formula_str)
     }
 
     # get the sample id field
-    sample_id_field <- dataset$sample_id_field
+    sample_id_field <- ds$sample_id_field
 
     # convert samples to data.frame because QTL2 relies heavily
     # on rownames and colnames, rownames currently are or will
     # soon be deprecated in tibbles
-    samples <- as.data.frame(dataset$annot_samples)
-
-    # set the rownames so scan1 will work
-    rownames(samples) <-
-        (samples %>%  dplyr::select(dplyr::matches(sample_id_field)))[[1]]
+    samples <- as.data.frame(ds$annot_samples)
 
     # [, -1, drop = FALSE] will drop the (Intercept) column
     covar <- stats::model.matrix.lm(
@@ -448,7 +448,21 @@ get_covar_matrix <- function(dataset, id = NULL) {
         #na.action = stats::na.pass
     )
 
-    return(covar[, -1, drop = FALSE])
+    # drop the Intercept column
+    covar <- covar[, -1, drop = FALSE]
+
+    # drop the covar column if it has all identical values
+    covar <- covar %>%
+        tibble::as_tibble() %>%
+        dplyr::select_if(function(col) length(unique(col))>1)
+
+    covar <- as.matrix(covar)
+
+    # set the rownames so scan1 will work
+    rownames(covar) <-
+        (samples %>%  dplyr::select(dplyr::matches(sample_id_field)))[[1]]
+
+    covar
 }
 
 
