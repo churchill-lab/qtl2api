@@ -74,7 +74,16 @@ get_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
                 pos = .data$pos,
                 LETTERS[1:8]
             ) %>%
-            dplyr::mutate_at(dplyr::vars(-c("id", "chr", "pos")), as.numeric)
+            dplyr::mutate_at(
+                dplyr::vars(-c("id", "chr", "pos")),
+                as.numeric
+            )
+
+        # convert from Mbp to bp
+        if (all(ret[["additive"]]$pos < 1000)) {
+            ret[["additive"]]$pos <- as.integer(ret[["additive"]]$pos * 1000000)
+        }
+
     } else {
         if (intcovar %not in% ds$covar_info$sample_column) {
             stop(sprintf("intcovar '%s' not found in covar.info", intcovar))
@@ -159,6 +168,10 @@ get_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
                     dplyr::vars(-c("id", "chr", "pos")),
                     as.numeric
                 )
+
+            if (all(ret[[toString(u)]]$pos < 1000)) {
+                ret[[toString(u)]]$pos <- as.integer(ret[[toString(u)]]$pos * 1000000)
+            }
         }
     }
 

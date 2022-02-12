@@ -15,7 +15,7 @@ get_markers <- function(chrom = NULL) {
 
     if (all(ret$pos < 1000)) {
         # convert from Mbp to bp
-        ret$pos <-  ret$pos * 1000000
+        ret$pos <-  as.integer(ret$pos * 1000000)
     }
 
     if (!is.null(chrom)) {

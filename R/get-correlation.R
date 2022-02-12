@@ -86,9 +86,17 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
             id     = names(pcor),
             symbol = annot_mrna$symbol[idxs],
             chr    = annot_mrna$chr[idxs],
-            start  = annot_mrna$start[idxs],
-            end    = annot_mrna$end[idxs]
+            start  = as.integer(annot_mrna$start[idxs]),
+            end    = as.integer(annot_mrna$end[idxs])
         )
+
+        if (all(ret$start < 1000)) {
+            ret$start <- as.integer(ret$start * 1000000)
+        }
+
+        if (all(ret$end < 1000)) {
+            ret$end <- as.integer(ret$end * 1000000)
+        }
     } else if (tolower(ds_correlate$datatype) == "protein") {
         # get the indices into the annotype data
         annot_protein <- ds_correlate$annot_protein
@@ -100,9 +108,17 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
             gene_id = annot_protein$gene_id[idxs],
             symbol  = annot_protein$symbol[idxs],
             chr     = annot_protein$chr[idxs],
-            start   = annot_protein$start[idxs],
-            end     = annot_protein$end[idxs]
+            start   = as.integer(annot_protein$start[idxs]),
+            end     = as.integer(annot_protein$end[idxs])
         )
+
+        if (all(ret$start < 1000)) {
+            ret$start <- as.integer(ret$start * 1000000)
+        }
+
+        if (all(ret$end < 1000)) {
+            ret$end <- as.integer(ret$end * 1000000)
+        }
     } else if (is_phenotype(ds_correlate)) {
         ret <- tibble::tibble(
             cor = pcor,

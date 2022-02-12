@@ -41,18 +41,18 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
 
     # convert from Mbp to bp
     if (all(markers_cleaned$pos < 1000)) {
-        markers_cleaned$pos <- markers_cleaned$pos * 1000000
+        markers_cleaned$pos <- as.integer(markers_cleaned$pos * 1000000)
     }
 
     if (tolower(ds$datatype) == "mrna") {
         annots <- ds$annot.mrna %>% janitor::clean_names()
 
         if (all(annots$start < 1000)) {
-            annots$start <- annots$start * 1000000
+            annots$start <- as.integer(annots$start * 1000000)
         }
 
         if (all(annots$end < 1000)) {
-            annots$end <- annots$end * 1000000
+            annots$end <- as.integer(annots$end * 1000000)
         }
 
         ret <- annots %>%
@@ -103,11 +103,11 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
         annots <- ds$annot.protein %>% janitor::clean_names()
 
         if (all(annots$start < 1000)) {
-            annots$start <- annots$start * 1000000
+            annots$start <- as.integer(annots$start * 1000000)
         }
 
         if (all(annots$end < 1000)) {
-            annots$end <- annots$end * 1000000
+            annots$end <- as.integer(annots$end * 1000000)
         }
 
         ret <- annots %>%
@@ -341,6 +341,23 @@ get_lod_peaks_for_annot <- function(dataset, id,
     output <- NULL
 
     if (nrow(peaks_all) > 0) {
+        output <- tibble::tibble(
+                annot_id  = character(),
+                marker_id = character(),
+                chr       = character(),
+                pos       = numeric(),
+                lod       = numeric(),
+                scan      = character(),
+                A         = numeric(),
+                B         = numeric(),
+                C         = numeric(),
+                D         = numeric(),
+                E         = numeric(),
+                F         = numeric(),
+                G         = numeric(),
+                H         = numeric()
+        )
+
         lod_peaks <-
             dplyr::left_join(
                 peaks_all,
@@ -360,22 +377,6 @@ get_lod_peaks_for_annot <- function(dataset, id,
             ) %>%
             tibble::as_tibble()
 
-        output <- tibble::tibble(
-                annot_id  = character(),
-                marker_id = character(),
-                chr       = character(),
-                pos       = numeric(),
-                lod       = numeric(),
-                scan      = character(),
-                A         = numeric(),
-                B         = numeric(),
-                C         = numeric(),
-                D         = numeric(),
-                E         = numeric(),
-                F         = numeric(),
-                G         = numeric(),
-                H         = numeric()
-        )
 
         for (i in 1:nrow(lod_peaks)) {
             peak <- lod_peaks[i, ]
@@ -419,6 +420,10 @@ get_lod_peaks_for_annot <- function(dataset, id,
                         dplyr::bind_cols(tibble::tibble(A=NA,B=NA,C=NA,D=NA,E=NA,F=NA,G=NA,H=NA))
                 )
             }
+        }
+
+        if (all(output$pos < 1000)) {
+            output$pos <- as.integer(output$pos * 1000000)
         }
     }
 

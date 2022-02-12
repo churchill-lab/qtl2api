@@ -115,6 +115,15 @@ get_lod_scan <- function(dataset, id, intcovar = NULL, cores = 0,
         ) %>%
         tibble::as_tibble()
 
+    # convert to bp
+    if (all(lod_scores_mod$pos < 1000)) {
+        lod_scores_mod$pos <- as.integer(lod_scores_mod$pos * 1000000)
+    }
+
+    if (all(lod_peaks$pos < 1000)) {
+        lod_peaks$pos <- as.integer(lod_peaks$pos * 1000000)
+    }
+
     ret <- list(
         lod_peaks  = lod_peaks,
         lod_scores = lod_scores_mod
@@ -232,7 +241,14 @@ get_lod_scan_by_sample <- function(dataset, id, chrom, intcovar, cores = 0) {
                 pos = .data$pos,
                 lod = id
             ) %>%
-            dplyr::mutate_at(c("lod"), as.numeric)
+            dplyr::mutate_at(
+                c("lod"),
+                as.numeric
+            )
+
+        if (all(temp$pos < 1000)) {
+            temp$pos <- temp$pos * 1000000
+        }
 
         ret[[toString(u)]] <- temp
     }

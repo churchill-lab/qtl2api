@@ -87,7 +87,7 @@ get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
     filtered_genoprobs <-
         genoprobs[[chrom]][rownames(ds_mediate$data), , marker_id]
 
-    mediation.scan(
+    ret <- mediation.scan(
         target = ds$data[, id, drop = FALSE],
         mediator = ds_mediate$data,
         annotation = annot,
@@ -95,6 +95,14 @@ get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
         qtl.geno = filtered_genoprobs,
         verbose = FALSE
     )
+
+    ret$middle_point <- as.integer(ret$middle_point)
+
+    if (all(ret$middle_point < 1000)) {
+        ret$middle_point <- as.integer(ret$middle_point * 1000000)
+    }
+
+    ret
 }
 
 #' Mediation Scan
