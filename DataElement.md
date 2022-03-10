@@ -177,7 +177,7 @@ Field | Description
 
 ## data
 
-**R data type:** matrix or list
+`R data type:` `matrix or list`
 
 This element is either a matrix or a list.
 
@@ -196,7 +196,7 @@ Each matrix will contain numerical data with samples (rows) by annotations (colu
 
 ## datatype
 
-`R data type: `character`
+`R data type:` `character`
 
 This will be used to identify the type of dataset.  This is a controlled vocabulary consisting of the following values:
 
