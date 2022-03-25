@@ -411,7 +411,6 @@ get_random_id <- function(dataset) {
 #'
 #' @importFrom rlang .data
 get_covar_matrix <- function(dataset, id = NULL) {
-
     # make sure samples and annotations are available
     ds <- synchronize_dataset(dataset)
 
@@ -441,11 +440,12 @@ get_covar_matrix <- function(dataset, id = NULL) {
     # soon be deprecated in tibbles
     samples <- as.data.frame(ds$annot_samples)
 
-    # [, -1, drop = FALSE] will drop the (Intercept) column
+    # create the model matrix, we use na.action = stats::na.pass so we can set
+    # the rownames below.  We than use na.omit to filter down the data.
     covar <- stats::model.matrix.lm(
         stats::as.formula(formula_str),
-        data = samples
-        #na.action = stats::na.pass
+        data = samples,
+        na.action = stats::na.pass
     )
 
     # drop the Intercept column
@@ -460,7 +460,10 @@ get_covar_matrix <- function(dataset, id = NULL) {
 
     # set the rownames so scan1 will work
     rownames(covar) <-
-        (samples %>%  dplyr::select(dplyr::matches(sample_id_field)))[[1]]
+        (samples %>% dplyr::select(dplyr::matches(sample_id_field)))[[1]]
+
+    # do not need NA values
+    covar <- na.omit(covar)
 
     covar
 }

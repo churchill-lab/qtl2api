@@ -4,12 +4,13 @@
 #' @param id the unique id in the dataset
 #' @param dataset_correlate the dataset to correlate against, dataset if INVALID
 #' @param intcovar the interactive covariate
+#' @param use_qr qr decomposition
 #'
 #' @return a `tibble` with the correlation and annotations
 #'
 #' @export
 get_correlation <- function(dataset, id, dataset_correlate = NULL,
-                            intcovar = NULL) {
+                            intcovar = NULL, use_qr = TRUE) {
 
     # make sure annotations, data, and samples are synchronized
     ds <- synchronize_dataset(dataset)
@@ -40,6 +41,9 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
     # get the covar data
     covar <- get_covar_matrix(ds, id)
 
+    # list of sample names that have been imputed
+    imputed_samples <- NULL
+
     if (is.null(intcovar)) {
         pcor <- stats::cor(data[, id], data_correlate, use = "pair")
     } else {
@@ -52,8 +56,11 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
                 adjust_matrix      = covar,
                 variables_interest = c(id),
                 variables_compare  = interactive_covariate,
-                use_qr             = FALSE
+                use_qr             = use_qr
             )
+
+        imputed_samples <- intersect(samples,
+                                     id_residual_matrix$imputed_samples)
 
         residual_matrix <-
             calc_residual_matrix(
@@ -61,12 +68,12 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
                 adjust_matrix      = covar,
                 variables_interest = colnames(data_correlate),
                 variables_compare  = interactive_covariate,
-                use_qr             = TRUE
+                use_qr             = use_qr
             )
 
         pcor <- stats::cor(
-            id_residual_matrix,
-            residual_matrix,
+            id_residual_matrix$residual_matrix,
+            residual_matrix$residual_matrix,
             use = "pair"
         )
     }
@@ -74,14 +81,14 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
     # reorder in decreasing order
     pcor <- pcor[1, order(abs(pcor), decreasing = TRUE)]
 
-    ret <- NULL
+    correlations <- NULL
 
     if (tolower(ds_correlate$datatype) == "mrna") {
         # get the indices into the annotype data
         annot_mrna <- ds_correlate$annot_mrna
         idxs <- match(names(pcor), annot_mrna$gene_id)
 
-        ret <- tibble::tibble(
+        correlations <- tibble::tibble(
             cor    = pcor,
             id     = names(pcor),
             symbol = annot_mrna$symbol[idxs],
@@ -90,19 +97,19 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
             end    = as.integer(annot_mrna$end[idxs])
         )
 
-        if (all(ret$start < 1000)) {
-            ret$start <- as.integer(ret$start * 1000000)
+        if (all(correlations$start < 1000)) {
+            correlations$start <- as.integer(correlations$start * 1000000)
         }
 
-        if (all(ret$end < 1000)) {
-            ret$end <- as.integer(ret$end * 1000000)
+        if (all(correlations$end < 1000)) {
+            ret$end <- as.integer(correlations$end * 1000000)
         }
     } else if (tolower(ds_correlate$datatype) == "protein") {
         # get the indices into the annotype data
         annot_protein <- ds_correlate$annot_protein
         idxs <- match(names(pcor), annot_protein$protein_id)
 
-        ret <- tibble::tibble(
+        correlations <- tibble::tibble(
             cor     = pcor,
             id      = names(pcor),
             gene_id = annot_protein$gene_id[idxs],
@@ -112,21 +119,22 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
             end     = as.integer(annot_protein$end[idxs])
         )
 
-        if (all(ret$start < 1000)) {
-            ret$start <- as.integer(ret$start * 1000000)
+        if (all(correlations$start < 1000)) {
+            correlations$start <- as.integer(correlations$start * 1000000)
         }
 
-        if (all(ret$end < 1000)) {
-            ret$end <- as.integer(ret$end * 1000000)
+        if (all(correlations$end < 1000)) {
+            correlations$end <- as.integer(correlations$end * 1000000)
         }
     } else if (is_phenotype(ds_correlate)) {
-        ret <- tibble::tibble(
+        correlations <- tibble::tibble(
             cor = pcor,
             id = names(pcor)
         )
     }
 
-    ret
+    list(correlations    = correlations,
+         imputed_samples = imputed_samples)
 }
 
 
@@ -137,13 +145,14 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
 #' @param dataset_correlate the dataset to correlate to
 #' @param id_correlate the identifier from the correlate dataset
 #' @param intcovar the interactive covariate
+#' @param use_qr qr decomposition
 #'
 #' @return a named `list` with the data to plot
 #'
 #' @export
 get_correlation_plot_data <- function(dataset, id,
                                       dataset_correlate, id_correlate,
-                                      intcovar = NULL) {
+                                      intcovar = NULL, use_qr = TRUE) {
     # make sure samples and annotations are available
     ds <- synchronize_dataset(dataset)
 
@@ -174,38 +183,48 @@ get_correlation_plot_data <- function(dataset, id,
     # get the covar matrix
     covar <- get_covar_matrix(ds, id)
 
-    if (!is.null(intcovar)) {
+    # list of sample names that have been imputed
+    imputed_samples <- NULL
+
+    if (is.null(intcovar)) {
+        x <- data[, id]
+        y <- data_correlate[, id_correlate]
+    } else {
         interactive_covariate <-
             colnames(covar)[grepl(intcovar, colnames(covar), ignore.case = T)]
 
-        data <-
+        id_residual_matrix <-
             calc_residual_matrix(
                 variable_matrix    = data,
                 adjust_matrix      = covar,
                 variables_interest = c(id),
                 variables_compare  = interactive_covariate,
-                use_qr             = FALSE
+                use_qr             = use_qr
             )
 
-        data_correlate <-
+        data <- id_residual_matrix$residual_matrix
+        imputed_samples <- id_residual_matrix$imputed_samples
+
+        residual_matrix <-
             calc_residual_matrix(
                 variable_matrix    = data_correlate,
                 adjust_matrix      = covar,
                 variables_interest = colnames(data_correlate),
                 variables_compare  = interactive_covariate,
-                use_qr             = TRUE
+                use_qr             = use_qr
             )
 
+        data_correlate <- residual_matrix$residual_matrix
+
         x <- data[, 1]
-        y <- data_correlate[, id_correlate]
-    } else {
-        x <- data[, id]
         y <- data_correlate[, id_correlate]
     }
 
     # get the intersecting samples and indices
     samples <- intersect(rownames(data), rownames(data_correlate))
     samples_idx <- which(ds$annot_samples[[ds$sample_id_field]] %in% samples)
+
+    imputed_samples <- intersect(samples, imputed_samples)
 
     # get the covar factors and their data levels
     sample_info <- list()
@@ -232,12 +251,13 @@ get_correlation_plot_data <- function(dataset, id,
                 y         = y[samples_idx],
                 sample_info,
                 stringsAsFactors = FALSE
-        ))
+        )) %>%
+        dplyr::mutate(imputed = .data$sample_id %in% imputed_samples)
 
     # TODO: should we add id to to the dataset object (fix_environemnt)
     list(
-        datatypes         = datatypes,
-        data              = correlation_plot_data
+        datatypes = datatypes,
+        data      = correlation_plot_data
     )
 }
 
@@ -255,6 +275,17 @@ calc_residual_matrix <- function(variable_matrix,
                                  variables_interest,
                                  variables_compare,
                                  use_qr = TRUE) {
+
+    imputed_samples <- NULL
+
+    # impute if necessary
+    if(any(is.na(variable_matrix))) {
+        imputed_samples <- setdiff(rownames(variable_matrix),
+                                   rownames(na.omit(variable_matrix)))
+
+        variable_matrix <- missMDA::imputeFAMD(X = variable_matrix)$completeObs
+    }
+
     # make sure we have the same samples
     samples <- intersect(rownames(variable_matrix), rownames(adjust_matrix))
 
@@ -271,7 +302,6 @@ calc_residual_matrix <- function(variable_matrix,
     residual_matrix <- NULL
 
     if(use_qr) {
-        # Fast, but can't handle NAs in y??
         formula_str <-
             paste("~ + 1 +", paste(variables_compare, collapse = " + "))
 
@@ -283,14 +313,6 @@ calc_residual_matrix <- function(variable_matrix,
 
         y_data <- data[samples, variables_interest_fix, drop = FALSE]
         colnames(y_data) <- variables_interest_fix
-
-        if (any(is.na(X_0))) {
-            X_0 <- missMDA::imputeFAMD(X = X_0)$completeObs
-        }
-
-        if (any(is.na(y_data))) {
-            y_data <- missMDA::imputeFAMD(X = y_data)$completeObs
-        }
 
         qr_0 <- qr(X_0)
 
@@ -322,5 +344,6 @@ calc_residual_matrix <- function(variable_matrix,
 
     colnames(residual_matrix) <- variables_interest
 
-    residual_matrix
+    list(imputed_samples = imputed_samples,
+         residual_matrix = residual_matrix)
 }
