@@ -5,12 +5,14 @@
 #' @param dataset_correlate the dataset to correlate against, dataset if INVALID
 #' @param intcovar the interactive covariate
 #' @param use_qr qr decomposition
+#' @param backfill_NA if we need to impute, should we backfill the NAs
 #'
 #' @return a `tibble` with the correlation and annotations
 #'
 #' @export
 get_correlation <- function(dataset, id, dataset_correlate = NULL,
-                            intcovar = NULL, use_qr = TRUE) {
+                            intcovar = NULL, use_qr = TRUE,
+                            backfill_NA = TRUE) {
 
     # make sure annotations, data, and samples are synchronized
     ds <- synchronize_dataset(dataset)
@@ -42,13 +44,21 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
     covar <- get_covar_matrix(ds, id)
 
     # list of sample names that have been imputed
-    imputed_samples <- NULL
+    samples_imputed <- NULL
+    samples_not_imputed <- NULL
 
     if (is.null(intcovar)) {
         pcor <- stats::cor(data[, id], data_correlate, use = "pair")
     } else {
         interactive_covariate <-
             colnames(covar)[grepl(intcovar, colnames(covar), ignore.case = T)]
+
+        # determine which samples are imputed
+        samples_imputed <- unique(names(which(is.na(data[, id]), arr.ind = TRUE)))
+        samples_not_imputed <- setdiff(rownames(data[, id]), samples_imputed)
+
+        # find out where the NA's are in data for the id
+        na_index  <- which(is.na(data[, id]), arr.ind = TRUE)
 
         id_residual_matrix <-
             calc_residual_matrix(
@@ -59,8 +69,13 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
                 use_qr             = use_qr
             )
 
-        imputed_samples <- intersect(samples,
-                                     id_residual_matrix$imputed_samples)
+        # backfill the NA's
+        if (backfill_NA) {
+            id_residual_matrix[na_index] <- NA
+        }
+
+        # find out where the NA's are for correlation data
+        na_index  <- which(is.na(data_correlate), arr.ind = TRUE)
 
         residual_matrix <-
             calc_residual_matrix(
@@ -71,9 +86,14 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
                 use_qr             = use_qr
             )
 
+        # backfill the NA's
+        if (backfill_NA) {
+            residual_matrix[na_index] <- NA
+        }
+
         pcor <- stats::cor(
-            id_residual_matrix$residual_matrix,
-            residual_matrix$residual_matrix,
+            id_residual_matrix,
+            residual_matrix,
             use = "pair"
         )
     }
@@ -134,7 +154,7 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
     }
 
     list(correlations    = correlations,
-         imputed_samples = imputed_samples)
+         imputed_samples = samples_imputed)
 }
 
 
@@ -146,13 +166,15 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
 #' @param id_correlate the identifier from the correlate dataset
 #' @param intcovar the interactive covariate
 #' @param use_qr qr decomposition
+#' @param backfill_NA if we need to impute, should we backfill the NAs
 #'
 #' @return a named `list` with the data to plot
 #'
 #' @export
 get_correlation_plot_data <- function(dataset, id,
                                       dataset_correlate, id_correlate,
-                                      intcovar = NULL, use_qr = TRUE) {
+                                      intcovar = NULL, use_qr = TRUE,
+                                      backfill_NA = TRUE) {
     # make sure samples and annotations are available
     ds <- synchronize_dataset(dataset)
 
@@ -184,7 +206,8 @@ get_correlation_plot_data <- function(dataset, id,
     covar <- get_covar_matrix(ds, id)
 
     # list of sample names that have been imputed
-    imputed_samples <- NULL
+    samples_imputed <- NULL
+    samples_not_imputed <- NULL
 
     if (is.null(intcovar)) {
         x <- data[, id]
@@ -193,7 +216,15 @@ get_correlation_plot_data <- function(dataset, id,
         interactive_covariate <-
             colnames(covar)[grepl(intcovar, colnames(covar), ignore.case = T)]
 
-        id_residual_matrix <-
+        # determine which samples are imputed
+        samples_imputed <- unique(names(which(is.na(data[, id]), arr.ind = TRUE)))
+        samples_not_imputed <- setdiff(rownames(data[, id]), samples_imputed)
+
+        print(samples_imputed)
+        # find out where the NA's are in data for the id
+        na_index  <- which(is.na(data[, id]), arr.ind = TRUE)
+
+        data <-
             calc_residual_matrix(
                 variable_matrix    = data,
                 adjust_matrix      = covar,
@@ -202,10 +233,15 @@ get_correlation_plot_data <- function(dataset, id,
                 use_qr             = use_qr
             )
 
-        data <- id_residual_matrix$residual_matrix
-        imputed_samples <- id_residual_matrix$imputed_samples
+        # backfill the NA's
+        if (backfill_NA) {
+            data[na_index] <- NA
+        }
 
-        residual_matrix <-
+        # find out where the NA's are for correlation data
+        na_index  <- which(is.na(data_correlate), arr.ind = TRUE)
+
+        data_correlate <-
             calc_residual_matrix(
                 variable_matrix    = data_correlate,
                 adjust_matrix      = covar,
@@ -214,7 +250,10 @@ get_correlation_plot_data <- function(dataset, id,
                 use_qr             = use_qr
             )
 
-        data_correlate <- residual_matrix$residual_matrix
+        # backfill the NA's
+        if (backfill_NA) {
+            data_correlate[na_index] <- NA
+        }
 
         x <- data[, 1]
         y <- data_correlate[, id_correlate]
@@ -223,8 +262,6 @@ get_correlation_plot_data <- function(dataset, id,
     # get the intersecting samples and indices
     samples <- intersect(rownames(data), rownames(data_correlate))
     samples_idx <- which(ds$annot_samples[[ds$sample_id_field]] %in% samples)
-
-    imputed_samples <- intersect(samples, imputed_samples)
 
     # get the covar factors and their data levels
     sample_info <- list()
@@ -252,7 +289,7 @@ get_correlation_plot_data <- function(dataset, id,
                 sample_info,
                 stringsAsFactors = FALSE
         )) %>%
-        dplyr::mutate(imputed = .data$sample_id %in% imputed_samples)
+        dplyr::mutate(imputed = .data$sample_id %in% samples_imputed)
 
     # TODO: should we add id to to the dataset object (fix_environemnt)
     list(
@@ -276,13 +313,8 @@ calc_residual_matrix <- function(variable_matrix,
                                  variables_compare,
                                  use_qr = TRUE) {
 
-    imputed_samples <- NULL
-
     # impute if necessary
     if(any(is.na(variable_matrix))) {
-        imputed_samples <- setdiff(rownames(variable_matrix),
-                                   rownames(na.omit(variable_matrix)))
-
         variable_matrix <- missMDA::imputeFAMD(X = variable_matrix)$completeObs
     }
 
@@ -344,6 +376,5 @@ calc_residual_matrix <- function(variable_matrix,
 
     colnames(residual_matrix) <- variables_interest
 
-    list(imputed_samples = imputed_samples,
-         residual_matrix = residual_matrix)
+    residual_matrix
 }
