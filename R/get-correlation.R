@@ -220,7 +220,6 @@ get_correlation_plot_data <- function(dataset, id,
         samples_imputed <- unique(names(which(is.na(data[, id]), arr.ind = TRUE)))
         samples_not_imputed <- setdiff(rownames(data[, id]), samples_imputed)
 
-        print(samples_imputed)
         # find out where the NA's are in data for the id
         na_index  <- which(is.na(data[, id]), arr.ind = TRUE)
 
