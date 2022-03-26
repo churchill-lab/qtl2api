@@ -9,7 +9,9 @@ get_correlation_plot_data(
   id,
   dataset_correlate,
   id_correlate,
-  intcovar = NULL
+  intcovar = NULL,
+  use_qr = TRUE,
+  backfill_NA = TRUE
 )
 }
 \arguments{
@@ -22,6 +24,10 @@ get_correlation_plot_data(
 \item{id_correlate}{the identifier from the correlate dataset}
 
 \item{intcovar}{the interactive covariate}
+
+\item{use_qr}{qr decomposition}
+
+\item{backfill_NA}{if we need to impute, should we backfill the NAs}
 }
 \value{
 a named `list` with the data to plot

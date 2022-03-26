@@ -4,7 +4,14 @@
 \alias{get_correlation}
 \title{Get the correlation.}
 \usage{
-get_correlation(dataset, id, dataset_correlate = NULL, intcovar = NULL)
+get_correlation(
+  dataset,
+  id,
+  dataset_correlate = NULL,
+  intcovar = NULL,
+  use_qr = TRUE,
+  backfill_NA = TRUE
+)
 }
 \arguments{
 \item{dataset}{the dataset object}
@@ -14,6 +21,10 @@ get_correlation(dataset, id, dataset_correlate = NULL, intcovar = NULL)
 \item{dataset_correlate}{the dataset to correlate against, dataset if INVALID}
 
 \item{intcovar}{the interactive covariate}
+
+\item{use_qr}{qr decomposition}
+
+\item{backfill_NA}{if we need to impute, should we backfill the NAs}
 }
 \value{
 a `tibble` with the correlation and annotations

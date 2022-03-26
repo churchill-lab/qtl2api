@@ -463,7 +463,7 @@ get_covar_matrix <- function(dataset, id = NULL) {
         (samples %>% dplyr::select(dplyr::matches(sample_id_field)))[[1]]
 
     # do not need NA values
-    covar <- na.omit(covar)
+    covar <- stats::na.omit(covar)
 
     covar
 }
