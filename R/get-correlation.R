@@ -314,7 +314,6 @@ calc_residual_matrix <- function(variable_matrix,
 
     # impute if necessary
     if(any(is.na(variable_matrix))) {
-        message('imputing')
         variable_matrix <- missMDA::imputeFAMD(X = variable_matrix)$completeObs
     }
 
