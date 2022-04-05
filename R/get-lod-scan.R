@@ -196,7 +196,7 @@ get_lod_scan_by_sample <- function(dataset, id, chrom, intcovar, cores = 0) {
         # samples.names will contain ONLY the samples that match x
         # take all samples
         # filter rows by value, i.e. sex = "F"
-        # select just the sample id field  column
+        # select just the sample id field column
         sample_names <-
             ds$annot_samples %>%
             dplyr::filter(!!as.name(intcovar) == u) %>%
@@ -209,6 +209,7 @@ get_lod_scan_by_sample <- function(dataset, id, chrom, intcovar, cores = 0) {
 
         # subset to the intersecting data
         sample_names <- intersect(sample_names, rownames(covar))
+        sample_names <- intersect(sample_names, rownames(K[[chrom]]))
 
         # filter by the samples we need
         covar <- covar[sample_names, , drop = FALSE]

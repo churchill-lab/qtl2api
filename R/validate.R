@@ -448,9 +448,9 @@ validate_annotations <- function(dataset_id) {
             }
         }
 
-        if(is.logical(annots_orig$is.id)) {
+        if(is.logical(annots_orig$is_id)) {
             # one and only 1 ID
-            theID <- annots_orig[which(annots_orig$is.id == TRUE),]$data.name
+            theID <- annots_orig[which(annots_orig$is_id == TRUE),]$data_name
 
             if(length(theID) != 1) {
                 message("ERROR   : annot_phenotype$is_id should have 1 and only 1 row set to TRUE")
