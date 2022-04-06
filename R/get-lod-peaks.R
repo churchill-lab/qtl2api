@@ -390,7 +390,7 @@ get_lod_peaks_for_annot <- function(dataset, id,
 
                 mrk <- markers %>%
                     dplyr::filter(
-                        marker.id == mrk_id
+                        .data$marker.id == mrk_id
                     )
 
                 peak$marker_id <- mrk_id
