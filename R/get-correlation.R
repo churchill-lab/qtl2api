@@ -153,6 +153,10 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
         )
     }
 
+    # don't return the NAs
+    correlations <- correlations %>%
+        dplyr::filter(!is.na(.data$cor))
+
     list(correlations    = correlations,
          imputed_samples = samples_imputed)
 }
@@ -288,7 +292,10 @@ get_correlation_plot_data <- function(dataset, id,
                 sample_info,
                 stringsAsFactors = FALSE
         )) %>%
-        dplyr::mutate(imputed = .data$sample_id %in% samples_imputed)
+        dplyr::mutate(imputed = .data$sample_id %in% samples_imputed) %>%
+        dplyr::filter(!is.na(.data$x)) %>%  # don't return the NAs
+        dplyr::filter(!is.na(.data$y))      # don't return the NAs
+
 
     # TODO: should we add id to to the dataset object (fix_environemnt)
     list(

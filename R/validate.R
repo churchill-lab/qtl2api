@@ -474,7 +474,7 @@ validate_annotations <- function(dataset_id) {
 
         for (n in expected_names) {
             if (n %not in% names(annots)) {
-                message("ERROR   :", n, "not found in", annot_name)
+                message("ERROR   :", n, " not found in ", annot_name)
             }
         }
 
