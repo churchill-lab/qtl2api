@@ -81,20 +81,32 @@ nvl_int <- function(value, default) {
 synchronize_data <- function(dataset) {
     # first thing is to get the annotation ids
     if (tolower(dataset$datatype) == 'mrna') {
+        annots_field <- grep("^annots?(\\.|_){1}mrnas?$",
+                             names(dataset),
+                             value = TRUE)
+
         annots <-
-            dataset$annot.mrna %>%
+            dataset[[annots_field]] %>%
             janitor::clean_names()
 
         annot_ids <- annots$gene_id
     } else if (tolower(dataset$datatype) == 'protein') {
+        annots_field <- grep("^annots?(\\.|_){1}proteins?$",
+                             names(dataset),
+                             value = TRUE)
+
         annots <-
-            dataset$annot.protein %>%
+            dataset[[annots_field]] %>%
             janitor::clean_names()
 
         annot_ids <- annots$protein_id
     } else if (is_phenotype(dataset)) {
+        annots_field <- grep("^annots?(\\.|_){1}pheno(type)?s?$",
+                             names(dataset),
+                             value = TRUE)
+
         annots <-
-            dataset$annot.phenotype %>%
+            dataset[[annots_field]] %>%
             janitor::clean_names() %>%
             dplyr::filter(.data$omit == FALSE, .data$is_pheno == TRUE)
 
@@ -107,10 +119,14 @@ synchronize_data <- function(dataset) {
     data <- get_data(dataset)
 
     # get the sample id field and the intersecting sample ids
+    annots_field <- grep("^annots?(\\.|_){1}samples?$",
+                         names(dataset),
+                         value = TRUE)
+
     sample_id_field <- get_sample_id_field(dataset)
     sample_ids <- intersect(
         rownames(data),
-        dataset$annot.samples[[sample_id_field]]
+        dataset[[annots_field]][[sample_id_field]]
     )
 
     if (length(sample_ids) == 0) {
@@ -144,8 +160,12 @@ synchronize_data <- function(dataset) {
     data <- data[sample_ids, annot_ids, drop = FALSE]
 
     # filter the samples
+    annots_field <- grep("^annots?(\\.|_){1}samples?$",
+                         names(dataset),
+                         value = TRUE)
+
     samples <-
-        dataset$annot.samples %>%
+        dataset[[annots_field]] %>%
         dplyr::filter(!!as.name(sample_id_field) %in% sample_ids)
 
     list(
@@ -181,13 +201,17 @@ synchronize_dataset <- function(dataset) {
     ds_synch <- synchronize_data(dataset)
 
     # fix the covar.info names
+    annots_field <- grep("^covar?(\\.|_){1}info$",
+                         names(dataset),
+                         value = TRUE)
+
     covar_info <-
-        dataset$covar.info %>%
+        dataset[[annots_field]] %>%
         janitor::clean_names()
 
     # fix the ensembl version
     ensembl_version <-
-        utils::apropos("^ensembl(.|_)version$", ignore.case = TRUE)
+        utils::apropos("^ensembl(\\.|_){1}version$", ignore.case = TRUE)
 
     if (!gtools::invalid(ensembl_version)) {
         ensembl_version <- get(ensembl_version)
@@ -198,7 +222,7 @@ synchronize_dataset <- function(dataset) {
     ds_ensembl_version <- ensembl_version
 
     temp_ensembl <- grep(
-        "^ensembl(.|_)version$",
+        "^ensembl(\\.|_){1}version$",
         names(dataset),
         ignore.case = TRUE,
         value = TRUE
@@ -210,12 +234,19 @@ synchronize_dataset <- function(dataset) {
 
     sample_id_field = get_sample_id_field(dataset)
 
+    display_name_field <- grep(
+        "^display(\\.|_){1}name$",
+        names(dataset),
+        ignore.case = TRUE,
+        value = TRUE
+    )
+
     ds <- list(
         annot_samples   = ds_synch$samples,
         covar_info      = covar_info,
         data            = ds_synch$data,
         datatype        = dataset$datatype,
-        display_name    = dataset$display.name,
+        display_name    = dataset[[display_name_field]],
         ensembl_version = ensembl_version,
         sample_id_field = sample_id_field,
         is_synchronized = TRUE

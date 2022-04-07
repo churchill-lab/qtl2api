@@ -8,8 +8,12 @@ get_sample_id_field <- function(dataset) {
     }
 
     if (is_phenotype(dataset)) {
+        annots_field <- grep("^annots?(\\.|_){1}pheno(type)?s?$",
+                             names(dataset),
+                             value = TRUE)
+
         sample_id_field <-
-            dataset$annot.phenotype %>%
+            dataset[[annots_field]] %>%
             janitor::clean_names() %>%
             dplyr::filter(.data$is_id == TRUE)
 
@@ -19,9 +23,13 @@ get_sample_id_field <- function(dataset) {
 
         sample_id_field <- sample_id_field$data_name
     } else {
+        annots_field <- grep("^annots?(\\.|_){1}samples?$",
+                             names(dataset),
+                             value = TRUE)
+
         sample_id_field <- grep(
             "^mouse(\\.|_)?id$|^sample(\\.|_)?id$",
-            colnames(dataset$annot.samples),
+            colnames(dataset[[annots_field]]),
             value = TRUE,
             ignore.case = TRUE
         )
