@@ -126,7 +126,7 @@ get_snp_assoc_mapping <- function(dataset, id, chrom, location,
 
     if (!is.null(intcovar)) {
         if (!any(intcovar == ds$covar_info$sample_column)) {
-            stop(sprintf("intcovar '%s' not found in covar.info", intcovar))
+            stop(sprintf("intcovar '%s' not found in covar_info", intcovar))
         }
 
         # grabbing all the columns from covar (covar.matrix) that

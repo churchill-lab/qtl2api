@@ -200,7 +200,7 @@ synchronize_dataset <- function(dataset) {
     # synchronize the data element
     ds_synch <- synchronize_data(dataset)
 
-    # fix the covar.info names
+    # fix the covar_info names
     annots_field <- grep("^covar?(\\.|_){1}info$",
                          names(dataset),
                          value = TRUE)
@@ -276,7 +276,7 @@ synchronize_dataset <- function(dataset) {
         ds$annot_phenotype <- ds_synch$annots
 
         #ds$annot_phenotpe_extra <-
-        #    dataset$annot.phenotype %>%
+        #    dataset$annot_phenotype %>%
         #    janitor::clean_names() %>%
         #    dplyr::filter(.data$omit == FALSE & .data$is_pheno == FALSE)
 
@@ -288,7 +288,7 @@ synchronize_dataset <- function(dataset) {
 }
 
 
-#' Get the dataset by id (a string).  annot.samples can be used at the top level
+#' Get the dataset by id (a string).  annot_samples can be used at the top level
 #' to share sample annotations among other datasets.
 #'
 #' @param dataset_id a string, either 'dataset.name' or just 'name'
@@ -386,9 +386,12 @@ get_data <- function(ds, data_name = NULL) {
 #' @export
 get_random_id <- function(dataset) {
     if (tolower(dataset$datatype) == "mrna") {
-        if ("annot.mrna" %in% names(dataset)) {
+        if (gtools::invalid(dataset$is_synchronized)) {
+            annots_field <- grep("^annots?(\\.|_){1}mrnas?$",
+                                 names(dataset),
+                                 value = TRUE)
             annot_ids <-
-                dataset$annot.mrna %>%
+                dataset[[annots_field]] %>%
                 janitor::clean_names()
         } else {
             annot_ids <- dataset$annot_mrna
@@ -396,9 +399,12 @@ get_random_id <- function(dataset) {
 
         annot_ids <- annot_ids$gene_id
     } else if (tolower(dataset$datatype) == "protein") {
-        if ("annot.protein" %in% names(dataset)) {
+        if (gtools::invalid(dataset$is_synchronized)) {
+            annots_field <- grep("^annots?(\\.|_){1}proteins?$",
+                                 names(dataset),
+                                 value = TRUE)
             annot_ids <-
-                dataset$annot.protein %>%
+                dataset[[annots_field]] %>%
                 janitor::clean_names()
         } else {
             annot_ids <- dataset$annot_protein
@@ -406,9 +412,12 @@ get_random_id <- function(dataset) {
 
         annot_ids <- annot_ids$protein_id
     } else if (is_phenotype(dataset)) {
-        if ("annot.phenotype" %in% names(dataset)) {
+        if (gtools::invalid(dataset$is_synchronized)) {
+            annots_field <- grep("^annots?(\\.|_){1}pheno(type)?s?$",
+                                 names(dataset),
+                                 value = TRUE)
             annot_ids <-
-                dataset$annot.phenotype %>%
+                dataset[[annots_field]] %>%
                 janitor::clean_names() %>%
                 dplyr::filter(.data$is_pheno == TRUE)
         } else {
@@ -446,7 +455,7 @@ get_covar_matrix <- function(dataset, id = NULL) {
     ds <- synchronize_dataset(dataset)
 
     if (is_phenotype(ds)) {
-        # get the annot.pheno row to get use.covar variable from the
+        # get the annot_phenotype row to get use_covar variable from the
         # annotations
         pheno <-
             ds$annot_phenotype %>%
@@ -512,7 +521,7 @@ get_dataset_info <- function() {
     ret <- c()
 
     ensembl_version <-
-        utils::apropos("^ensembl(.|_)version$", ignore.case = TRUE)
+        utils::apropos("^ensembl(\\.|_){1}version$", ignore.case = TRUE)
 
     if (length(ensembl_version) != 0) {
         ensembl_version <- get(ensembl_version)
@@ -544,7 +553,7 @@ get_dataset_info <- function() {
             # TODO: Rethink this, do we need is_pheno == FALSE?
             #
             # annotations <-
-            #     ds$annot.phenotype %>%
+            #     ds$annot_phenotype %>%
             #     janitor::clean_names() %>%
             #     dplyr::filter(.data$omit == FALSE & .data$is_pheno == FALSE)
             #
@@ -555,12 +564,16 @@ get_dataset_info <- function() {
             annotations <- ds_synchronized$annots
         }
 
-        covar_info <- ds$covar.info %>% janitor::clean_names()
+        annots_field <- grep("^covar?(\\.|_){1}info$",
+                             names(ds),
+                             value = TRUE)
+
+        covar_info <- ds[[annots_field]] %>% janitor::clean_names()
 
         ds_ensembl_version <- ensembl_version
 
         temp_ensembl <- grep(
-            "^ensembl(.|_)version$",
+            "^ensembl(\\.|_){1}version$",
             names(ds),
             ignore.case = TRUE,
             value = TRUE
@@ -570,10 +583,23 @@ get_dataset_info <- function() {
             ds_ensembl_version <- ds[[temp_ensembl]]
         }
 
+        display_name_field <- grep(
+            "^display(\\.|_){1}name$",
+            names(ds),
+            ignore.case = TRUE,
+            value = TRUE
+        )
+
+        display_name <- d
+
+        if (length(display_name_field) != 0) {
+            display_name <- ds[[display_name_field]]
+        }
+
         temp <- list(
             id              = d,
             annotations     = annotations,
-            display_name    = nvl(ds$display.name, d),
+            display_name    = display.name,
             datatype        = ds$datatype,
             covar_info      = covar_info,
             ensembl_version = ds_ensembl_version
@@ -599,21 +625,44 @@ get_dataset_stats <- function() {
     for (d in datasets) {
         ds <- get(d)
 
-        num_annotations <- NA
+        annots_field <- NA
 
         if (tolower(ds$datatype) == 'mrna') {
-            num_annotations <- NROW(ds$annot.mrna)
+            annots_field <- grep("^annots?(\\.|_){1}mrnas?$",
+                                 names(ds),
+                                 value = TRUE)
         } else if(tolower(ds$datatype) == 'protein') {
-            num_annotations <- NROW(ds$annot.protein)
+            annots_field <- grep("^annots?(\\.|_){1}proteins?$",
+                                 names(ds),
+                                 value = TRUE)
         } else if(is_phenotype(ds)) {
-            num_annotations <- NROW(ds$annot.phenotype)
+            annots_field <- grep("^annots?(\\.|_){1}pheno(type)?s?$",
+                                 names(ds),
+                                 value = TRUE)
+        }
+
+        annots_field_samples <- grep("^annots?(\\.|_){1}samples?$",
+                                     names(ds),
+                                     value = TRUE)
+
+        display_name_field <- grep(
+            "^display(\\.|_){1}name$",
+            names(ds),
+            ignore.case = TRUE,
+            value = TRUE
+        )
+
+        display_name <- d
+
+        if (length(display_name_field) != 0) {
+            display_name <- ds[[display_name_field]]
         }
 
         temp <- list(id              = d,
-                     display_name    = nvl(ds$display.name, d),
+                     display_name    = display_name,
                      datatype        = ds$datatype,
-                     num_annotations = num_annotations,
-                     num_samples     = NROW(ds$annot.samples))
+                     num_annotations = NROW(ds[[annots_field]]),
+                     num_samples     = NROW(ds[[annots_field_samples]]))
 
         ret <- c(ret, list(temp))
     }

@@ -16,17 +16,25 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
         stop("dataset should not be synchronized")
     }
 
+    annots_field_covar <- grep("^covar(\\.|_){1}info$",
+                               names(ds),
+                               value = TRUE)
+
+    annots_field_peaks <- grep("^lod(\\.|_){1}peaks?$",
+                               names(ds),
+                               value = TRUE)
+
     peaks <- NULL
 
     if (is.null(intcovar)) {
-        peaks <- ds$lod.peaks$additive
+        peaks <- ds[[annots_field_peaks]]$additive
     } else {
         # find the covar and get the name of the lod peaks
-        covar_info <- ds$covar.info %>% janitor::clean_names()
+        covar_info <- ds[[annots_field_covar]] %>% janitor::clean_names()
 
         if (any(intcovar == covar_info$sample_column)) {
             n <- covar_info[covar_info$sample_column == intcovar, ]
-            peaks <- ds$lod.peaks[[n$lod_peaks]]
+            peaks <- ds[[annots_field_peaks]][[n$lod_peaks]]
         }
     }
 
@@ -45,7 +53,11 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
     }
 
     if (tolower(ds$datatype) == "mrna") {
-        annots <- ds$annot.mrna %>% janitor::clean_names()
+        annots_field <- grep("^annots?(\\.|_){1}mrnas?$",
+                             names(ds),
+                             value = TRUE)
+
+        annots <- ds[[annots_field]] %>% janitor::clean_names()
 
         if (all(annots$start < 1000)) {
             annots$start <- as.integer(annots$start * 1000000)
@@ -100,7 +112,11 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
                 )
         }
     } else if (tolower(ds$datatype) == "protein") {
-        annots <- ds$annot.protein %>% janitor::clean_names()
+        annots_field <- grep("^annots?(\\.|_){1}proteins?$",
+                             names(ds),
+                             value = TRUE)
+
+        annots <- ds[[annots_field]] %>% janitor::clean_names()
 
         if (all(annots$start < 1000)) {
             annots$start <- as.integer(annots$start * 1000000)
@@ -157,7 +173,11 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
                 )
         }
     } else if (is_phenotype(ds)) {
-        ret <- ds$annot.phenotype %>%
+        annots_field <- grep("^annots?(\\.|_){1}pheno(type)?s?$",
+                             names(ds),
+                             value = TRUE)
+
+        ret <- ds[[annots_field]] %>%
             janitor::clean_names() %>%
             dplyr::inner_join(
                 peaks,
@@ -224,7 +244,11 @@ get_lod_peaks_all <- function(ds) {
     # get the additive LOD peaks
     peaks <- list(additive = get_lod_peaks(ds))
 
-    covar_info <- ds$covar.info %>% janitor::clean_names()
+    annots_field <- grep("^covar(\\.|_){1}info$",
+                         names(ds),
+                         value = TRUE)
+
+    covar_info <- ds[[annots_field]] %>% janitor::clean_names()
 
     # get the rest
     for (i in seq(nrow(covar_info))) {

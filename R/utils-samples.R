@@ -18,7 +18,7 @@ get_sample_id_field <- function(dataset) {
             dplyr::filter(.data$is_id == TRUE)
 
         if (NROW(sample_id_field) != 1) {
-            stop("is_id == TRUE more than once in annot.phenotype")
+            stop("is_id == TRUE more than once in annot_phenotype")
         }
 
         sample_id_field <- sample_id_field$data_name
@@ -28,14 +28,16 @@ get_sample_id_field <- function(dataset) {
                              value = TRUE)
 
         sample_id_field <- grep(
-            "^mouse(\\.|_)?id$|^sample(\\.|_)?id$",
+            "^mouse(\\.|_){1}?id$|^sample(\\.|_){1}?id$",
             colnames(dataset[[annots_field]]),
             value = TRUE,
             ignore.case = TRUE
         )
 
-        if (length(sample_id_field) != 1) {
-            stop("unable to find a sample id field in annot.samples")
+        if (length(sample_id_field) == 0) {
+            stop("unable to find a sample id field in annot_samples")
+        } else if (length(sample_id_field) > 1) {
+            stop("ambiguous mouse_id and/or sample_id fields in annot_samples")
         }
     }
 

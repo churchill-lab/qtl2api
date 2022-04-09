@@ -86,7 +86,7 @@ get_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
 
     } else {
         if (intcovar %not in% ds$covar_info$sample_column) {
-            stop(sprintf("intcovar '%s' not found in covar.info", intcovar))
+            stop(sprintf("intcovar '%s' not found in covar_info", intcovar))
         }
 
         # get all the unique values for the intcovar and sort them
