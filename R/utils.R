@@ -530,13 +530,10 @@ get_dataset_info <- function() {
     }
 
     for (d in datasets) {
-        print(paste0('d=', d))
         ds <- get(d)
 
         # make sure samples and annotations are available
         ds_synchronized <- synchronize_data(ds)
-
-        print('synchronized')
 
         annotations <- list()
 
@@ -571,8 +568,6 @@ get_dataset_info <- function() {
                              names(ds),
                              value = TRUE)
 
-        print(paste0('annots_field=', annots_field))
-
         covar_info <- ds[[annots_field]] %>% janitor::clean_names()
 
         ds_ensembl_version <- ensembl_version
@@ -600,8 +595,6 @@ get_dataset_info <- function() {
         if (length(display_name_field) != 0) {
             display_name <- ds[[display_name_field]]
         }
-
-        print('making klist')
 
         temp <- list(
             id              = d,
