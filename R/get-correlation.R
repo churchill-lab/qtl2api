@@ -161,9 +161,12 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
     correlations <- correlations %>%
         dplyr::filter(!is.na(.data$cor))
 
-    list(correlations    = correlations,
-         imputed_samples = samples_imputed,
-         covar_formula   = covar_formula)
+    ret <- list(
+        correlations    = correlations,
+        imputed_samples = samples_imputed
+    )
+
+    attr(ret, 'covar_formula') <- covar_information$covar_formula
 }
 
 
