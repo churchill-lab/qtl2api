@@ -599,7 +599,7 @@ get_dataset_info <- function() {
         temp <- list(
             id              = d,
             annotations     = annotations,
-            display_name    = display.name,
+            display_name    = display_name,
             datatype        = ds$datatype,
             covar_info      = covar_info,
             ensembl_version = ds_ensembl_version

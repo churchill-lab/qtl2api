@@ -2,13 +2,13 @@
 % Please edit documentation in R/validate.R
 \name{validate_covar_info}
 \alias{validate_covar_info}
-\title{Validate the covar.info in the dataset to make sure qtl2api can use it.}
+\title{Validate the covar_info in the dataset to make sure qtl2api can use it.}
 \usage{
-validate_covar_info(dataset_id)
+validate_covar_info(dataset)
 }
 \arguments{
-\item{dataset_id}{the dataset_id as a string identifier}
+\item{dataset}{the dataset_id as a string identifier}
 }
 \description{
-Validate the covar.info in the dataset to make sure qtl2api can use it.
+Validate the covar_info in the dataset to make sure qtl2api can use it.
 }

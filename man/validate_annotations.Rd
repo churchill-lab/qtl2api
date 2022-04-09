@@ -4,10 +4,10 @@
 \alias{validate_annotations}
 \title{Validate the annotations in the dataset to make sure qtl2api can use it.}
 \usage{
-validate_annotations(dataset_id)
+validate_annotations(dataset)
 }
 \arguments{
-\item{dataset_id}{the dataset_id as a string identifier}
+\item{dataset}{the dataset as a string identifier}
 }
 \description{
 Validate the annotations in the dataset to make sure qtl2api can use it.

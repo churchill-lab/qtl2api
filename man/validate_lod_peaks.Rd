@@ -4,10 +4,10 @@
 \alias{validate_lod_peaks}
 \title{Validate the lod.peaks to make sure qtl2api can use it.}
 \usage{
-validate_lod_peaks(dataset_id)
+validate_lod_peaks(dataset)
 }
 \arguments{
-\item{dataset_id}{the dataset_id as a string identifier}
+\item{dataset}{the dataset as a string identifier}
 }
 \description{
 Validate the lod.peaks to make sure qtl2api can use it.

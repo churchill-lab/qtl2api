@@ -2,13 +2,13 @@
 % Please edit documentation in R/validate.R
 \name{validate_samples}
 \alias{validate_samples}
-\title{Validate the annot.samples in the dataset to make sure qtl2api can use it.}
+\title{Validate the annot_samples in the dataset to make sure qtl2api can use it.}
 \usage{
-validate_samples(dataset_id)
+validate_samples(dataset)
 }
 \arguments{
-\item{dataset_id}{the dataset_id as a string identifier}
+\item{dataset}{the dataset as a string identifier}
 }
 \description{
-Validate the annot.samples in the dataset to make sure qtl2api can use it.
+Validate the annot_samples in the dataset to make sure qtl2api can use it.
 }

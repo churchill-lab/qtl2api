@@ -850,7 +850,7 @@ validate_lod_peaks <- function(dataset) {
 
 #' Validate the data in the dataset to make sure qtl2api can use it.
 #'
-#' @param dataset_id the dataset_id as a string identifier
+#' @param dataset the dataset_id as a string identifier
 #'
 #' @export
 validate_data <- function(dataset) {

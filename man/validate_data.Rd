@@ -4,10 +4,10 @@
 \alias{validate_data}
 \title{Validate the data in the dataset to make sure qtl2api can use it.}
 \usage{
-validate_data(dataset_id)
+validate_data(dataset)
 }
 \arguments{
-\item{dataset_id}{the dataset_id as a string identifier}
+\item{dataset}{the dataset_id as a string identifier}
 }
 \description{
 Validate the data in the dataset to make sure qtl2api can use it.

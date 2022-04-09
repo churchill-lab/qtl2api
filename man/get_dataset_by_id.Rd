@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{get_dataset_by_id}
 \alias{get_dataset_by_id}
-\title{Get the dataset by id (a string).  annot.samples can be used at the top level
+\title{Get the dataset by id (a string).  annot_samples can be used at the top level
 to share sample annotations among other datasets.}
 \usage{
 get_dataset_by_id(dataset_id)
@@ -14,6 +14,6 @@ get_dataset_by_id(dataset_id)
 the dataset element
 }
 \description{
-Get the dataset by id (a string).  annot.samples can be used at the top level
+Get the dataset by id (a string).  annot_samples can be used at the top level
 to share sample annotations among other datasets.
 }

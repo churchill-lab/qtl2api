@@ -4,10 +4,10 @@
 \alias{validate_dataset_extensive}
 \title{Perform scans on random data in the dataset designated by dataset_id.}
 \usage{
-validate_dataset_extensive(dataset_id)
+validate_dataset_extensive(dataset)
 }
 \arguments{
-\item{dataset_id}{the dataset as a string identifier}
+\item{dataset}{the dataset as a string identifier}
 }
 \description{
 Perform scans on random data in the dataset designated by dataset_id.
