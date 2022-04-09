@@ -9,8 +9,11 @@
 #' @param intcovar the interactive covariate
 #' @param cores number of cores to use (0=ALL)
 #'
-#' @return a `data.frame` with the following columns: snp, chr, pos, alleles,
-#'   sdp, ensembl_gene, csq, index, interval, on_map, lod.
+#' @return a named `list` with 2 values.
+#'   data - which is a `data.frame` with the following columns:
+#'       snp, chr, pos, alleles, sdp, ensembl_gene, csq, index, interval,
+#'       on_map, lod
+#'  covar_formula - the covar formula string
 #'
 #' @export
 get_snp_assoc_mapping <- function(dataset, id, chrom, location,
@@ -86,8 +89,10 @@ get_snp_assoc_mapping <- function(dataset, id, chrom, location,
     colnames(window_snps)[c(1, 3)] <- c("snp", "pos")
     window_snps <- qtl2::index_snps(map = map, window_snps)
 
-    # get the covar data
-    covar <- get_covar_matrix(ds, id)
+    # get the covar information
+    covar_information <- get_covar_matrix(ds, id)
+    covar_matrix <- covar_information$covar_matrix
+    covar_formula <- covar_information$covar_formula
 
     # convert allele probs to SNP probs
     snp_prob <- qtl2::genoprob_to_snpprob(genoprobs, window_snps)
@@ -99,7 +104,7 @@ get_snp_assoc_mapping <- function(dataset, id, chrom, location,
         pheno     = ds$data[, id, drop = FALSE],
         kinship   = K[[chrom]],
         genoprobs = snp_prob,
-        addcovar  = covar,
+        addcovar  = covar_matrix,
         cores     = num_cores
     )
 
@@ -132,7 +137,7 @@ get_snp_assoc_mapping <- function(dataset, id, chrom, location,
         # grabbing all the columns from covar (covar.matrix) that
         # match, i.e., "batch" will match "batch2", "BATCH3", etc
         interactive_covariate <-
-            covar[, which(grepl(intcovar, colnames(covar), ignore.case = T))]
+            covar_matrix[, which(grepl(intcovar, colnames(covar_matrix), ignore.case = T))]
 
         # perform the scan using QTL2,
         # - addcovar should always be ALL covars
@@ -141,7 +146,7 @@ get_snp_assoc_mapping <- function(dataset, id, chrom, location,
             pheno     = ds$data[, id, drop = FALSE],
             kinship   = K[[chrom]],
             genoprobs = snp_prob,
-            addcovar  = covar,
+            addcovar  = covar_matrix,
             intcovar  = interactive_covariate,
             cores     = num_cores
         )
@@ -152,7 +157,10 @@ get_snp_assoc_mapping <- function(dataset, id, chrom, location,
         ret$lod_intcovar <- tmp$lod[, 1]
     }
 
-    ret
+    list(
+        data          = ret,
+        covar_formula = covar_formula
+    )
 }
 
 

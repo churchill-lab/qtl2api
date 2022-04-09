@@ -12,7 +12,7 @@ get_covar_matrix(dataset, id = NULL)
 \item{id}{the phenotype identifier, for phenotype datasets}
 }
 \value{
-the covar matrix
+a named list list with 2 elements, covar_matrix and covar_formula
 }
 \description{
 Create the covar.matrix element.

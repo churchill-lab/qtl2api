@@ -1,11 +1,12 @@
-#' Perform mediation
+#' Perform mediation.
 #'
 #' @param dataset the dataset object
 #' @param id the unique id in the dataset
 #' @param marker_id marker identifier
 #' @param dataset_mediate the dataset object to mediate against
 #'
-#' @return A data.frame with the following columns depending on datatype:
+#' @return A named `list` with the covar_formula and data that is a tibble with
+#'         the following columns depending on datatype:
 #'         mRNA = gene_id, symbol, chr, pos, LOD
 #'         protein = protein_id, gene_id, symbol, chr, pos, LOD
 #'         phenotype = NONE
@@ -79,30 +80,35 @@ get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
         stop(sprintf("invalid dataset datatype: '%s'", ds_mediate$datatype))
     }
 
-    # get the covar data
-    covar <- get_covar_matrix(ds_mediate)
+    # get the covar information
+    covar_information <- get_covar_matrix(ds_mediate)
+    covar_matrix <- covar_information$covar_matrix
+    covar_formula <- covar_information$covar_formula
 
     chrom <- as.character(markers[mrkx, "chr"])
 
     filtered_genoprobs <-
         genoprobs[[chrom]][rownames(ds_mediate$data), , marker_id]
 
-    ret <- mediation.scan(
-        target = ds$data[, id, drop = FALSE],
-        mediator = ds_mediate$data,
+    data <- mediation.scan(
+        target     = ds$data[, id, drop = FALSE],
+        mediator   = ds_mediate$data,
         annotation = annot,
-        covar = covar,
-        qtl.geno = filtered_genoprobs,
-        verbose = FALSE
+        covar      = covar_matrix,
+        qtl.geno   = filtered_genoprobs,
+        verbose    = FALSE
     )
 
-    ret$middle_point <- as.integer(ret$middle_point)
+    data$middle_point <- as.integer(data$middle_point)
 
-    if (all(ret$middle_point < 1000)) {
-        ret$middle_point <- as.integer(ret$middle_point * 1000000)
+    if (all(data$middle_point < 1000)) {
+        data$middle_point <- as.integer(data$middle_point * 1000000)
     }
 
-    ret
+    list(
+        data          = data,
+        covar_formula = covar_formula
+    )
 }
 
 #' Mediation Scan

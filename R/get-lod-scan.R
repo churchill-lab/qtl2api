@@ -15,6 +15,7 @@
 #' @return a `list` with the following elements:
 #'   lod_peaks - list of peaks
 #'   lod_scores - tibble with the following columns: id, chr, pos, lod
+#'   covar_formula - string representing the covar formula used
 #'   scan1 - `qtl2::scan1` output
 #'
 #' @importFrom rlang .data
@@ -34,14 +35,15 @@ get_lod_scan <- function(dataset, id, intcovar = NULL, cores = 0,
     # make sure num_cores is appropriate
     num_cores <- nvl_int(cores, 0)
 
-    # get the covar data
-    covar <- get_covar_matrix(ds, id)
+    # get the covar information
+    covar_information <- get_covar_matrix(ds, id)
+    covar_matrix <- covar_information$covar_matrix
+    covar_formula <- covar_information$covar_formula
 
     # set the interactive.covariate, to be used in scan1
-    # as scan1(intcovar=interactive_covariate)
-    if (is.null(intcovar)) {
-        interactive_covariate <- NULL
-    } else {
+    interactive_covariate <- NULL
+
+    if (!is.null(intcovar)) {
         if (!any(intcovar == ds$covar_info$sample_column)) {
             stop(sprintf("intcovar '%s' not found in covar_info", intcovar))
         }
@@ -49,7 +51,7 @@ get_lod_scan <- function(dataset, id, intcovar = NULL, cores = 0,
         # grabbing all the columns from covar (covar.matrix) that
         # match, i.e., "batch" will match "batch2", "BATCH3", etc
         interactive_covariate <-
-            covar[, which(grepl(intcovar, colnames(covar), ignore.case = T))]
+            covar_matrix[, which(grepl(intcovar, colnames(covar_matrix), ignore.case = T))]
     }
 
     # perform the scan using QTL2,
@@ -59,7 +61,7 @@ get_lod_scan <- function(dataset, id, intcovar = NULL, cores = 0,
         genoprobs = genoprobs,
         kinship   = K,
         pheno     = ds$data[, id, drop = FALSE],
-        addcovar  = covar,
+        addcovar  = covar_matrix,
         intcovar  = interactive_covariate,
         cores     = num_cores,
         reml      = TRUE
@@ -125,8 +127,9 @@ get_lod_scan <- function(dataset, id, intcovar = NULL, cores = 0,
     }
 
     ret <- list(
-        lod_peaks  = lod_peaks,
-        lod_scores = lod_scores_mod
+        lod_peaks     = lod_peaks,
+        lod_scores    = lod_scores_mod,
+        covar_formula = covar_formula
     )
 
     ret$scan1 <- if (scan1_output) lod_scores else NULL

@@ -16,7 +16,8 @@ get_mediation(dataset, id, marker_id, dataset_mediate = NULL)
 \item{dataset_mediate}{the dataset object to mediate against}
 }
 \value{
-A data.frame with the following columns depending on datatype:
+A named list with the covar_formula and data that is a tibble with
+        the following columns depending on datatype:
         mRNA = gene_id, symbol, chr, pos, LOD
         protein = protein_id, gene_id, symbol, chr, pos, LOD
         phenotype = NONE

@@ -31,7 +31,7 @@ get_founder_coefficients(
 }
 \value{
 a named `list` with each element being a tibble with the following
-        columns: id, chr, pos, and A-H
+        columns: id, chr, pos, and A-H, also the covar_formula used
 }
 \description{
 Get the founder coefficients

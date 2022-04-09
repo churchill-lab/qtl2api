@@ -40,18 +40,22 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
     data <- ds$data[samples, ]
     data_correlate <- ds_correlate$data[samples, ]
 
-    # get the covar data
-    covar <- get_covar_matrix(ds, id)
-
     # list of sample names that have been imputed
     samples_imputed <- NULL
     samples_not_imputed <- NULL
 
+    covar_formula <- NULL
+
     if (is.null(intcovar)) {
         pcor <- stats::cor(data[, id], data_correlate, use = "pair")
     } else {
+        # get the covar information
+        covar_information <- get_covar_matrix(ds, id)
+        covar_matrix <- covar_information$covar_matrix
+        covar_formula <- covar_information$covar_formula
+
         interactive_covariate <-
-            colnames(covar)[grepl(intcovar, colnames(covar), ignore.case = T)]
+            colnames(covar_matrix)[grepl(intcovar, colnames(covar_matrix), ignore.case = T)]
 
         # determine which samples are imputed
         samples_imputed <- unique(names(which(is.na(data[, id]), arr.ind = TRUE)))
@@ -63,7 +67,7 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
         id_residual_matrix <-
             calc_residual_matrix(
                 variable_matrix    = data,
-                adjust_matrix      = covar,
+                adjust_matrix      = covar_matrix,
                 variables_interest = c(id),
                 variables_compare  = interactive_covariate,
                 use_qr             = use_qr
@@ -80,7 +84,7 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
         residual_matrix <-
             calc_residual_matrix(
                 variable_matrix    = data_correlate,
-                adjust_matrix      = covar,
+                adjust_matrix      = covar_matrix,
                 variables_interest = colnames(data_correlate),
                 variables_compare  = interactive_covariate,
                 use_qr             = use_qr
@@ -158,7 +162,8 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
         dplyr::filter(!is.na(.data$cor))
 
     list(correlations    = correlations,
-         imputed_samples = samples_imputed)
+         imputed_samples = samples_imputed,
+         covar_formula   = covar_formula)
 }
 
 
@@ -206,19 +211,23 @@ get_correlation_plot_data <- function(dataset, id,
         stop(sprintf("Cannot find id '%s' in dataset", id_correlate))
     }
 
-    # get the covar matrix
-    covar <- get_covar_matrix(ds, id)
-
     # list of sample names that have been imputed
     samples_imputed <- NULL
     samples_not_imputed <- NULL
+
+    covar_formula <- NULL
 
     if (is.null(intcovar)) {
         x <- data[, id]
         y <- data_correlate[, id_correlate]
     } else {
+        # get the covar matrix
+        covar_information <- get_covar_matrix(ds, id)
+        covar_matrix <- covar_information$covar_matrix
+        covar_formula <- covar_information$covar_formula
+
         interactive_covariate <-
-            colnames(covar)[grepl(intcovar, colnames(covar), ignore.case = T)]
+            colnames(covar_matrix)[grepl(intcovar, colnames(covar_matrix), ignore.case = T)]
 
         # determine which samples are imputed
         samples_imputed <- unique(names(which(is.na(data[, id]), arr.ind = TRUE)))
@@ -230,7 +239,7 @@ get_correlation_plot_data <- function(dataset, id,
         data <-
             calc_residual_matrix(
                 variable_matrix    = data,
-                adjust_matrix      = covar,
+                adjust_matrix      = covar_matrix,
                 variables_interest = c(id),
                 variables_compare  = interactive_covariate,
                 use_qr             = use_qr
@@ -247,7 +256,7 @@ get_correlation_plot_data <- function(dataset, id,
         data_correlate <-
             calc_residual_matrix(
                 variable_matrix    = data_correlate,
-                adjust_matrix      = covar,
+                adjust_matrix      = covar_matrix,
                 variables_interest = colnames(data_correlate),
                 variables_compare  = interactive_covariate,
                 use_qr             = use_qr
@@ -296,11 +305,10 @@ get_correlation_plot_data <- function(dataset, id,
         dplyr::filter(!is.na(.data$x)) %>%  # don't return the NAs
         dplyr::filter(!is.na(.data$y))      # don't return the NAs
 
-
-    # TODO: should we add id to to the dataset object (fix_environemnt)
     list(
-        datatypes = datatypes,
-        data      = correlation_plot_data
+        datatypes     = datatypes,
+        data          = correlation_plot_data,
+        covar_formula = covar_formula
     )
 }
 

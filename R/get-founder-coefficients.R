@@ -9,7 +9,7 @@
 #' @param cores number of cores to use (0=ALL)
 #'
 #' @return a named `list` with each element being a tibble with the following
-#'         columns: id, chr, pos, and A-H
+#'         columns: id, chr, pos, and A-H, also the covar_formula used
 #'
 #' @export
 get_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
@@ -30,14 +30,16 @@ get_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
     # make sure ncores is appropriate
     num_cores <- nvl_int(cores, 0)
 
-    # get the covar data
-    covar <- get_covar_matrix(ds, id)
+    # get the covar information
+    covar_information <- get_covar_matrix(ds, id)
+    covar_matrix <- covar_information$covar_matrix
+    covar_formula <- covar_information$covar_formula
 
     # this is a little extra work because we are trying to be nice for users
     # who separate with '.' or '_'
     markers_cleaned <- markers %>% janitor::clean_names()
 
-    ret <- list()
+    ret <- list(covar_formula = covar_formula)
 
     if (gtools::invalid(intcovar)) {
         if (blup) {
@@ -45,7 +47,7 @@ get_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
                 genoprobs = genoprobs[, chrom],
                 pheno     = ds$data[, id, drop = FALSE],
                 kinship   = K[[chrom]],
-                addcovar  = covar,
+                addcovar  = covar_matrix,
                 cores     = num_cores
             )
         } else {
@@ -53,7 +55,7 @@ get_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
                 genoprobs = genoprobs[, chrom],
                 pheno     = ds$data[, id, drop = FALSE],
                 kinship   = K[[chrom]],
-                addcovar  = covar
+                addcovar  = covar_matrix
             )
         }
 
@@ -121,14 +123,14 @@ get_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
             sample_names <- c(sample_names[[1]])
 
             # subset to the intersecting data
-            sample_names <- intersect(sample_names, rownames(covar))
+            sample_names <- intersect(sample_names, rownames(covar_matrix))
             sample_names <- intersect(sample_names, rownames(K[[chrom]]))
 
             # exclude covar columns that contain it's name
             covar_subset <-
-                covar[
+                covar_matrix[
                     sample_names,
-                    -which(grepl(intcovar, colnames(covar), ignore.case = T))
+                    -which(grepl(intcovar, colnames(covar_matrix), ignore.case = T))
                 ]
 
             if (blup) {

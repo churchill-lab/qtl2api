@@ -4,7 +4,6 @@
 #
 # #############################################################################
 
-
 `%not in%` <- function(x, table) match(x, table, nomatch = 0L) == 0L
 
 
@@ -447,7 +446,7 @@ get_random_id <- function(dataset) {
 #' @param dataset the dataset object (synchronized)
 #' @param id the phenotype identifier, for phenotype datasets
 #'
-#' @return the covar matrix
+#' @return a named list list with 2 elements, covar_matrix and covar_formula
 #'
 #' @importFrom rlang .data
 get_covar_matrix <- function(dataset, id = NULL) {
@@ -466,10 +465,10 @@ get_covar_matrix <- function(dataset, id = NULL) {
         }
 
         # create a string (model formula) from the use.covar column
-        formula_str <- paste0("~", gsub(":", "+", pheno$use_covar))
+        covar_formula <- paste0("~", gsub(":", "+", pheno$use_covar))
     } else {
-        formula_str <- paste0(ds$covar_info$sample_column, collapse="+")
-        formula_str <- paste0("~", formula_str)
+        covar_formula <- paste0(ds$covar_info$sample_column, collapse="+")
+        covar_formula <- paste0("~", covar_formula)
     }
 
     # get the sample id field
@@ -482,30 +481,33 @@ get_covar_matrix <- function(dataset, id = NULL) {
 
     # create the model matrix, we use na.action = stats::na.pass so we can set
     # the rownames below.  We than use na.omit to filter down the data.
-    covar <- stats::model.matrix.lm(
-        stats::as.formula(formula_str),
+    covar_matrix <- stats::model.matrix.lm(
+        stats::as.formula(covar_formula),
         data = samples,
         na.action = stats::na.pass
     )
 
     # drop the Intercept column
-    covar <- covar[, -1, drop = FALSE]
+    covar_matrix <- covar_matrix[, -1, drop = FALSE]
 
     # drop the covar column if it has all identical values
-    covar <- covar %>%
+    covar_matrix <- covar_matrix %>%
         tibble::as_tibble() %>%
         dplyr::select_if(function(col) length(unique(col))>1)
 
-    covar <- as.matrix(covar)
+    # convert to a matrix and set the rownames so scan1 will work
+    covar_matrix <- as.matrix(covar_matrix)
 
-    # set the rownames so scan1 will work
-    rownames(covar) <-
+    rownames(covar_matrix) <-
         (samples %>% dplyr::select(dplyr::matches(sample_id_field)))[[1]]
 
     # do not need NA values
-    covar <- stats::na.omit(covar)
+    covar_matrix <- stats::na.omit(covar_matrix)
 
-    covar
+    list(
+        covar_matrix   = covar_matrix,
+        covar_formula  = covar_formula
+    )
 }
 
 

@@ -40,6 +40,7 @@ return}
 a `list` with the following elements:
   lod_peaks - list of peaks
   lod_scores - tibble with the following columns: id, chr, pos, lod
+  covar_formula - string representing the covar formula used
   scan1 - `qtl2::scan1` output
 }
 \description{
