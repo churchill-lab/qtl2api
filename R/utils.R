@@ -572,19 +572,6 @@ get_dataset_info <- function() {
 
         covar_info <- ds[[annots_field]] %>% janitor::clean_names()
 
-        ds_ensembl_version <- ensembl_version
-
-        temp_ensembl <- grep(
-            "^ensembl(\\.|_){1}version$",
-            names(ds),
-            ignore.case = TRUE,
-            value = TRUE
-        )
-
-        if (!gtools::invalid(temp_ensembl)) {
-            ds_ensembl_version <- ds[[temp_ensembl]]
-        }
-
         display_name_field <- grep(
             "^display(\\.|_){1}name$",
             names(ds),
@@ -601,10 +588,12 @@ get_dataset_info <- function() {
         temp <- list(
             id              = d,
             annotations     = annotations,
-            display_name    = display_name,
-            datatype        = ds$datatype,
             covar_info      = covar_info,
-            ensembl_version = ds_ensembl_version
+            datatype        = ds$datatype,
+            display_name    = display_name,
+            ensembl_version = ds$ensembl_version,
+            samples         = ds$annot_samples,
+            sample_id_field = get_sample_id_field(ds)
         )
 
         ret <- c(ret, list(temp))

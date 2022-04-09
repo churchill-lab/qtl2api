@@ -86,6 +86,8 @@ get_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
             ret[["additive"]]$pos <- as.integer(ret[["additive"]]$pos * 1000000)
         }
 
+        attr(ret[["additive"]], 'samples') <-
+            intersect(rownames(ds$data), rownames(covar_matrix))
     } else {
         if (intcovar %not in% ds$covar_info$sample_column) {
             stop(sprintf("intcovar '%s' not found in covar_info", intcovar))
@@ -175,6 +177,8 @@ get_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
             if (all(ret[[toString(u)]]$pos < 1000)) {
                 ret[[toString(u)]]$pos <- as.integer(ret[[toString(u)]]$pos * 1000000)
             }
+
+            attr(ret[[toString(u)]], 'samples') <- sample_names
         }
     }
 

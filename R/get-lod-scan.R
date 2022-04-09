@@ -255,7 +255,8 @@ get_lod_scan_by_sample <- function(dataset, id, chrom, intcovar, cores = 0) {
             temp$pos <- temp$pos * 1000000
         }
 
-        attr(ret, 'covar_formula') <- covar_information$covar_formula
+        attr(temp, 'covar_formula') <- covar_information$covar_formula
+        attr(temp, 'samples') <- sample_names
 
         ret[[toString(u)]] <- temp
     }

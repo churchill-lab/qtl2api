@@ -43,7 +43,6 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
     # list of sample names that have been imputed
     samples_imputed <- NULL
     samples_not_imputed <- NULL
-
     covar_formula <- NULL
 
     if (is.null(intcovar)) {
@@ -161,12 +160,10 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
     correlations <- correlations %>%
         dplyr::filter(!is.na(.data$cor))
 
-    ret <- list(
-        correlations    = correlations,
-        imputed_samples = samples_imputed
-    )
+    attr(correlations, 'imputed_samples') <- samples_imputed
+    attr(correlations, 'covar_formula') <- covar_formula
 
-    attr(ret, 'covar_formula') <- covar_information$covar_formula
+    correlations
 }
 
 
@@ -217,14 +214,13 @@ get_correlation_plot_data <- function(dataset, id,
     # list of sample names that have been imputed
     samples_imputed <- NULL
     samples_not_imputed <- NULL
-
     covar_formula <- NULL
 
     if (is.null(intcovar)) {
         x <- data[, id]
         y <- data_correlate[, id_correlate]
     } else {
-        # get the covar matrix
+        # get the covar information
         covar_information <- get_covar_matrix(ds, id)
         covar_matrix <- covar_information$covar_matrix
         covar_formula <- covar_information$covar_formula
@@ -310,10 +306,10 @@ get_correlation_plot_data <- function(dataset, id,
 
     ret <- list(
         datatypes     = datatypes,
-        data          = correlation_plot_data,
+        data          = correlation_plot_data
     )
 
-    attr(ret, 'covar_formula') <- covar_information$covar_formula
+    attr(ret, 'covar_formula') <- covar_formula
 
     ret
 }
