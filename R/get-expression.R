@@ -3,7 +3,9 @@
 #' @param dataset the dataset object
 #' @param id the unique id in the dataset
 #'
-#' @return a `list` with elements of tibble and list of the datatypes.
+#' @return a named `list` with 2 elements.
+#' data - a `tibble` with samples and data
+#' datatypes - a `list` of all the types and the unique values
 #'
 #' @export
 get_expression <- function(dataset, id) {
@@ -53,7 +55,7 @@ get_expression <- function(dataset, id) {
         )
 
     list(
-        data = output,
+        data      = output,
         datatypes = datatypes
     )
 }

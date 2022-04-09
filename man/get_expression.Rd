@@ -12,7 +12,9 @@ get_expression(dataset, id)
 \item{id}{the unique id in the dataset}
 }
 \value{
-a `list` with elements of tibble and list of the datatypes.
+a named `list` with 2 elements.
+data - a `tibble` with samples and data
+datatypes - a `list` of all the types and the unique values
 }
 \description{
 Get the expression data.

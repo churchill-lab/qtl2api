@@ -305,11 +305,14 @@ get_correlation_plot_data <- function(dataset, id,
         dplyr::filter(!is.na(.data$x)) %>%  # don't return the NAs
         dplyr::filter(!is.na(.data$y))      # don't return the NAs
 
-    list(
+    ret <- list(
         datatypes     = datatypes,
         data          = correlation_plot_data,
-        covar_formula = covar_formula
     )
+
+    attr(ret, 'covar_formula') <- covar_information$covar_formula
+
+    ret
 }
 
 #' Calculate the residual matrix

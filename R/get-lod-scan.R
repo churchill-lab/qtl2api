@@ -15,7 +15,6 @@
 #' @return a `list` with the following elements:
 #'   lod_peaks - list of peaks
 #'   lod_scores - tibble with the following columns: id, chr, pos, lod
-#'   covar_formula - string representing the covar formula used
 #'   scan1 - `qtl2::scan1` output
 #'
 #' @importFrom rlang .data
@@ -128,11 +127,12 @@ get_lod_scan <- function(dataset, id, intcovar = NULL, cores = 0,
 
     ret <- list(
         lod_peaks     = lod_peaks,
-        lod_scores    = lod_scores_mod,
-        covar_formula = covar_formula
+        lod_scores    = lod_scores_mod
     )
 
     ret$scan1 <- if (scan1_output) lod_scores else NULL
+
+    attr(ret, 'covar_formula') <- covar_formula
 
     ret
 }
@@ -208,25 +208,26 @@ get_lod_scan_by_sample <- function(dataset, id, chrom, intcovar, cores = 0) {
         sample_names <- c(sample_names[[1]])
 
         # get the covar data
-        covar <- get_covar_matrix(ds, id)
+        covar_information <- get_covar_matrix(ds, id)
+        covar_matrix <- covar_information$covar_matrix
 
         # subset to the intersecting data
-        sample_names <- intersect(sample_names, rownames(covar))
+        sample_names <- intersect(sample_names, rownames(covar_matrix))
         sample_names <- intersect(sample_names, rownames(K[[chrom]]))
 
         # filter by the samples we need
-        covar <- covar[sample_names, , drop = FALSE]
+        covar_matrix <- covar_matrix[sample_names, , drop = FALSE]
 
         # exclude covar columns that contain it's name
         # since this is a matrix we cannot use %>% select
-        covar <-
-            covar[, -which(grepl(intcovar, colnames(covar), ignore.case = T))]
+        covar_matrix <-
+            covar_matrix[, -which(grepl(intcovar, colnames(covar_matrix), ignore.case = T))]
 
         temp <- qtl2::scan1(
             genoprobs = genoprobs[sample_names, chrom],
             kinship   = K[[chrom]][sample_names, sample_names],
             pheno     = ds$data[sample_names, id, drop = FALSE],
-            addcovar  = covar,
+            addcovar  = covar_matrix,
             cores     = num_cores,
             reml      = TRUE
         )
@@ -253,6 +254,8 @@ get_lod_scan_by_sample <- function(dataset, id, chrom, intcovar, cores = 0) {
         if (all(temp$pos < 1000)) {
             temp$pos <- temp$pos * 1000000
         }
+
+        attr(ret, 'covar_formula') <- covar_information$covar_formula
 
         ret[[toString(u)]] <- temp
     }

@@ -33,11 +33,9 @@ get_snp_assoc_mapping(
 \item{cores}{number of cores to use (0=ALL)}
 }
 \value{
-a named `list` with 2 values.
-  data - which is a `data.frame` with the following columns:
+a `tibble` with the following columns:
       snp, chr, pos, alleles, sdp, ensembl_gene, csq, index, interval,
       on_map, lod
- covar_formula - the covar formula string
 }
 \description{
 Get the SNP association mapping from foundersnps database.

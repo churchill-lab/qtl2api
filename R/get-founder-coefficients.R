@@ -9,7 +9,7 @@
 #' @param cores number of cores to use (0=ALL)
 #'
 #' @return a named `list` with each element being a tibble with the following
-#'         columns: id, chr, pos, and A-H, also the covar_formula used
+#'         columns: id, chr, pos, and A-H
 #'
 #' @export
 get_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
@@ -33,13 +33,13 @@ get_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
     # get the covar information
     covar_information <- get_covar_matrix(ds, id)
     covar_matrix <- covar_information$covar_matrix
-    covar_formula <- covar_information$covar_formula
 
     # this is a little extra work because we are trying to be nice for users
     # who separate with '.' or '_'
     markers_cleaned <- markers %>% janitor::clean_names()
 
-    ret <- list(covar_formula = covar_formula)
+    ret <- list()
+    attr(ret, 'covar_formula') <- covar_information$covar_formula
 
     if (gtools::invalid(intcovar)) {
         if (blup) {

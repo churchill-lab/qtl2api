@@ -5,8 +5,7 @@
 #' @param marker_id marker identifier
 #' @param dataset_mediate the dataset object to mediate against
 #'
-#' @return A named `list` with the covar_formula and data that is a tibble with
-#'         the following columns depending on datatype:
+#' @return a `tibble` with the following columns depending on datatype:
 #'         mRNA = gene_id, symbol, chr, pos, LOD
 #'         protein = protein_id, gene_id, symbol, chr, pos, LOD
 #'         phenotype = NONE
@@ -82,8 +81,6 @@ get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
 
     # get the covar information
     covar_information <- get_covar_matrix(ds_mediate)
-    covar_matrix <- covar_information$covar_matrix
-    covar_formula <- covar_information$covar_formula
 
     chrom <- as.character(markers[mrkx, "chr"])
 
@@ -94,7 +91,7 @@ get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
         target     = ds$data[, id, drop = FALSE],
         mediator   = ds_mediate$data,
         annotation = annot,
-        covar      = covar_matrix,
+        covar      = covar_information$covar_matrix,
         qtl.geno   = filtered_genoprobs,
         verbose    = FALSE
     )
@@ -105,10 +102,10 @@ get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
         data$middle_point <- as.integer(data$middle_point * 1000000)
     }
 
-    list(
-        data          = data,
-        covar_formula = covar_formula
-    )
+    attr(data, 'covar_formula') <- covar_information$covar_formula
+
+    data
+
 }
 
 #' Mediation Scan

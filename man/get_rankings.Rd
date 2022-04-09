@@ -16,7 +16,7 @@ get_rankings(dataset, chrom = NULL, min_value = 100, max_value = 1000)
 \item{max_value}{maximum score value (defaults to 1000).}
 }
 \value{
-A tibble with the following columns: id, ranking
+A `tibble` with the identifiers and rankings
 }
 \description{
 Calculate the rankings for which gene/protein should be shown.

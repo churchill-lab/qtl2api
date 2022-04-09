@@ -2,7 +2,7 @@
 % Please edit documentation in R/get-mediation.R
 \name{get_mediation}
 \alias{get_mediation}
-\title{Perform mediation}
+\title{Perform mediation.}
 \usage{
 get_mediation(dataset, id, marker_id, dataset_mediate = NULL)
 }
@@ -16,12 +16,11 @@ get_mediation(dataset, id, marker_id, dataset_mediate = NULL)
 \item{dataset_mediate}{the dataset object to mediate against}
 }
 \value{
-A named list with the covar_formula and data that is a tibble with
-        the following columns depending on datatype:
+a `tibble` with the following columns depending on datatype:
         mRNA = gene_id, symbol, chr, pos, LOD
         protein = protein_id, gene_id, symbol, chr, pos, LOD
         phenotype = NONE
 }
 \description{
-Perform mediation
+Perform mediation.
 }

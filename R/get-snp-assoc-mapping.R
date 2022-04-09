@@ -9,11 +9,9 @@
 #' @param intcovar the interactive covariate
 #' @param cores number of cores to use (0=ALL)
 #'
-#' @return a named `list` with 2 values.
-#'   data - which is a `data.frame` with the following columns:
+#' @return a `tibble` with the following columns:
 #'       snp, chr, pos, alleles, sdp, ensembl_gene, csq, index, interval,
 #'       on_map, lod
-#'  covar_formula - the covar formula string
 #'
 #' @export
 get_snp_assoc_mapping <- function(dataset, id, chrom, location,
@@ -92,7 +90,6 @@ get_snp_assoc_mapping <- function(dataset, id, chrom, location,
     # get the covar information
     covar_information <- get_covar_matrix(ds, id)
     covar_matrix <- covar_information$covar_matrix
-    covar_formula <- covar_information$covar_formula
 
     # convert allele probs to SNP probs
     snp_prob <- qtl2::genoprob_to_snpprob(genoprobs, window_snps)
@@ -124,6 +121,8 @@ get_snp_assoc_mapping <- function(dataset, id, chrom, location,
 
     ret$lod <- tmp$lod[, 1]
     ret$pos <- ret$pos * 1000000.0
+
+    attr(ret, 'covar_formula') <- covar_information$covar_formula
 
     # set the interactive_covariates, to be used in scan1
     # as scan1(intcovar=interactive.covariate)
@@ -157,10 +156,7 @@ get_snp_assoc_mapping <- function(dataset, id, chrom, location,
         ret$lod_intcovar <- tmp$lod[, 1]
     }
 
-    list(
-        data          = ret,
-        covar_formula = covar_formula
-    )
+    ret
 }
 
 

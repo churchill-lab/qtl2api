@@ -5,7 +5,7 @@
 #' @param min_value minimum score value (defaults to 100).
 #' @param max_value maximum score value (defaults to 1000).
 #'
-#' @return A tibble with the following columns: id, ranking
+#' @return A `tibble` with the identifiers and rankings
 #' @export
 get_rankings <- function(dataset, chrom = NULL,
                          min_value = 100, max_value = 1000) {
