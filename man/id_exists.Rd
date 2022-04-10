@@ -12,7 +12,7 @@ id_exists(id, ds = NULL)
 \item{ds}{a dataset object}
 }
 \value{
-`TRUE` if id contains data, `FALSE` otherwise
+\code{TRUE} if id contains data, \code{FALSE} otherwise
 }
 \description{
 Check if id exists and has data in dataset.

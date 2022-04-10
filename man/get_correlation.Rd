@@ -14,21 +14,24 @@ get_correlation(
 )
 }
 \arguments{
-\item{dataset}{the dataset object}
+\item{dataset}{The dataset object}
 
-\item{id}{the unique id in the dataset}
+\item{id}{The unique id in the dataset.}
 
-\item{dataset_correlate}{the dataset to correlate against, dataset if INVALID}
+\item{dataset_correlate}{The dataset to correlate against, dataset if INVALID
+or NULL.}
 
-\item{intcovar}{the interactive covariate}
+\item{intcovar}{The interactive covariate.}
 
-\item{use_qr}{qr decomposition}
+\item{use_qr}{\code{TRUE} to use qr decomposition.}
 
-\item{backfill_NA}{if we need to impute, should we backfill the NAs}
+\item{backfill_NA}{\code{TRUE} if we need to impute, we backfill the NAs.}
 }
 \value{
-a `tibble` with the correlation and annotations
+A \code{tibble} with the correlation and annotations.
 }
 \description{
-Get the correlation.
+Perform a correlation analysis on an \code{id} for a \code{dataset}.  By default, the
+correlation will be against the same dataset, but a different dataset can
+be specified with \code{dataset_correlate}.
 }

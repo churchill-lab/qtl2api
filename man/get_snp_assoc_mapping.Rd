@@ -16,26 +16,26 @@ get_snp_assoc_mapping(
 )
 }
 \arguments{
-\item{dataset}{the dataset object}
+\item{dataset}{The dataset object.}
 
-\item{id}{the unique id in the dataset}
+\item{id}{The unique id in the dataset.}
 
 \item{chrom}{The chromosome.}
 
-\item{location}{location on chromosome in base pairs}
+\item{location}{Location on chromosome in base pairs.}
 
-\item{db_file}{full path to the sqlite database file}
+\item{db_file}{Full path to the sqlite database file.}
 
-\item{window_size}{the size of the window to scan before and after location}
+\item{window_size}{The size of the window to scan before and after location.}
 
-\item{intcovar}{the interactive covariate}
+\item{intcovar}{The interactive covariate.}
 
-\item{cores}{number of cores to use (0=ALL)}
+\item{cores}{Number of cores to use (0 = ALL).}
 }
 \value{
-a `tibble` with the following columns:
-      snp, chr, pos, alleles, sdp, ensembl_gene, csq, index, interval,
-      on_map, lod
+a \code{tibble} with the following columns:
+snp, chr, pos, alleles, sdp, ensembl_gene, csq, index, interval,
+on_map, lod
 }
 \description{
 Get the SNP association mapping from foundersnps database.

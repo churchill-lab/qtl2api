@@ -2,7 +2,7 @@
 % Please edit documentation in R/get-correlation.R
 \name{calc_residual_matrix}
 \alias{calc_residual_matrix}
-\title{Calculate the residual matrix}
+\title{Calculate the residual matrix.}
 \usage{
 calc_residual_matrix(
   variable_matrix,
@@ -13,19 +13,19 @@ calc_residual_matrix(
 )
 }
 \arguments{
-\item{variable_matrix}{The data  matrix for first set.}
+\item{variable_matrix}{The data \code{matrix} for first set.}
 
-\item{adjust_matrix}{The data matrix for the second set.}
+\item{adjust_matrix}{The data \code{matrix} for the second set.}
 
-\item{variables_interest}{List of variables of interest.}
+\item{variables_interest}{\code{list} of variables of interest.}
 
-\item{variables_compare}{List of variables to compare.}
+\item{variables_compare}{\code{list} of variables to compare.}
 
-\item{use_qr}{qr decomposition}
+\item{use_qr}{\code{TRUE} to use qr decomposition.}
 }
 \value{
-residual matrix
+The residual \code{matrix}.
 }
 \description{
-Calculate the residual matrix
+Calculate the residual matrix.
 }

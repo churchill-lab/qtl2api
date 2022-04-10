@@ -2,7 +2,7 @@
 % Please edit documentation in R/get-mediation.R
 \name{mediation.scan}
 \alias{mediation.scan}
-\title{Mediation Scan}
+\title{Mediation Scan.}
 \usage{
 mediation.scan(
   target,

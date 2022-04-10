@@ -7,14 +7,16 @@
 get_expression(dataset, id)
 }
 \arguments{
-\item{dataset}{the dataset object}
+\item{dataset}{The dataset object.}
 
-\item{id}{the unique id in the dataset}
+\item{id}{The unique id in the dataset.}
 }
 \value{
-a named `list` with 2 elements.
-data - a `tibble` with samples and data
-datatypes - a `list` of all the types and the unique values
+a named \code{list} with 2 elements.
+\itemize{
+\item data - a \code{tibble} with samples and data
+\item datatypes - a \code{list} of all the types and the unique values
+}
 }
 \description{
 Get the expression data.

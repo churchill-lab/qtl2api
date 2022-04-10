@@ -1,21 +1,21 @@
-
 #' Perform a LOD scan.
 #'
-#' @param dataset the dataset object
-#' @param id the unique id in the dataset
-#' @param intcovar the interactive covariate
-#' @param cores number of cores to use (0=ALL)
-#' @param filter_threshold if set, qtl2::find_peaks is used
-#' @param filter_peak_drop if set, qtl2::find_peaks is used
-#' @param filter_thresholdX if set, qtl2::find_peaks is used
-#' @param filter_peak_dropX if set, qtl2::find_peaks is used
-#' @param scan1_output if `TRUE`, original `qtl2::scan1` data is included in
-#'     return
+#' @param dataset The dataset object.
+#' @param id The unique id in the dataset.
+#' @param intcovar The interactive covariate.
+#' @param cores Number of cores to use (0 = ALL).
+#' @param filter_threshold If set, qtl2::find_peaks is used.
+#' @param filter_peak_drop If set, qtl2::find_peaks is used.
+#' @param filter_thresholdX If set, qtl2::find_peaks is used.
+#' @param filter_peak_dropX If set, qtl2::find_peaks is used.
+#' @param scan1_output If `TRUE`, original `qtl2::scan1` data is included.
 #'
 #' @return a `list` with the following elements:
-#'   lod_peaks - list of peaks
-#'   lod_scores - tibble with the following columns: id, chr, pos, lod
-#'   scan1 - `qtl2::scan1` output
+#' \itemize{
+#'   \item lod_peaks - `tibble` of LOD peaks
+#'   \item lod_scores - `tibble` with the following columns: id, chr, pos, lod
+#'   \item scan1 - `qtl2::scan1` output
+#' }
 #'
 #' @importFrom rlang .data
 #' @export

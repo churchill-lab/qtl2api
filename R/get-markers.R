@@ -1,6 +1,6 @@
 #' Get the markers (more for API benefits).  Not for qtl2.
 #'
-#' @param chrom the chromosome to filter on
+#' @param chrom The chromosome to filter on.
 #'
 #' @return A tibble with the following columns: marker_id, chr, bp
 #' @export

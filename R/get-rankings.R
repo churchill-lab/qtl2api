@@ -1,11 +1,12 @@
 #' Calculate the rankings for which gene/protein should be shown.
 #'
-#' @param dataset the dataset object
-#' @param chrom the chromosome to filter on
-#' @param min_value minimum score value (defaults to 100).
-#' @param max_value maximum score value (defaults to 1000).
+#' @param dataset The dataset object.
+#' @param chrom The chromosome to filter on.
+#' @param min_value Minimum score value (defaults to 100).
+#' @param max_value Maximum score value (defaults to 1000).
 #'
-#' @return A `tibble` with the identifiers and rankings
+#' @return A `tibble` with the identifiers and rankings.
+#'
 #' @export
 get_rankings <- function(dataset, chrom = NULL,
                          min_value = 100, max_value = 1000) {

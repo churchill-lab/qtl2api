@@ -7,19 +7,22 @@
 get_mediation(dataset, id, marker_id, dataset_mediate = NULL)
 }
 \arguments{
-\item{dataset}{the dataset object}
+\item{dataset}{The dataset object.}
 
-\item{id}{the unique id in the dataset}
+\item{id}{The unique id in the dataset.}
 
-\item{marker_id}{marker identifier}
+\item{marker_id}{The unique marker identifier.}
 
-\item{dataset_mediate}{the dataset object to mediate against}
+\item{dataset_mediate}{The dataset object to mediate against (defaults to
+dataset)}
 }
 \value{
-a `tibble` with the following columns depending on datatype:
-        mRNA = gene_id, symbol, chr, pos, LOD
-        protein = protein_id, gene_id, symbol, chr, pos, LOD
-        phenotype = NONE
+A \code{tibble} with the following columns depending on datatype:
+\itemize{
+\item mRNA - gene_id, symbol, chr, pos, LOD
+\item protein = protein_id, gene_id, symbol, chr, pos, LOD
+\item phenotype = NONE
+}
 }
 \description{
 Perform mediation.

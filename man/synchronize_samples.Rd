@@ -16,7 +16,7 @@ synchronize_samples(pheno, probs, expr, covar = NULL)
 \item{covar}{a numeric matrix containing the mapping covariates}
 }
 \value{
-list with four elements: `pheno`, `probs`, `expr` and `covar`. The
+list with four elements: \code{pheno}, \code{probs}, \code{expr} and \code{covar}. The
 Sample IDs will all be in the same order.
 }
 \description{

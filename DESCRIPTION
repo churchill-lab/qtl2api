@@ -25,4 +25,5 @@ Imports:
     RSQLite (>= 2.2.7),
     stringr (>= 1.4.0),
     tibble (>= 3.1.6)
+Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2

@@ -1,15 +1,15 @@
-#' Get the founder coefficients
+#' Get the founder coefficients.
 #'
-#' @param dataset the dataset object
-#' @param id the unique id in the dataset
-#' @param chrom the chromosome
-#' @param intcovar the interactive covariate
-#' @param blup whether or not to perform BLUP
-#' @param center whether or not to center the data
-#' @param cores number of cores to use (0=ALL)
+#' @param dataset The dataset object.
+#' @param id The unique id in the dataset.
+#' @param chrom The chromosome.
+#' @param intcovar The interactive covariate.
+#' @param blup `TRUE` to perform BLUP.
+#' @param center `TRUE` to center the data.
+#' @param cores The number of cores to use (0 = ALL).
 #'
-#' @return a named `list` with each element being a tibble with the following
-#'         columns: id, chr, pos, and A-H
+#' @return A named `list` with each element being a tibble with the following
+#    columns: `id`, `chr`, `pos`, `A`, `B`, `C`, `D`, `E`, `F`, `G`, `H`
 #'
 #' @export
 get_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,

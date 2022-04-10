@@ -2,7 +2,7 @@
 % Please edit documentation in R/get-founder-coefficients.R
 \name{get_founder_coefficients}
 \alias{get_founder_coefficients}
-\title{Get the founder coefficients}
+\title{Get the founder coefficients.}
 \usage{
 get_founder_coefficients(
   dataset,
@@ -15,24 +15,23 @@ get_founder_coefficients(
 )
 }
 \arguments{
-\item{dataset}{the dataset object}
+\item{dataset}{The dataset object.}
 
-\item{id}{the unique id in the dataset}
+\item{id}{The unique id in the dataset.}
 
-\item{chrom}{the chromosome}
+\item{chrom}{The chromosome.}
 
-\item{intcovar}{the interactive covariate}
+\item{intcovar}{The interactive covariate.}
 
-\item{blup}{whether or not to perform BLUP}
+\item{blup}{\code{TRUE} to perform BLUP.}
 
-\item{center}{whether or not to center the data}
+\item{center}{\code{TRUE} to center the data.}
 
-\item{cores}{number of cores to use (0=ALL)}
+\item{cores}{The number of cores to use (0 = ALL).}
 }
 \value{
-a named `list` with each element being a tibble with the following
-        columns: id, chr, pos, and A-H
+A named \code{list} with each element being a tibble with the following
 }
 \description{
-Get the founder coefficients
+Get the founder coefficients.
 }

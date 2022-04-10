@@ -1,13 +1,13 @@
 #' Get the SNP association mapping from foundersnps database.
 #'
-#' @param dataset the dataset object
-#' @param id the unique id in the dataset
+#' @param dataset The dataset object.
+#' @param id The unique id in the dataset.
 #' @param chrom The chromosome.
-#' @param location location on chromosome in base pairs
-#' @param db_file full path to the sqlite database file
-#' @param window_size the size of the window to scan before and after location
-#' @param intcovar the interactive covariate
-#' @param cores number of cores to use (0=ALL)
+#' @param location Location on chromosome in base pairs.
+#' @param db_file Full path to the sqlite database file.
+#' @param window_size The size of the window to scan before and after location.
+#' @param intcovar The interactive covariate.
+#' @param cores Number of cores to use (0 = ALL).
 #'
 #' @return a `tibble` with the following columns:
 #'       snp, chr, pos, alleles, sdp, ensembl_gene, csq, index, interval,

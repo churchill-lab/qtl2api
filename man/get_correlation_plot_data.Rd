@@ -15,23 +15,26 @@ get_correlation_plot_data(
 )
 }
 \arguments{
-\item{dataset}{the dataset object}
+\item{dataset}{The dataset object}
 
-\item{id}{the unique id in the dataset}
+\item{id}{The unique id in the dataset.}
 
-\item{dataset_correlate}{the dataset to correlate to}
+\item{dataset_correlate}{The dataset to correlate against, dataset if INVALID
+or NULL.}
 
-\item{id_correlate}{the identifier from the correlate dataset}
+\item{id_correlate}{The identifier from the correlate dataset.}
 
-\item{intcovar}{the interactive covariate}
+\item{intcovar}{The interactive covariate.}
 
-\item{use_qr}{qr decomposition}
+\item{use_qr}{\code{TRUE} to use qr decomposition.}
 
-\item{backfill_NA}{if we need to impute, should we backfill the NAs}
+\item{backfill_NA}{\code{TRUE} if we need to impute, we backfill the NAs.}
 }
 \value{
-a named `list` with the data to plot
+A named \code{list} with keys of \code{data} and \code{datatypes}.
 }
 \description{
-Get the correlation data for plotting.
+Perform a correlation analysis on an \code{id} for a \code{dataset}.  By default, the
+correlation will be against the same dataset, but a different dataset can
+be specified with \code{dataset_correlate}.  Return x and y values for plotting.
 }

@@ -1,11 +1,13 @@
 #' Get the expression data.
 #'
-#' @param dataset the dataset object
-#' @param id the unique id in the dataset
+#' @param dataset The dataset object.
+#' @param id The unique id in the dataset.
 #'
 #' @return a named `list` with 2 elements.
-#' data - a `tibble` with samples and data
-#' datatypes - a `list` of all the types and the unique values
+#' \itemize{
+#'   \item data - a `tibble` with samples and data
+#'   \item datatypes - a `list` of all the types and the unique values
+#' }
 #'
 #' @export
 get_expression <- function(dataset, id) {

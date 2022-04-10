@@ -10,7 +10,7 @@ synchronize_data(dataset)
 \item{dataset}{the dataset object}
 }
 \value{
-list with 3 elements: `annots`, `samples` and `data`.
+list with 3 elements: \code{annots}, \code{samples} and \code{data}.
 }
 \description{
 Synchronize data and subset accordingly.

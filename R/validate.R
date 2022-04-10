@@ -118,11 +118,11 @@ validate_dataset_extensive <- function(dataset) {
 
     marker <- markers_temp$marker.id
 
-    cat("STATUS  : Checking qtl2api::get_lod_peaks_all\n")
+    cat("STATUS  : Checking qtl2api::get_lod_peaks_dataset\n")
     tryCatch(
         {
             # NOTE: dataset instead of ds
-            temp <- get_lod_peaks_all(dataset)
+            temp <- get_lod_peaks_dataset(dataset)
         },
         error = function(cond) {
             message("ERROR   : ", cond$message)

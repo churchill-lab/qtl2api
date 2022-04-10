@@ -1,14 +1,17 @@
 #' Perform mediation.
 #'
-#' @param dataset the dataset object
-#' @param id the unique id in the dataset
-#' @param marker_id marker identifier
-#' @param dataset_mediate the dataset object to mediate against
+#' @param dataset The dataset object.
+#' @param id The unique id in the dataset.
+#' @param marker_id The unique marker identifier.
+#' @param dataset_mediate The dataset object to mediate against (defaults to
+#'   dataset)
 #'
-#' @return a `tibble` with the following columns depending on datatype:
-#'         mRNA = gene_id, symbol, chr, pos, LOD
-#'         protein = protein_id, gene_id, symbol, chr, pos, LOD
-#'         phenotype = NONE
+#' @return A `tibble` with the following columns depending on datatype:
+#' \itemize{
+#'   \item mRNA - gene_id, symbol, chr, pos, LOD
+#'   \item protein = protein_id, gene_id, symbol, chr, pos, LOD
+#'   \item phenotype = NONE
+#' }
 #'
 #' @importFrom rlang .data
 #' @export
@@ -108,7 +111,7 @@ get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
 
 }
 
-#' Mediation Scan
+#' Mediation Scan.
 #'
 #' For a given QTL haplotype probabilities \code{qtl.geno} and target \code{target},
 #' the function sequentially tries to add each column \code{m} of \code{mediator} matrix as a covariate
@@ -208,6 +211,7 @@ mediation.scan <- function(target,
     output <- annotation
     output$LOD <- LOD
     class(output) <- c("mediation", "data.frame")
+
     return(output)
 }
 

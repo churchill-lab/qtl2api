@@ -7,16 +7,16 @@
 get_rankings(dataset, chrom = NULL, min_value = 100, max_value = 1000)
 }
 \arguments{
-\item{dataset}{the dataset object}
+\item{dataset}{The dataset object.}
 
-\item{chrom}{the chromosome to filter on}
+\item{chrom}{The chromosome to filter on.}
 
-\item{min_value}{minimum score value (defaults to 100).}
+\item{min_value}{Minimum score value (defaults to 100).}
 
-\item{max_value}{maximum score value (defaults to 1000).}
+\item{max_value}{Maximum score value (defaults to 1000).}
 }
 \value{
-A `tibble` with the identifiers and rankings
+A \code{tibble} with the identifiers and rankings.
 }
 \description{
 Calculate the rankings for which gene/protein should be shown.

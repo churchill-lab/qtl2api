@@ -8,7 +8,7 @@ get_dataset_info()
 }
 \value{
 A named list of all the dataset objects, along with the
-  ensembl.version.
+ensembl.version.
 }
 \description{
 This will return a named list of all datasets and the ensmebl version.

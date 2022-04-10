@@ -19,7 +19,7 @@ get_lod_scan_by_sample(dataset, id, chrom, intcovar, cores = 0)
 }
 \value{
 A named list with each name a "sample value" and the element is a
-  tibble with the following columns: id, chr, pos, lod.
+tibble with the following columns: id, chr, pos, lod.
 }
 \description{
 Perform the LOD scan for each "value" of the interactive covariate.

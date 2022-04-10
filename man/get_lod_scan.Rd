@@ -17,30 +17,31 @@ get_lod_scan(
 )
 }
 \arguments{
-\item{dataset}{the dataset object}
+\item{dataset}{The dataset object.}
 
-\item{id}{the unique id in the dataset}
+\item{id}{The unique id in the dataset.}
 
-\item{intcovar}{the interactive covariate}
+\item{intcovar}{The interactive covariate.}
 
-\item{cores}{number of cores to use (0=ALL)}
+\item{cores}{Number of cores to use (0 = ALL).}
 
-\item{filter_threshold}{if set, qtl2::find_peaks is used}
+\item{filter_threshold}{If set, qtl2::find_peaks is used.}
 
-\item{filter_peak_drop}{if set, qtl2::find_peaks is used}
+\item{filter_peak_drop}{If set, qtl2::find_peaks is used.}
 
-\item{filter_thresholdX}{if set, qtl2::find_peaks is used}
+\item{filter_thresholdX}{If set, qtl2::find_peaks is used.}
 
-\item{filter_peak_dropX}{if set, qtl2::find_peaks is used}
+\item{filter_peak_dropX}{If set, qtl2::find_peaks is used.}
 
-\item{scan1_output}{if `TRUE`, original `qtl2::scan1` data is included in
-return}
+\item{scan1_output}{If \code{TRUE}, original \code{qtl2::scan1} data is included.}
 }
 \value{
-a `list` with the following elements:
-  lod_peaks - list of peaks
-  lod_scores - tibble with the following columns: id, chr, pos, lod
-  scan1 - `qtl2::scan1` output
+a \code{list} with the following elements:
+\itemize{
+\item lod_peaks - \code{tibble} of LOD peaks
+\item lod_scores - \code{tibble} with the following columns: id, chr, pos, lod
+\item scan1 - \code{qtl2::scan1} output
+}
 }
 \description{
 Perform a LOD scan.

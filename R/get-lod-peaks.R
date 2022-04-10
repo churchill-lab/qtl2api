@@ -1,15 +1,23 @@
-#' Get the LOD peaks
+#' Get the LOD peaks for a dataset.
 #'
-#' @param ds the dataset object
-#' @param intcovar the interactive covariate
+#' Used internally to the package.
 #'
-#' @return a `data.frame` with the following columns: marker, chr, bp
-#' and depending upon dataset$dataType the following columns:
-#' mRNA = gene_id, symbol, gene_chrom, middle, lod
-#' protein = protein_id, gene_id, symbol, gene_chrom, middle, lod
-#' phenotype = data_name, short_name, description, lod
+#' By default, this will get all LOD peaks stored in the `dataset$lod_peaks`
+#' `list`.  If `intcovar` is specified, only the peaks for that are returned.
 #'
-#' @export
+#' @param ds The dataset object to get the LOD peaks for.
+#' @param intcovar NULL for 'additive' or a value representing the interactive
+#' covariate.
+#'
+#' @return A a `tibble` with the following columns depending upon
+#' `dataset$datatype`:
+#' \itemize{
+#'   \item mRNA - `marker,chr,pos,gene_id,symbol,gene_chrom,middle,lod`
+#'   \item protein - `marker,chr,pos,protein_id,gene_id,symbol,gene_chrom,middle,lod`
+#'   \item phenotype - `marker,chr,pos,data_name,short_name,description,lod`
+#' }
+#'
+#' If the allele effects are stored, values `A-H` will also be included.
 get_lod_peaks <- function(ds, intcovar = NULL) {
     # these functions should not be synchronized
     if (!gtools::invalid(ds$is_synchronized)) {
@@ -224,18 +232,27 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
 }
 
 
-#' Get the LOD peaks for additive and all covariates.
+#' Get the LOD peaks for a dataset.
 #'
-#' @param ds the dataset object (not synchronized)
+#' By default, this will get all LOD peaks stored in the `dataset$lod_peaks`
+#' `list`.  If `intcovar` is specified, only the peaks for that are returned.
 #'
-#' @return a data.frame with the following columns: marker, chr, pos
-#' and depending upons dataset$dataType the following columns:
-#' mRNA = gene_id, symbol, gene_chrom, middle, lod
-#' protein = protein_id, gene_id, symbol, gene_chrom, middle, lod
-#' phenotype = data_name, short_name, description, lod
+#' @param ds The dataset object to get the LOD peaks for.
+#' @param intcovar NULL for all LOD peaks or a value to filter which interactive
+#' covariate.
 #'
+#' @return A named `list` of either all the LOD peaks or the specified
+#' `intcovar`. Each element in the `list` is a `tibble` with the following
+#' columns depending upon `dataset$datatype`:
+#' \itemize{
+#'   \item mRNA - `marker,chr,pos,gene_id,symbol,gene_chrom,middle,lod`
+#'   \item protein - `marker,chr,pos,protein_id,gene_id,symbol,gene_chrom,middle,lod`
+#'   \item phenotype - `marker,chr,pos,data_name,short_name,description,lod`
+#' }
+#'
+#' If the allele effects are stored, values `A-H` will also be included.
 #' @export
-get_lod_peaks_all <- function(ds) {
+get_lod_peaks_dataset <- function(ds, intcovar = NULL) {
     # these functions should not be synchronized
     if (!gtools::invalid(ds$is_synchronized)) {
         stop("dataset should not be synchronized")
@@ -260,9 +277,12 @@ get_lod_peaks_all <- function(ds) {
         }
     }
 
+    if (!gtools::invalid(intcovar)) {
+        peaks <- peaks[[intcovar]]
+    }
+
     peaks
 }
-
 
 
 #' Get all the peaks for an id.

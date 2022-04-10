@@ -12,7 +12,7 @@ nvl_int(value, default)
 \item{default}{default value to use if value is "invalid"}
 }
 \value{
-`value` if it is numeric, `default` otherwise
+\code{value} if it is numeric, \code{default} otherwise
 }
 \description{
 Convert value to numeric if possible

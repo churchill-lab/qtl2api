@@ -20,7 +20,7 @@ The data element in the dataset list should either be a matrix or a named
 list with each eleemnt being a matrix.
 }
 \details{
-If `data_name` is not specified, the order that will be returned is:
-    data (if a matrix)
-    rz, norm, raw, log, transformed (if a named list).
+If \code{data_name} is not specified, the order that will be returned is:
+data (if a matrix)
+rz, norm, raw, log, transformed (if a named list).
 }

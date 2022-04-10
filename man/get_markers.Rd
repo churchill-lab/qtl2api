@@ -7,7 +7,7 @@
 get_markers(chrom = NULL)
 }
 \arguments{
-\item{chrom}{the chromosome to filter on}
+\item{chrom}{The chromosome to filter on.}
 }
 \value{
 A tibble with the following columns: marker_id, chr, bp

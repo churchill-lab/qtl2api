@@ -1,19 +1,23 @@
 #' Get the correlation.
 #'
-#' @param dataset the dataset object
-#' @param id the unique id in the dataset
-#' @param dataset_correlate the dataset to correlate against, dataset if INVALID
-#' @param intcovar the interactive covariate
-#' @param use_qr qr decomposition
-#' @param backfill_NA if we need to impute, should we backfill the NAs
+#' Perform a correlation analysis on an `id` for a `dataset`.  By default, the
+#' correlation will be against the same dataset, but a different dataset can
+#' be specified with `dataset_correlate`.
 #'
-#' @return a `tibble` with the correlation and annotations
+#' @param dataset The dataset object
+#' @param id The unique id in the dataset.
+#' @param dataset_correlate The dataset to correlate against, dataset if INVALID
+#'   or NULL.
+#' @param intcovar The interactive covariate.
+#' @param use_qr `TRUE` to use qr decomposition.
+#' @param backfill_NA `TRUE` if we need to impute, we backfill the NAs.
+#'
+#' @return A `tibble` with the correlation and annotations.
 #'
 #' @export
 get_correlation <- function(dataset, id, dataset_correlate = NULL,
                             intcovar = NULL, use_qr = TRUE,
                             backfill_NA = TRUE) {
-
     # make sure annotations, data, and samples are synchronized
     ds <- synchronize_dataset(dataset)
 
@@ -106,6 +110,8 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
 
     correlations <- NULL
 
+    # attach some annotations to the correlation data
+
     if (tolower(ds_correlate$datatype) == "mrna") {
         # get the indices into the annotype data
         annot_mrna <- ds_correlate$annot_mrna
@@ -156,12 +162,15 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
         )
     }
 
-    # don't return the NAs
-    correlations <- correlations %>%
-        dplyr::filter(!is.na(.data$cor))
+    if (!gtools::invalid(correlations)) {
+        # don't return the NAs
+        correlations <- correlations %>%
+            dplyr::filter(!is.na(.data$cor))
 
-    attr(correlations, 'imputed_samples') <- samples_imputed
-    attr(correlations, 'covar_formula') <- covar_formula
+        # attach some attributes
+        attr(correlations, 'imputed_samples') <- samples_imputed
+        attr(correlations, 'covar_formula') <- covar_formula
+    }
 
     correlations
 }
@@ -169,15 +178,20 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
 
 #' Get the correlation data for plotting.
 #'
-#' @param dataset the dataset object
-#' @param id the unique id in the dataset
-#' @param dataset_correlate the dataset to correlate to
-#' @param id_correlate the identifier from the correlate dataset
-#' @param intcovar the interactive covariate
-#' @param use_qr qr decomposition
-#' @param backfill_NA if we need to impute, should we backfill the NAs
+#' Perform a correlation analysis on an `id` for a `dataset`.  By default, the
+#' correlation will be against the same dataset, but a different dataset can
+#' be specified with `dataset_correlate`.  Return x and y values for plotting.
 #'
-#' @return a named `list` with the data to plot
+#' @param dataset The dataset object
+#' @param id The unique id in the dataset.
+#' @param dataset_correlate The dataset to correlate against, dataset if INVALID
+#'   or NULL.
+#' @param id_correlate The identifier from the correlate dataset.
+#' @param intcovar The interactive covariate.
+#' @param use_qr `TRUE` to use qr decomposition.
+#' @param backfill_NA `TRUE` if we need to impute, we backfill the NAs.
+#'
+#' @return A named `list` with keys of `data` and `datatypes`.
 #'
 #' @export
 get_correlation_plot_data <- function(dataset, id,
@@ -300,7 +314,6 @@ get_correlation_plot_data <- function(dataset, id,
                 sample_info,
                 stringsAsFactors = FALSE
         )) %>%
-        dplyr::mutate(imputed = .data$sample_id %in% samples_imputed) %>%
         dplyr::filter(!is.na(.data$x)) %>%  # don't return the NAs
         dplyr::filter(!is.na(.data$y))      # don't return the NAs
 
@@ -314,15 +327,15 @@ get_correlation_plot_data <- function(dataset, id,
     ret
 }
 
-#' Calculate the residual matrix
+#' Calculate the residual matrix.
 #'
-#' @param variable_matrix The data  matrix for first set.
-#' @param adjust_matrix The data matrix for the second set.
-#' @param variables_interest List of variables of interest.
-#' @param variables_compare List of variables to compare.
-#' @param use_qr qr decomposition
+#' @param variable_matrix The data `matrix` for first set.
+#' @param adjust_matrix The data `matrix` for the second set.
+#' @param variables_interest `list` of variables of interest.
+#' @param variables_compare `list` of variables to compare.
+#' @param use_qr `TRUE` to use qr decomposition.
 #'
-#' @return residual matrix
+#' @return The residual `matrix`.
 calc_residual_matrix <- function(variable_matrix,
                                  adjust_matrix,
                                  variables_interest,
