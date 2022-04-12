@@ -585,14 +585,27 @@ get_dataset_info <- function() {
             display_name <- ds[[display_name_field]]
         }
 
+        ds_ensembl_version <- ensembl_version
+
+        temp_ensembl <- grep(
+            "^ensembl(\\.|_){1}version$",
+            names(ds),
+            ignore.case = TRUE,
+            value = TRUE
+        )
+
+        if (!gtools::invalid(temp_ensembl)) {
+            ds_ensembl_version <- dataset[[temp_ensembl]]
+        }
+
         temp <- list(
             id              = d,
             annotations     = annotations,
             covar_info      = covar_info,
             datatype        = ds$datatype,
             display_name    = display_name,
-            ensembl_version = ds$ensembl_version,
-            samples         = ds$annot_samples,
+            ensembl_version = ds_ensembl_version,
+            samples         = ds_synchronized$samples,
             sample_id_field = get_sample_id_field(ds)
         )
 
