@@ -623,7 +623,11 @@ get_dataset_info <- function() {
                              names(ds),
                              value = TRUE)
 
-        covar_info <- ds[[annots_field]] %>% janitor::clean_names()
+        covar_info <- NULL
+
+        if ((length(annots_field) != 0) && (!is.null(ds[[annots_field]]))) {
+            covar_info <- ds[[annots_field]] %>% janitor::clean_names()
+        }
 
         display_name_field <- grep(
             "^display(\\.|_){1}name$",
