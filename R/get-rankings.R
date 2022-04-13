@@ -51,7 +51,7 @@ get_rankings <- function(dataset, chrom = NULL,
             )
 
         return(ret)
-    } else {
+    } else if (tolower(ds$datatype) == "protein") {
         if (!is.null(chrom)) {
             # filter the data to just return the chromosome asked for
             protein_ids <-
@@ -83,5 +83,40 @@ get_rankings <- function(dataset, chrom = NULL,
             )
 
         return(ret)
+    } else if (tolower(ds$datatype) == "phos") {
+        if (!is.null(chrom)) {
+            # filter the data to just return the chromosome asked for
+            phos_ids <-
+                ds$annot_misc %>%
+                dplyr::filter(.data$chr == chrom)
+
+            tmp <- tmp[phos_ids$phos_id]
+        }
+
+        ret <- tibble::tibble(
+            id = names(tmp),
+            ranking = as.integer(tmp)
+        )
+
+        # group by gene_id and than take the gene_id ranking value
+        ret <- ret %>%
+            dplyr::inner_join(
+                ds$phos_misc,
+                by = c("id" = "phos_id")
+            ) %>%
+            dplyr::select(
+                phos_id    = .data$id,
+                protein_id = .data$protein_id,
+                gene_id    = .data$gene_id,
+                ranking    = .data$ranking
+            ) %>%
+            dplyr::group_by(.data$gene_id) %>%
+            dplyr::summarise(
+                ranking = max(.data$ranking)
+            )
+
+        return(ret)
+    } else {
+        stop(paste0(ds$datatype, ' datatype not supported'))
     }
 }

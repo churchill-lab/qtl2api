@@ -47,6 +47,10 @@ get_lod_scan <- function(dataset, id, intcovar = NULL, cores = 0,
             stop(sprintf("intcovar '%s' not found in covar_info", intcovar))
         }
 
+        if (!is.null(covar_matrix)) {
+            stop(sprintf("no covar_matrix, but intcovar '%s' specified", intcovar))
+        }
+
         # grabbing all the columns from covar (covar.matrix) that
         # match, i.e., "batch" will match "batch2", "BATCH3", etc
         interactive_covariate <-

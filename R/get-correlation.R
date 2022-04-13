@@ -290,32 +290,47 @@ get_correlation_plot_data <- function(dataset, id,
 
     # get the covar factors and their data levels
     sample_info <- list()
-    datatypes <- list()
+    datatypes <- NULL
 
-    for (s in ds$covar_info$sample_column) {
-        stopifnot(!is.null(ds$annot_samples[[s]]))
-        sample_info[[toString(s)]] <- ds$annot_samples[samples_idx, ][[s]]
+    if (!is.null(ds$covar_info)) {
+        datatypes <- list()
 
-        if (is.factor(ds$annot_samples[[s]])) {
-            datatypes[[toString(s)]] <-
-                gtools::mixedsort(levels(ds$annot_samples[[s]]))
-        } else {
-            datatypes[[toString(s)]] <-
-                gtools::mixedsort(unique(ds$annot_samples[[s]]))
+        for (s in ds$covar_info$sample_column) {
+            stopifnot(!is.null(ds$annot_samples[[s]]))
+            sample_info[[toString(s)]] <- ds$annot_samples[samples_idx, ][[s]]
+
+            if (is.factor(ds$annot_samples[[s]])) {
+                datatypes[[toString(s)]] <-
+                    gtools::mixedsort(levels(ds$annot_samples[[s]]))
+            } else {
+                datatypes[[toString(s)]] <-
+                    gtools::mixedsort(unique(ds$annot_samples[[s]]))
+            }
         }
-    }
 
-    correlation_plot_data <-
-        tibble::as_tibble(
-            data.frame(
-                sample_id = rownames(data)[samples_idx],
-                x         = x[samples_idx],
-                y         = y[samples_idx],
-                sample_info,
-                stringsAsFactors = FALSE
-        )) %>%
-        dplyr::filter(!is.na(.data$x)) %>%  # don't return the NAs
-        dplyr::filter(!is.na(.data$y))      # don't return the NAs
+        correlation_plot_data <-
+            tibble::as_tibble(
+                data.frame(
+                    sample_id = rownames(data)[samples_idx],
+                    x         = x[samples_idx],
+                    y         = y[samples_idx],
+                    sample_info,
+                    stringsAsFactors = FALSE
+            )) %>%
+            dplyr::filter(!is.na(.data$x)) %>%  # don't return the NAs
+            dplyr::filter(!is.na(.data$y))      # don't return the NAs
+    } else {
+        correlation_plot_data <-
+            tibble::as_tibble(
+                data.frame(
+                    sample_id = rownames(data)[samples_idx],
+                    x         = x[samples_idx],
+                    y         = y[samples_idx],
+                    stringsAsFactors = FALSE
+            )) %>%
+            dplyr::filter(!is.na(.data$x)) %>%  # don't return the NAs
+            dplyr::filter(!is.na(.data$y))      # don't return the NAs
+    }
 
     ret <- list(
         datatypes     = datatypes,

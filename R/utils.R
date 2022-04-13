@@ -99,6 +99,16 @@ synchronize_data <- function(dataset) {
             janitor::clean_names()
 
         annot_ids <- annots$protein_id
+    } else if (tolower(dataset$datatype) == 'phos') {
+        annots_field <- grep("^annots?(\\.|_){1}phos?$",
+                             names(dataset),
+                             value = TRUE)
+
+        annots <-
+            dataset[[annots_field]] %>%
+            janitor::clean_names()
+
+        annot_ids <- annots$phos_id
     } else if (is_phenotype(dataset)) {
         annots_field <- grep("^annots?(\\.|_){1}pheno(type)?s?$",
                              names(dataset),
@@ -151,6 +161,8 @@ synchronize_data <- function(dataset) {
         annots <- annots %>% dplyr::filter(.data$gene_id %in% annot_ids)
     } else if (tolower(dataset$datatype) == 'protein') {
         annots <- annots %>% dplyr::filter(.data$protein_id %in% annot_ids)
+    } else if (tolower(dataset$datatype) == 'phos') {
+        annots <- annots %>% dplyr::filter(.data$phos_id %in% annot_ids)
     } else if (is_phenotype(dataset)) {
         annots <- annots %>% dplyr::filter(.data$data_name %in% annot_ids)
     }
@@ -204,9 +216,11 @@ synchronize_dataset <- function(dataset) {
                          names(dataset),
                          value = TRUE)
 
-    covar_info <-
-        dataset[[annots_field]] %>%
-        janitor::clean_names()
+    covar_info <- dataset[[annots_field]]
+
+    if (!is.null(covar_info)) {
+        covar_info <- covar_info %>% janitor::clean_names()
+    }
 
     # fix the ensembl version
     ensembl_version <-
@@ -271,6 +285,16 @@ synchronize_dataset <- function(dataset) {
         }
 
         ds$annot_protein <- ds_synch$annots
+    } else if (tolower(dataset$datatype) == 'phos') {
+        if (all(ds_synch$annots$start < 1000)) {
+            ds_synch$annots$start <- ds_synch$annots$start * 1000000
+        }
+
+        if (all(ds_synch$annots$end < 1000)) {
+            ds_synch$annots$end <- ds_synch$annots$end * 1000000
+        }
+
+        ds$annot_phos <- ds_synch$annots
     } else if (startsWith(tolower(dataset$datatype), "pheno")) {
         ds$annot_phenotype <- ds_synch$annots
 
@@ -410,6 +434,19 @@ get_random_id <- function(dataset) {
         }
 
         annot_ids <- annot_ids$protein_id
+    } else if (tolower(dataset$datatype) == "phos") {
+        if (gtools::invalid(dataset$is_synchronized)) {
+            annots_field <- grep("^annots?(\\.|_){1}phos$",
+                                 names(dataset),
+                                 value = TRUE)
+            annot_ids <-
+                dataset[[annots_field]] %>%
+                janitor::clean_names()
+        } else {
+            annot_ids <- dataset$annot_phos
+        }
+
+        annot_ids <- annot_ids$phos_id
     } else if (is_phenotype(dataset)) {
         if (gtools::invalid(dataset$is_synchronized)) {
             annots_field <- grep("^annots?(\\.|_){1}pheno(type)?s?$",
@@ -453,6 +490,9 @@ get_covar_matrix <- function(dataset, id = NULL) {
     # make sure samples and annotations are available
     ds <- synchronize_dataset(dataset)
 
+    covar_formula <- NULL
+    covar_matrix <- NULL
+
     if (is_phenotype(ds)) {
         # get the annot_phenotype row to get use_covar variable from the
         # annotations
@@ -464,49 +504,55 @@ get_covar_matrix <- function(dataset, id = NULL) {
             stop(sprintf("Cannot find phenotype '%s' in dataset", id))
         }
 
-        # create a string (model formula) from the use.covar column
-        covar_formula <- paste0("~", gsub(":", "+", pheno$use_covar))
+        if (!is.null(pheno$use_covar)) {
+            # create a string (model formula) from the use.covar column
+            covar_formula <- paste0("~", gsub(":", "+", pheno$use_covar))
+        }
     } else {
-        covar_formula <- paste0(ds$covar_info$sample_column, collapse="+")
-        covar_formula <- paste0("~", covar_formula)
+        if (!is.null(ds$covar.info)) {
+            covar_formula <- paste0(ds$covar_info$sample_column, collapse="+")
+            covar_formula <- paste0("~", covar_formula)
+        }
     }
 
-    # get the sample id field
-    sample_id_field <- ds$sample_id_field
+    if (!is.null(covar_formula)) {
+        # get the sample id field
+        sample_id_field <- ds$sample_id_field
 
-    # convert samples to data.frame because QTL2 relies heavily
-    # on rownames and colnames, rownames currently are or will
-    # soon be deprecated in tibbles
-    samples <- as.data.frame(ds$annot_samples)
+        # convert samples to data.frame because QTL2 relies heavily
+        # on rownames and colnames, rownames currently are or will
+        # soon be deprecated in tibbles
+        samples <- as.data.frame(ds$annot_samples)
 
-    # create the model matrix, we use na.action = stats::na.pass so we can set
-    # the rownames below.  We than use na.omit to filter down the data.
-    covar_matrix <- stats::model.matrix.lm(
-        stats::as.formula(covar_formula),
-        data = samples,
-        na.action = stats::na.pass
-    )
+        # create the model matrix, we use na.action = stats::na.pass so we can set
+        # the rownames below.  We than use na.omit to filter down the data.
+        covar_matrix <- stats::model.matrix.lm(
+            stats::as.formula(covar_formula),
+            data = samples,
+            na.action = stats::na.pass
+        )
 
-    # drop the Intercept column
-    covar_matrix <- covar_matrix[, -1, drop = FALSE]
+        # drop the Intercept column
+        covar_matrix <- covar_matrix[, -1, drop = FALSE]
 
-    # drop the covar column if it has all identical values
-    covar_matrix <- covar_matrix %>%
-        tibble::as_tibble() %>%
-        dplyr::select_if(function(col) length(unique(col))>1)
+        # drop the covar column if it has all identical values
+        covar_matrix <- covar_matrix %>%
+            tibble::as_tibble() %>%
+            dplyr::select_if(function(col) length(unique(col))>1)
 
-    # convert to a matrix and set the rownames so scan1 will work
-    covar_matrix <- as.matrix(covar_matrix)
+        # convert to a matrix and set the rownames so scan1 will work
+        covar_matrix <- as.matrix(covar_matrix)
 
-    rownames(covar_matrix) <-
-        (samples %>% dplyr::select(dplyr::matches(sample_id_field)))[[1]]
+        rownames(covar_matrix) <-
+            (samples %>% dplyr::select(dplyr::matches(sample_id_field)))[[1]]
 
-    # do not need NA values
-    covar_matrix <- stats::na.omit(covar_matrix)
+        # do not need NA values
+        covar_matrix <- stats::na.omit(covar_matrix)
+    }
 
     list(
-        covar_matrix   = covar_matrix,
-        covar_formula  = covar_formula
+        covar_formula  = covar_formula,
+        covar_matrix   = covar_matrix
     )
 }
 
@@ -547,6 +593,13 @@ get_dataset_info <- function() {
         } else if(tolower(ds$datatype) == 'protein') {
             annotations <-
                 tibble::tibble(
+                    protein_id = ds_synchronized$annots$protein_id,
+                    gene_id    = ds_synchronized$annots$gene_id
+                )
+        } else if(tolower(ds$datatype) == 'phos') {
+            annotations <-
+                tibble::tibble(
+                    phos_id    = ds_synchronized$annots$phos_id,
                     protein_id = ds_synchronized$annots$protein_id,
                     gene_id    = ds_synchronized$annots$gene_id
                 )
@@ -637,6 +690,10 @@ get_dataset_stats <- function() {
                                  value = TRUE)
         } else if(tolower(ds$datatype) == 'protein') {
             annots_field <- grep("^annots?(\\.|_){1}proteins?$",
+                                 names(ds),
+                                 value = TRUE)
+        } else if(tolower(ds$datatype) == 'phos') {
+            annots_field <- grep("^annots?(\\.|_){1}phos?$",
                                  names(ds),
                                  value = TRUE)
         } else if(is_phenotype(ds)) {

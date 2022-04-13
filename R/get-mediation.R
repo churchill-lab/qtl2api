@@ -76,6 +76,26 @@ get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
                 chr          = .data$chr,
                 middle_point = .data$mid_point
             )
+    } else if (tolower(ds_mediate$datatype) == "phos") {
+        # grab the annotations, create middle_point, and select what is needed
+        annot <-
+            ds_mediate$annot_phos %>%
+            janitor::clean_names() %>%
+            dplyr::inner_join(
+                tibble::enframe(colnames(ds_mediate$data), name = NULL),
+                by = c("phos_id" = "value")
+            ) %>%
+            dplyr::mutate(
+                mid_point = round((.data$start + .data$end) / 2)
+            ) %>%
+            dplyr::select(
+                phos_id      = .data$phos_id,
+                protein_id   = .data$protein_id,
+                gene_id      = .data$gene_id,
+                symbol       = .data$symbol,
+                chr          = .data$chr,
+                middle_point = .data$mid_point
+            )
     } else if (is_phenotype(ds_mediate)) {
         stop("dataset is a phenotype dataset and is not supported")
     } else {

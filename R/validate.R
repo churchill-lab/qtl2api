@@ -43,12 +43,15 @@ validate_dataset <- function(dataset, extensive = FALSE) {
     datatype = ds[['datatype']]
     is_mrna <- FALSE
     is_protein <- FALSE
+    is_phos <- FALSE
     is_pheno <- FALSE
 
     if (tolower(datatype) == 'mrna') {
         is_mrna <- TRUE
     } else if (tolower(datatype) == 'protein') {
         is_protein <- TRUE
+    } else if (tolower(datatype) == 'phos') {
+        is_phos <- TRUE
     } else if (is_phenotype(ds)) {
         is_pheno <- TRUE
     } else {
@@ -403,7 +406,7 @@ validate_annotations <- function(dataset) {
     annots_orig <- NULL
 
     if (tolower(ds$datatype) == "mrna") {
-        annots_field <- grep("^annots?(\\.|_){1}mrna$",
+        annots_field <- grep("^annots?(\\.|_){1}mrnas?$",
                              names(ds_orig),
                              value = TRUE)
 
@@ -423,7 +426,7 @@ validate_annotations <- function(dataset) {
             message("ERROR   : There are duplicated gene identifiers in annot_mrna")
         }
     } else if (tolower(ds$datatype) == "protein") {
-        annots_field <- grep("^annots?(\\.|_){1}protein$",
+        annots_field <- grep("^annots?(\\.|_){1}proteins?$",
                              names(ds_orig),
                              value = TRUE)
 
@@ -441,6 +444,26 @@ validate_annotations <- function(dataset) {
 
         if (any(duplicated(annots$protein_id))) {
             message("ERROR   : There are duplicated protein identifiers in annot_protein")
+        }
+    } else if (tolower(ds$datatype) == "phos") {
+        annots_field <- grep("^annots?(\\.|_){1}phos$",
+                             names(ds_orig),
+                             value = TRUE)
+
+        if (length(annots_field) == 0) {
+            message("ERROR   : annot_phos not found in dataset.")
+            return()
+        }
+
+        if (!tibble::is_tibble(ds_orig[[annots_field]])) {
+            message("ERROR   : annot_phos should be a tibble, but found: ", class(ds[[annots_field]]))
+        }
+
+        annots <- ds$annot_phos
+        annots_orig <- ds_orig[[annots_field]]
+
+        if (any(duplicated(annots$phos_id))) {
+            message("ERROR   : There are duplicated phos identifiers in annot_phos")
         }
     } else if (is_phenotype(ds)) {
         annots_field <- grep("^annots?(\\.|_){1}pheno(type)?s?$",
@@ -509,21 +532,33 @@ validate_annotations <- function(dataset) {
     } else {
         annot_name <- NULL
 
-        if (tolower(ds$datatype) == "protein") {
+        if (tolower(ds$datatype) == "mrna") {
+            annot_name <- "annot_mrna"
+        } else if (tolower(ds$datatype) == "protein") {
             annot_name <- 'annot_protein'
 
             if ('protein_id' %not in% names(annots)) {
                 message("ERROR   : protein_id not found in annot_protein")
             }
-        } else {
-            annot_name <- "annot_mrna"
+        } else if (tolower(ds$datatype) == "phos") {
+            annot_name <- 'annot_phos'
+
+            if ('protein_id' %not in% names(annots)) {
+                message("ERROR   : protein_id not found in annot_phos")
+            }
+
+            annot_name <- 'annot_phos'
+
+            if ('phos_id' %not in% names(annots)) {
+                message("ERROR   : phos_id not found in annot_phos")
+            }
         }
 
         expected_names <-  c('gene_id', 'symbol', 'chr', 'start', 'end')
 
         for (n in expected_names) {
             if (n %not in% names(annots)) {
-                message("ERROR   :", n, " not found in ", annot_name)
+                message("ERROR   : ", n, " not found in ", annot_name)
             }
         }
 
@@ -625,7 +660,12 @@ validate_covar_info <- function(dataset) {
                          value = TRUE)
 
     if (length(annots_field) == 0) {
-        message("ERROR   : covar_info not found")
+        message("WARNING : covar_info not found")
+        return()
+    }
+
+    if (is.null(ds_orig[[annots_field]])) {
+        message("WARNING : covar_info is NULL")
         return()
     }
 
@@ -791,7 +831,7 @@ validate_lod_peaks <- function(dataset) {
                          value = TRUE)
 
     if (length(annots_field) == 0) {
-        message("ERROR   : lod_peaks not found")
+        message("WARNING : lod_peaks not found")
         return()
     }
 
@@ -875,6 +915,8 @@ validate_data <- function(dataset) {
         annot_ids <- ds$annot_mrna$gene_id
     } else if (tolower(ds$datatype) == "protein") {
         annot_ids <- ds$annot_protein$protein_id
+    } else if (tolower(ds$datatype) == "phos") {
+        annot_ids <- ds$annot_phos$phos_id
     } else {
         annots_temp <-
             ds$annot_phenotype %>%
@@ -910,11 +952,13 @@ validate_data <- function(dataset) {
             y <- setdiff(colnames(ds$data), annot_ids)
 
             if (length(x) > 0) {
-                cat("WARNING : annotations with no data:", paste(x, sep = ",", collapse = ","), "\n")
+                #cat("WARNING : annotations with no data:", paste(x, sep = ",", collapse = ","), "\n")
+                cat("WARNING : # annotations with no data:", length(x), "\n")
             }
 
             if (length(y) > 0) {
-                cat("WARNING : data with no annotations:", paste(y, sep = ",", collapse = ","), "\n")
+                #cat("WARNING : data with no annotations:", paste(y, sep = ",", collapse = ","), "\n")
+                cat("WARNING : # data with no annotations:", length(y), "\n")
             }
         }
 
@@ -964,11 +1008,13 @@ validate_data <- function(dataset) {
                 y <- setdiff(colnames(temp_data), annot_ids)
 
                 if (length(x) > 0) {
-                    cat("WARNING : annotations with no data:", paste(x, sep = ",", collapse = ","), "\n")
+                    #cat("WARNING : annotations with no data:", paste(x, sep = ",", collapse = ","), "\n")
+                    cat("WARNING : # annotations with no data:", length(x), "\n")
                 }
 
                 if (length(y) > 0) {
-                    cat("WARNING : data with no annotations:", paste(y, sep = ",", collapse = ","), "\n")
+                    #cat("WARNING : data with no annotations:", paste(y, sep = ",", collapse = ","), "\n")
+                    cat("WARNING : # data with no annotations:", length(y), "\n")
                 }
             }
 
