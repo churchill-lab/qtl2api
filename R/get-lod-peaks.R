@@ -24,11 +24,17 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
         stop("dataset should not be synchronized")
     }
 
-    annots_field_covar <- grep("^covar(\\.|_){1}info$",
+    annots_field_peaks <- grep("^lod(\\.|_){1}peaks?$",
                                names(ds),
                                value = TRUE)
 
-    annots_field_peaks <- grep("^lod(\\.|_){1}peaks?$",
+    if (length(annots_field_peaks) == 0) {
+        return(NULL)
+    } else if (is.null(ds[[annots_field_peaks]])) {
+        return(NULL)
+    }
+
+    annots_field_covar <- grep("^covar(\\.|_){1}info$",
                                names(ds),
                                value = TRUE)
 
@@ -180,6 +186,69 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
                     by = c("protein_id", "marker_id", "lod")
                 )
         }
+    } else if (tolower(ds$datatype) == "phos") {
+        annots_field <- grep("^annots?(\\.|_){1}phos$",
+                             names(ds),
+                             value = TRUE)
+
+        annots <- ds[[annots_field]] %>% janitor::clean_names()
+
+        if (all(annots$start < 1000)) {
+            annots$start <- as.integer(annots$start * 1000000)
+        }
+
+        if (all(annots$end < 1000)) {
+            annots$end <- as.integer(annots$end * 1000000)
+        }
+
+        ret <- annots %>%
+            dplyr::inner_join(
+                peaks,
+                by = "phos_id"
+            ) %>%
+            dplyr::select(
+                phos_id    = .data$phos_id,
+                protein_id = .data$protein_id,
+                gene_id    = .data$gene_id,
+                symbol     = .data$symbol,
+                gene_chr   = .data$chr,
+                start      = .data$start,
+                end        = .data$end,
+                marker_id  = .data$marker_id,
+                lod        = .data$lod
+            ) %>%
+            dplyr::mutate(
+                gene_pos = round((.data$start + .data$end) / 2)
+            ) %>%
+            dplyr::inner_join(
+                markers_cleaned,
+                by = "marker_id"
+            ) %>%
+            dplyr::select(
+                marker_id  = .data$marker_id,
+                chr        = .data$chr,
+                pos        = .data$pos,
+                phos_id    = .data$phos_id,
+                protein_id = .data$protein_id,
+                gene_id    = .data$gene_id,
+                symbol     = .data$symbol,
+                gene_chr   = .data$gene_chr,
+                gene_pos   = .data$gene_pos,
+                lod        = .data$lod
+            ) %>%
+            dplyr::arrange(
+                .data$chr,
+                .data$pos
+            )
+
+        # now add A-H for additive if they exist
+        if (all(tolower(LETTERS[1:8]) %in% colnames(peaks))) {
+            ret <- ret %>%
+                dplyr::inner_join(
+                    peaks,
+                    by = c("phos_id", "marker_id", "lod")
+                )
+        }
     } else if (is_phenotype(ds)) {
         annots_field <- grep("^annots?(\\.|_){1}pheno(type)?s?$",
                              names(ds),
@@ -258,27 +327,43 @@ get_lod_peaks_dataset <- function(ds, intcovar = NULL) {
         stop("dataset should not be synchronized")
     }
 
+    peaks <- list()
+
     # get the additive LOD peaks
-    peaks <- list(additive = get_lod_peaks(ds))
+    peaks_additive <- get_lod_peaks(ds)
+
+    if (!is.null(peaks_additive)) {
+        peaks <- list(additive = peaks_additive)
+    }
 
     annots_field <- grep("^covar(\\.|_){1}info$",
                          names(ds),
                          value = TRUE)
 
-    covar_info <- ds[[annots_field]] %>% janitor::clean_names()
+    if (length(annots_field) == 0) {
+        return(NULL)
+    } else if (is.null(ds[[annots_field]])) {
+        return(NULL)
+    } else {
+        covar_info <- ds[[annots_field]] %>% janitor::clean_names()
 
-    # get the rest
-    for (i in seq(nrow(covar_info))) {
-        cov_inf <- covar_info[i, ]
+        # get the rest
+        for (i in seq(nrow(covar_info))) {
+            cov_inf <- covar_info[i, ]
 
-        if (cov_inf$interactive == TRUE) {
-            peaks[[cov_inf$sample_column]] <-
-                get_lod_peaks(ds, cov_inf$sample_column)
+            if (cov_inf$interactive == TRUE) {
+                peaks[[cov_inf$sample_column]] <-
+                    get_lod_peaks(ds, cov_inf$sample_column)
+            }
+        }
+
+        if (!gtools::invalid(intcovar)) {
+            peaks <- peaks[[intcovar]]
         }
     }
 
-    if (!gtools::invalid(intcovar)) {
-        peaks <- peaks[[intcovar]]
+    if (length(peaks) == 0) {
+        peaks <- NULL
     }
 
     peaks
