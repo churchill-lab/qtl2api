@@ -568,11 +568,11 @@ get_dataset_info <- function() {
     datasets <- utils::apropos('^dataset\\.*', ignore.case = TRUE)
     ret <- c()
 
-    ensembl_version <-
+    ensembl_version_field <-
         utils::apropos("^ensembl(\\.|_){1}version$", ignore.case = TRUE)
 
-    if (length(ensembl_version) != 0) {
-        ensembl_version <- get(ensembl_version)
+    if (length(ensembl_version_field) != 0) {
+        ensembl_version <- get(ensembl_version_field)
     } else {
         ensembl_version <- NULL
     }
