@@ -87,7 +87,7 @@ get_rankings <- function(dataset, chrom = NULL,
         if (!is.null(chrom)) {
             # filter the data to just return the chromosome asked for
             phos_ids <-
-                ds$annot_misc %>%
+                ds$annot_phos %>%
                 dplyr::filter(.data$chr == chrom)
 
             tmp <- tmp[phos_ids$phos_id]
@@ -101,7 +101,7 @@ get_rankings <- function(dataset, chrom = NULL,
         # group by gene_id and than take the gene_id ranking value
         ret <- ret %>%
             dplyr::inner_join(
-                ds$phos_misc,
+                ds$annot_phos,
                 by = c("id" = "phos_id")
             ) %>%
             dplyr::select(
