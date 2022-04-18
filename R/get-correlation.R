@@ -163,12 +163,12 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
         correlations <- tibble::tibble(
             cor        = pcor,
             id         = names(pcor),
-            protein_id = annot_protein$protein_id[idxs],
-            gene_id    = annot_protein$gene_id[idxs],
-            symbol     = annot_protein$symbol[idxs],
-            chr        = annot_protein$chr[idxs],
-            start      = as.integer(annot_protein$start[idxs]),
-            end        = as.integer(annot_protein$end[idxs])
+            protein_id = annot_phos$protein_id[idxs],
+            gene_id    = annot_phos$gene_id[idxs],
+            symbol     = annot_phos$symbol[idxs],
+            chr        = annot_phos$chr[idxs],
+            start      = as.integer(annot_phos$start[idxs]),
+            end        = as.integer(annot_phos$end[idxs])
         )
 
         if (all(correlations$start < 1000)) {
