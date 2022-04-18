@@ -155,6 +155,29 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
         if (all(correlations$end < 1000)) {
             correlations$end <- as.integer(correlations$end * 1000000)
         }
+    } else if (tolower(ds_correlate$datatype) == "phos") {
+        # get the indices into the annotype data
+        annot_phos <- ds_correlate$annot_phos
+        idxs <- match(names(pcor), annot_phos$phos_id)
+
+        correlations <- tibble::tibble(
+            cor        = pcor,
+            id         = names(pcor),
+            protein_id = annot_protein$protein_id[idxs],
+            gene_id    = annot_protein$gene_id[idxs],
+            symbol     = annot_protein$symbol[idxs],
+            chr        = annot_protein$chr[idxs],
+            start      = as.integer(annot_protein$start[idxs]),
+            end        = as.integer(annot_protein$end[idxs])
+        )
+
+        if (all(correlations$start < 1000)) {
+            correlations$start <- as.integer(correlations$start * 1000000)
+        }
+
+        if (all(correlations$end < 1000)) {
+            correlations$end <- as.integer(correlations$end * 1000000)
+        }
     } else if (is_phenotype(ds_correlate)) {
         correlations <- tibble::tibble(
             cor = pcor,
