@@ -207,6 +207,9 @@ mediation.scan <- function(target,
 
     # for-loop comparing M0: target~covar+mediator[,i] vs M1: target~covar+mediator[,i]+qtl.geno
     for (i in 1:N) {
+        if(i==185) {
+            print(i)
+        }
         no.na <- !is.na(target) & !is.na(mediator[,i])
         loglik0 <- LL(target[no.na], cbind(covar[no.na,], mediator[no.na,i]))
         loglik1 <- LL(target[no.na], cbind(covar[no.na,], mediator[no.na,i], qtl.geno[no.na,]))
@@ -215,7 +218,8 @@ mediation.scan <- function(target,
             # "double-lod-diff" for no missing observation is identical to "ignore"
             LOD[i] <- loglik1 - loglik0
         } else {
-            loglik2 <- LL(target[no.na], covar[no.na,])
+            loglik2 <- LL(target[no.na,drop=FALSE], covar[no.na,,drop=FALSE])
+            #loglik2 <- LL(target[no.na], covar[no.na,])
             loglik3 <- LL(target[no.na], cbind(covar[no.na,], qtl.geno[no.na,]))
 
             if (method == "lod-diff") {
