@@ -47,7 +47,7 @@ get_lod_scan <- function(dataset, id, intcovar = NULL, cores = 0,
             stop(sprintf("intcovar '%s' not found in covar_info", intcovar))
         }
 
-        if (!is.null(covar_matrix)) {
+        if (is.null(covar_matrix)) {
             stop(sprintf("no covar_matrix, but intcovar '%s' specified", intcovar))
         }
 
