@@ -207,9 +207,6 @@ mediation.scan <- function(target,
 
     # for-loop comparing M0: target~covar+mediator[,i] vs M1: target~covar+mediator[,i]+qtl.geno
     for (i in 1:N) {
-        if(i==185) {
-            print(i)
-        }
         no.na <- !is.na(target) & !is.na(mediator[,i])
         loglik0 <- LL(target[no.na], cbind(covar[no.na,], mediator[no.na,i]))
         loglik1 <- LL(target[no.na], cbind(covar[no.na,], mediator[no.na,i], qtl.geno[no.na,]))

@@ -656,7 +656,7 @@ get_dataset_info <- function() {
         )
 
         if (!gtools::invalid(temp_ensembl)) {
-            ds_ensembl_version <- dataset[[temp_ensembl]]
+            ds_ensembl_version <- ds[[temp_ensembl]]
         }
 
         temp <- list(
