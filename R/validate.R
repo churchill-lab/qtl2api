@@ -741,8 +741,10 @@ validate_covar_info <- function(dataset) {
                                                names(ds_orig),
                                                value = TRUE)
 
-                    if (gtools::invalid(ds_orig[[annots_field_peaks]][[row$lod_peaks]])) {
-                        message("ERROR   : covar_info$interactive is TRUE, but covar_info$lod_peaks ('", row$lod_peaks, "') is not in lod_peaks")
+                    if ((length(annots_field_peaks) != 0) && (!is.null(ds_orig[[annots_field_peaks]]))) {
+                        if (row$lod_peaks %not in% names(ds_orig[[annots_field_peaks]])) {
+                            message("ERROR   : covar_info$interactive is TRUE, but covar_info$lod_peaks ('", row$lod_peaks, "') is not in lod_peaks")
+                        }
                     }
                 }
             } else {

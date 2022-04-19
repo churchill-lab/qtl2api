@@ -389,7 +389,10 @@ calc_residual_matrix <- function(variable_matrix,
     samples <- intersect(rownames(variable_matrix), rownames(adjust_matrix))
 
     # combine the data
-    data <- cbind(variable_matrix[samples, ], adjust_matrix[samples, ])
+    data <- cbind(
+        variable_matrix[samples, , drop = FALSE],
+        adjust_matrix[samples, , drop = FALSE]
+    )
     data <- as.data.frame(data)
 
     # columns/variable names with ";" don't work well in formulas

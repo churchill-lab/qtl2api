@@ -509,7 +509,7 @@ get_covar_matrix <- function(dataset, id = NULL) {
             covar_formula <- paste0("~", gsub(":", "+", pheno$use_covar))
         }
     } else {
-        if (!is.null(ds$covar.info)) {
+        if (!is.null(ds$covar_info)) {
             covar_formula <- paste0(ds$covar_info$sample_column, collapse="+")
             covar_formula <- paste0("~", covar_formula)
         }
