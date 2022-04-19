@@ -36,7 +36,10 @@ get_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
 
     # this is a little extra work because we are trying to be nice for users
     # who separate with '.' or '_'
-    markers_cleaned <- markers %>% janitor::clean_names()
+    markers_cleaned <-
+        markers %>%
+        janitor::clean_names() %>%
+        dplyr::filter(!is.na(.data$pos))
 
     ret <- list()
     attr(ret, 'covar_formula') <- covar_information$covar_formula

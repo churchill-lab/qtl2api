@@ -32,7 +32,11 @@ get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
     }
 
     # get the marker index and check it
-    markers_cleaned <- markers %>% janitor::clean_names()
+    markers_cleaned <-
+        markers %>%
+        dplyr::filter(!is.na(.data$pos)) %>%
+        janitor::clean_names()
+
     mrkx <- which(markers_cleaned$marker_id == marker_id)
 
     if (!any(mrkx)) {

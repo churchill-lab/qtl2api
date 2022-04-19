@@ -59,7 +59,10 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
     # this is a little extra work because we are trying to be nice for users
     # who separate with '.' or '_'
     peaks %<>% janitor::clean_names()
-    markers_cleaned <- markers %>% janitor::clean_names()
+    markers_cleaned <-
+        markers %>%
+        dplyr::filter(!is.na(.data$pos)) %>%
+        janitor::clean_names()
 
     # convert from Mbp to bp
     if (all(markers_cleaned$pos < 1000)) {

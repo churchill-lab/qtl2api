@@ -192,7 +192,10 @@ get_lod_scan_by_sample <- function(dataset, id, chrom, intcovar, cores = 0) {
     rownames(samples) <-
         (samples %>% dplyr::select(dplyr::matches(ds$sample_id_field)))[[1]]
 
-    markers_cleaned <- markers %>% janitor::clean_names()
+    markers_cleaned <-
+        markers %>%
+        dplyr::filter(!is.na(.data$pos)) %>%
+        janitor::clean_names()
 
     # ret will be a named list of tibbles with LOD scores
     # each name is a unique sample value
