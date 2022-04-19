@@ -80,7 +80,10 @@ get_lod_scan <- function(dataset, id, intcovar = NULL, cores = 0,
         peakdropX  = filter_peak_dropX
     )
 
-    markers_cleaned <- markers %>% janitor::clean_names()
+    markers_cleaned <-
+        markers %>%
+        dplyr::filter(!is.na(.data$pos)) %>%
+        janitor::clean_names()
 
     # construct a 2 dimensional array of data with id, chr, pos, lod as columns
     # we perform a left join here to make sure that the number of elements match
