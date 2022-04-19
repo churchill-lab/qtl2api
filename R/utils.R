@@ -212,11 +212,15 @@ synchronize_dataset <- function(dataset) {
     ds_synch <- synchronize_data(dataset)
 
     # fix the covar_info names
+    covar_info <- NULL
+
     annots_field <- grep("^covar?(\\.|_){1}info$",
                          names(dataset),
                          value = TRUE)
 
-    covar_info <- dataset[[annots_field]]
+    if ((length(annots_field) > 0) && (!is.null(ds_orig[[annots_field]]))) {
+        covar_info <- dataset[[annots_field]]
+    }
 
     if (!is.null(covar_info)) {
         covar_info <- covar_info %>% janitor::clean_names()
