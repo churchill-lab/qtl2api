@@ -1,10 +1,10 @@
 Package: qtl2api
 Type: Package
 Title: QTL2 API Library
-Version: 0.2.2
+Version: 0.3.0
 Author: person("Matthew", "Vincent", email = "mvincent@jax.org",
   role = c("aut", "cre"))
-Maintainer: Matthew Vincent <mvincent@jax.org>
+Maintainer: Matthew Vincent <matt.vincent@jax.org>
 Description: Wraps Karl Broman's rqtl/qtl2 package to provide friendlier
     JSON data structures.
 License: MIT + file LICENSE
