@@ -7,6 +7,7 @@
 get_markers <- function(chrom = NULL) {
     ret <- markers %>%
         janitor::clean_names() %>%
+        dplyr::filter(!is.na(.data$pos)) %>%
         dplyr::select(
             marker_id = .data$marker_id,
             chr       = .data$chr,
