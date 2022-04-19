@@ -218,7 +218,7 @@ synchronize_dataset <- function(dataset) {
                          names(dataset),
                          value = TRUE)
 
-    if ((length(annots_field) > 0) && (!is.null(ds_orig[[annots_field]]))) {
+    if ((length(annots_field) > 0) && (!is.null(dataset[[annots_field]]))) {
         covar_info <- dataset[[annots_field]]
     }
 
