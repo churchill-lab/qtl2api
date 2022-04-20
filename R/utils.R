@@ -18,6 +18,28 @@ version <- function() {
 }
 
 
+#' Test if `val` is invalid.
+#'
+#' @param val value to be tested
+#' @return TRUE if invalid, FALSE otherwise
+#'
+#' @export
+invalid <- function(val) {
+    return(gtools::invalid(val))
+}
+
+
+#' Test if `val` is valid.
+#'
+#' @param x value to be tested
+#' @return TRUE if valid, FALSE otherwise
+#'
+#' @export
+valid <- function(val) {
+    return(!gtools::invalid(val))
+}
+
+
 #' Check value for validity and return it or a default
 #'
 #' @param value value to check
@@ -27,7 +49,7 @@ version <- function() {
 #'
 #' @export
 nvl <- function(value, default) {
-    if (gtools::invalid(value)) {
+    if (invalid(value)) {
         return(default)
     }
 
@@ -195,13 +217,13 @@ synchronize_data <- function(dataset) {
 #'
 #' @export
 synchronize_dataset <- function(dataset) {
-    if (gtools::invalid(dataset)) {
+    if (invalid(dataset)) {
         stop("invalid dataset object")
     } else if (class(dataset) != "list") {
         stop(paste0("dataset should be a list, but it's a ", class(dataset)))
     }
 
-    if (!gtools::invalid(dataset$is_synchronized)) {
+    if (valid(dataset$is_synchronized)) {
         # already synchronized
         return(dataset)
     }
@@ -230,7 +252,7 @@ synchronize_dataset <- function(dataset) {
     ensembl_version <-
         utils::apropos("^ensembl(\\.|_){1}version$", ignore.case = TRUE)
 
-    if (!gtools::invalid(ensembl_version)) {
+    if (valid(ensembl_version)) {
         ensembl_version <- get(ensembl_version)
     } else {
         ensembl_version <- NULL
@@ -245,7 +267,7 @@ synchronize_dataset <- function(dataset) {
         value = TRUE
     )
 
-    if (!gtools::invalid(temp_ensembl)) {
+    if (valid(temp_ensembl)) {
         ds_ensembl_version <- dataset[[temp_ensembl]]
     }
 
@@ -258,11 +280,16 @@ synchronize_dataset <- function(dataset) {
         value = TRUE
     )
 
+    datatype <- tolower(dataset$datatype)
+    if (startsWith(datatype, "pheno")) {
+        datatype <- 'phenotype'
+    }
+
     ds <- list(
         annot_samples   = ds_synch$samples,
         covar_info      = covar_info,
         data            = ds_synch$data,
-        datatype        = dataset$datatype,
+        datatype        = datatype,
         display_name    = dataset[[display_name_field]],
         ensembl_version = ensembl_version,
         sample_id_field = sample_id_field,
@@ -339,7 +366,7 @@ get_dataset_by_id <- function(dataset_id) {
         }
     }
 
-    if (gtools::invalid(dataset)) {
+    if (invalid(dataset)) {
         stop(sprintf("'%s' does not exist", dataset_id))
     }
 
@@ -370,7 +397,7 @@ get_data <- function(ds, data_name = NULL) {
         stop(sprintf("Specified data '%s' not found in dataset", data_name))
     }
 
-    if (!gtools::invalid(data_name)) {
+    if (valid(data_name)) {
         if (is.matrix(ds$data)) {
             stop(sprintf("Specified data '%s' not found in dataset", data_name))
         }
@@ -397,7 +424,7 @@ get_data <- function(ds, data_name = NULL) {
         }
     }
 
-    if (gtools::invalid(ret)) {
+    if (invalid(ret)) {
         stop("Unable to find data in dataset")
     }
 
@@ -413,7 +440,7 @@ get_data <- function(ds, data_name = NULL) {
 #' @export
 get_random_id <- function(dataset) {
     if (tolower(dataset$datatype) == "mrna") {
-        if (gtools::invalid(dataset$is_synchronized)) {
+        if (invalid(dataset$is_synchronized)) {
             annots_field <- grep("^annots?(\\.|_){1}mrnas?$",
                                  names(dataset),
                                  value = TRUE)
@@ -426,7 +453,7 @@ get_random_id <- function(dataset) {
 
         annot_ids <- annot_ids$gene_id
     } else if (tolower(dataset$datatype) == "protein") {
-        if (gtools::invalid(dataset$is_synchronized)) {
+        if (invalid(dataset$is_synchronized)) {
             annots_field <- grep("^annots?(\\.|_){1}proteins?$",
                                  names(dataset),
                                  value = TRUE)
@@ -439,7 +466,7 @@ get_random_id <- function(dataset) {
 
         annot_ids <- annot_ids$protein_id
     } else if (tolower(dataset$datatype) == "phos") {
-        if (gtools::invalid(dataset$is_synchronized)) {
+        if (invalid(dataset$is_synchronized)) {
             annots_field <- grep("^annots?(\\.|_){1}phos$",
                                  names(dataset),
                                  value = TRUE)
@@ -452,7 +479,7 @@ get_random_id <- function(dataset) {
 
         annot_ids <- annot_ids$phos_id
     } else if (is_phenotype(dataset)) {
-        if (gtools::invalid(dataset$is_synchronized)) {
+        if (invalid(dataset$is_synchronized)) {
             annots_field <- grep("^annots?(\\.|_){1}pheno(type)?s?$",
                                  names(dataset),
                                  value = TRUE)
@@ -504,7 +531,7 @@ get_covar_matrix <- function(dataset, id = NULL) {
             ds$annot_phenotype %>%
             dplyr::filter(.data$data_name == id)
 
-        if (gtools::invalid(pheno)) {
+        if (invalid(pheno)) {
             stop(sprintf("Cannot find phenotype '%s' in dataset", id))
         }
 
@@ -655,7 +682,7 @@ get_dataset_info <- function() {
             value = TRUE
         )
 
-        if (!gtools::invalid(temp_ensembl)) {
+        if (valid(temp_ensembl)) {
             ds_ensembl_version <- ds[[temp_ensembl]]
         }
 
@@ -747,7 +774,7 @@ get_dataset_stats <- function() {
 #' @return `TRUE` if id contains data, `FALSE` otherwise
 #' @export
 id_exists <- function(id, ds = NULL) {
-    if (gtools::invalid(ds)) {
+    if (invalid(ds)) {
         # check all datasets
         datasets <- utils::apropos('^dataset\\.*', ignore.case = TRUE)
 

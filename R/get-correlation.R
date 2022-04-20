@@ -185,7 +185,7 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
         )
     }
 
-    if (!gtools::invalid(correlations)) {
+    if (valid(correlations)) {
         # don't return the NAs
         correlations <- correlations %>%
             dplyr::filter(!is.na(.data$cor))

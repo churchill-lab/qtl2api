@@ -20,7 +20,7 @@
 #' If the allele effects are stored, values `A-H` will also be included.
 get_lod_peaks <- function(ds, intcovar = NULL) {
     # these functions should not be synchronized
-    if (!gtools::invalid(ds$is_synchronized)) {
+    if (valid(ds$is_synchronized)) {
         stop("dataset should not be synchronized")
     }
 
@@ -52,7 +52,7 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
         }
     }
 
-    if (gtools::invalid(peaks)) {
+    if (invalid(peaks)) {
         stop(sprintf("No peaks found for intcovar '%s' in lod.peaks", intcovar))
     }
 
@@ -326,7 +326,7 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
 #' @export
 get_lod_peaks_dataset <- function(ds, intcovar = NULL) {
     # these functions should not be synchronized
-    if (!gtools::invalid(ds$is_synchronized)) {
+    if (valid(ds$is_synchronized)) {
         stop("dataset should not be synchronized")
     }
 
@@ -360,7 +360,7 @@ get_lod_peaks_dataset <- function(ds, intcovar = NULL) {
             }
         }
 
-        if (!gtools::invalid(intcovar)) {
+        if (valid(intcovar)) {
             peaks <- peaks[[intcovar]]
         }
     }
@@ -418,7 +418,7 @@ get_lod_peaks_for_annot <- function(dataset, id,
         peakdropX  = peakdropX
     )
 
-    if (gtools::invalid(peaks_additive)) {
+    if (invalid(peaks_additive)) {
         peaks_additive <- tibble::tibble(
             lodindex  = numeric(),
             lodcolumn = character(),
@@ -463,7 +463,7 @@ get_lod_peaks_for_annot <- function(dataset, id,
                 peakdropX  = peakdropX
             )
 
-            if(!gtools::invalid(peaks_covar)) {
+            if(valid(peaks_covar)) {
                 peaks_covar$scan = inf$sample_column
                 peaks_all <- peaks_all %>% dplyr::bind_rows(peaks_covar)
             }
@@ -513,7 +513,7 @@ get_lod_peaks_for_annot <- function(dataset, id,
         for (i in 1:nrow(lod_peaks)) {
             peak <- lod_peaks[i, ]
 
-            if(gtools::invalid(peak$marker_id)) {
+            if(invalid(peak$marker_id)) {
                 mrk_id <- qtl2::find_marker(
                     map,
                     peak$chr,

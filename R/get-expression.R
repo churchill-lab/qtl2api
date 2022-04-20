@@ -19,7 +19,7 @@ get_expression <- function(dataset, id) {
         stop(sprintf("Cannot find id '%s' in dataset", id))
     }
 
-    if (gtools::invalid(ds$covar_info)) {
+    if (invalid(ds$covar_info)) {
         datatypes <- NULL
     } else {
         datatypes <- list()

@@ -23,13 +23,6 @@ validate_dataset <- function(dataset, extensive = FALSE) {
 
     cat("\nSTATUS  : Checking dataset '", ds_orig[[annots_field]], "' ...\n")
 
-    ds <- synchronize_dataset(ds_orig)
-
-    if (gtools::invalid(ds)) {
-        message("ERROR   : dataset not found")
-        return()
-    }
-
     # dataset should be a list
     if (!is.list(ds_orig)) {
         message("ERROR   : dataset should be a list, but found: ", class(ds_orig))
@@ -40,7 +33,7 @@ validate_dataset <- function(dataset, extensive = FALSE) {
         message("ERROR   : dataset must contain 'datatype'")
     }
 
-    datatype = ds[['datatype']]
+    datatype = ds_orig[['datatype']]
     is_mrna <- FALSE
     is_protein <- FALSE
     is_phos <- FALSE
@@ -52,13 +45,20 @@ validate_dataset <- function(dataset, extensive = FALSE) {
         is_protein <- TRUE
     } else if (tolower(datatype) == 'phos') {
         is_phos <- TRUE
-    } else if (is_phenotype(ds)) {
+    } else if (is_phenotype(ds_orig)) {
         is_pheno <- TRUE
     } else {
         message("ERROR   : datatype is invalid: ", datatype)
     }
 
     validate_annotations(ds_orig)
+
+    ds <- synchronize_dataset(ds_orig)
+
+    if (invalid(ds)) {
+        message("ERROR   : dataset not found")
+        return()
+    }
 
     validate_covar_info(ds_orig)
 
@@ -151,7 +151,7 @@ validate_dataset_extensive <- function(dataset) {
         }
     )
 
-    if (gtools::invalid(intcovar)) {
+    if (invalid(intcovar)) {
         cat("WARNING : unable to test qtl2api::get_lod_scan with intcovar\n")
     } else {
         cat(paste0("STATUS  : Checking qtl2api::get_lod_scan: ", id, " intcovar: ", intcovar, "\n"))
@@ -169,7 +169,7 @@ validate_dataset_extensive <- function(dataset) {
         )
     }
 
-    if (gtools::invalid(intcovar)) {
+    if (invalid(intcovar)) {
         cat("WARNING : unable to test qtl2api::get_lod_scan_by_sample with intcovar\n")
     } else {
         cat(paste0("STATUS  : Checking qtl2api::get_lod_scan_by_sample: ", id, " chrom: ", chrom, " intcovar: ", intcovar, "\n"))
@@ -215,7 +215,7 @@ validate_dataset_extensive <- function(dataset) {
         }
     )
 
-    if (gtools::invalid(intcovar)) {
+    if (invalid(intcovar)) {
         cat("WARNING : unable to test qtl2api::get_founder_coefficients with intcovar\n")
     } else {
         cat(paste0("STATUS  : Checking qtl2api::get_founder_coefficients: ", id, " chrom: ", chrom, ", intcovar: ", intcovar, "\n"))
@@ -247,7 +247,7 @@ validate_dataset_extensive <- function(dataset) {
         }
     )
 
-    if (gtools::invalid(intcovar)) {
+    if (invalid(intcovar)) {
         cat("WARNING : unable to test qtl2api::get_correlation with intcovar\n")
     } else {
         cat(paste0("STATUS  : Checking qtl2api::get_correlation ", id, " intcovar: ", intcovar, "\n"))
@@ -280,7 +280,7 @@ validate_dataset_extensive <- function(dataset) {
         }
     )
 
-    if (gtools::invalid(intcovar)) {
+    if (invalid(intcovar)) {
         cat("WARNING : unable to test qtl2api::get_correlation_plot_data with intcovar\n")
     } else {
         cat(paste0("STATUS  : Checking qtl2api::get_correlation_plot_data ", id, " id_correlate: ", id_correlate, " intcovar: ", intcovar, "\n"))
@@ -337,7 +337,7 @@ validate_environment <- function(extensive = FALSE) {
     # grab the datasets in the environment
     datasets <- grep('^dataset*', utils::apropos('dataset\\.'), value=TRUE)
 
-    if (gtools::invalid(datasets)) {
+    if (invalid(datasets)) {
         message("ERROR   : No datasets found!")
         return()
     }
@@ -400,12 +400,11 @@ validate_annotations <- function(dataset) {
         ds_orig <- dataset
     }
 
-    ds <- synchronize_dataset(ds_orig)
-
     annots <- NULL
     annots_orig <- NULL
 
-    if (tolower(ds$datatype) == "mrna") {
+    # check orginal
+    if (tolower(ds_orig$datatype) == "mrna") {
         annots_field <- grep("^annots?(\\.|_){1}mrnas?$",
                              names(ds_orig),
                              value = TRUE)
@@ -419,13 +418,8 @@ validate_annotations <- function(dataset) {
             message("ERROR   : annot_mrna should be a tibble, but found: ", class(ds[[annots_field]]))
         }
 
-        annots <- ds$annot_mrna
         annots_orig <- ds_orig[[annots_field]]
-
-        if (any(duplicated(annots$gene_id))) {
-            message("ERROR   : There are duplicated gene identifiers in annot_mrna")
-        }
-    } else if (tolower(ds$datatype) == "protein") {
+    } else if (tolower(ds_orig$datatype) == "protein") {
         annots_field <- grep("^annots?(\\.|_){1}proteins?$",
                              names(ds_orig),
                              value = TRUE)
@@ -439,13 +433,8 @@ validate_annotations <- function(dataset) {
             message("ERROR   : annot_protein should be a tibble, but found: ", class(ds[[annots_field]]))
         }
 
-        annots <- ds$annot_protein
         annots_orig <- ds_orig[[annots_field]]
-
-        if (any(duplicated(annots$protein_id))) {
-            message("ERROR   : There are duplicated protein identifiers in annot_protein")
-        }
-    } else if (tolower(ds$datatype) == "phos") {
+    } else if (tolower(ds_orig$datatype) == "phos") {
         annots_field <- grep("^annots?(\\.|_){1}phos$",
                              names(ds_orig),
                              value = TRUE)
@@ -459,13 +448,8 @@ validate_annotations <- function(dataset) {
             message("ERROR   : annot_phos should be a tibble, but found: ", class(ds[[annots_field]]))
         }
 
-        annots <- ds$annot_phos
         annots_orig <- ds_orig[[annots_field]]
-
-        if (any(duplicated(annots$phos_id))) {
-            message("ERROR   : There are duplicated phos identifiers in annot_phos")
-        }
-    } else if (is_phenotype(ds)) {
+    } else if (is_phenotype(ds_orig)) {
         annots_field <- grep("^annots?(\\.|_){1}pheno(type)?s?$",
                              names(dataset),
                              value = TRUE)
@@ -479,13 +463,70 @@ validate_annotations <- function(dataset) {
             message("ERROR   : annot_phenotype should be a tibble, but found: ", class(ds[[annots_field]]))
         }
 
-        annots <- ds$annot_phenotype
         annots_orig <- ds_orig[[annots_field]]
+
+        column_field <- grep(
+            "^is(\\.|_){1}id$",
+            colnames(annots_orig),
+            value = TRUE,
+            ignore.case = TRUE
+        )
+
+        if (length(column_field) == 0) {
+            message("ERROR   : is_id not found in annots_phenotype")
+            return()
+        }
+
+        column_field <- grep(
+            "^data(\\.|_){1}name$",
+            colnames(annots_orig),
+            value = TRUE,
+            ignore.case = TRUE
+        )
+
+        if (length(column_field) == 0) {
+            message("ERROR   : data_name not found in annots_phenotype")
+            return()
+        }
+    }
+
+    ds <- synchronize_dataset(ds_orig)
+
+    annots <- NULL
+
+    if (tolower(ds$datatype) == "mrna") {
+        annots <- ds$annot_mrna
+
+        if (any(duplicated(annots$gene_id))) {
+            message("ERROR   : There are duplicated gene identifiers in annot_mrna")
+        }
+    } else if (tolower(ds$datatype) == "protein") {
+        annots <- ds$annot_protein
+
+        if (any(duplicated(annots$protein_id))) {
+            message("ERROR   : There are duplicated protein identifiers in annot_protein")
+        }
+    } else if (tolower(ds$datatype) == "phos") {
+        annots <- ds$annot_phos
+
+        if (any(duplicated(annots$phos_id))) {
+            message("ERROR   : There are duplicated phos identifiers in annot_phos")
+        }
+    } else if (is_phenotype(ds)) {
+        annots <- ds$annot_phenotype
 
         if (any(duplicated(annots$data_name))) {
             message("ERROR   : There are duplicated data_name annotations in annot_phenotype")
         }
     }
+
+
+
+
+
+
+
+
 
     if (is_phenotype(ds)) {
         expected_names <- c('data_name', 'short_name', 'description', 'is_id',
@@ -609,7 +650,7 @@ validate_samples <- function(dataset) {
     }
 
     sample_id_field <- ds$sample_id_field
-    if (gtools::invalid(sample_id_field)) {
+    if (invalid(sample_id_field)) {
         message('ERROR   : unable to determine sample id field')
     }
 
@@ -727,13 +768,13 @@ validate_covar_info <- function(dataset) {
             message("ERROR   : covar_info$sample_column ('", row$sample_column, "') is not a column name in annot_samples")
         }
 
-        if (gtools::invalid(row$display_name)) {
+        if (invalid(row$display_name)) {
             message("ERROR   : covar_info$display_name needs to have a value")
         }
 
         if (class(row$interactive) == 'logical') {
             if (row$interactive) {
-                if (gtools::invalid(row$lod_peaks)) {
+                if (invalid(row$lod_peaks)) {
                     message("ERROR   : covar_info$interactive is TRUE, but covar_info$lod_peaks is NA")
                 } else {
                     # check for existence of lod_peaks
@@ -748,7 +789,7 @@ validate_covar_info <- function(dataset) {
                     }
                 }
             } else {
-                if (!gtools::invalid(row$lod_peaks)) {
+                if (valid(row$lod_peaks)) {
                     message("ERROR   : covar_info$interactive is FALSE, but covar_info$lod_peaks ('", row$lod_peaks, "') is set")
                 }
             }
@@ -857,7 +898,7 @@ validate_lod_peaks <- function(dataset) {
 
             peaks <- ds_orig[[annots_field_peaks]][[cov_inf$lod_peaks]]
 
-            if (gtools::invalid(peaks)) {
+            if (invalid(peaks)) {
                 message("ERROR   : Unable to find lod_peaks '", cov_inf$lod_peaks, "'")
             } else {
 
@@ -867,6 +908,14 @@ validate_lod_peaks <- function(dataset) {
                 if (tolower(ds$datatype) == "protein") {
                     if (length(setdiff(peaks$protein_id, ds$annot_protein$protein_id))) {
                         cat("WARNING : not all lod_peaks$protein_id are in annot_protein$protein_id\n")
+                    }
+
+                    if (length(setdiff(peaks$marker_id, markers$marker.id))) {
+                        cat("WARNING : not all lod_peaks$marker_id are in markers\n")
+                    }
+                } else if (tolower(ds$datatype) == "phos") {
+                    if (length(setdiff(peaks$phos_id, ds$annot_phos$phos_id))) {
+                        cat("WARNING : not all lod_peaks$phos_id are in annot_phos$phos_id\n")
                     }
 
                     if (length(setdiff(peaks$marker_id, markers$marker.id))) {

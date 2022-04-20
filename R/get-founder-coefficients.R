@@ -44,7 +44,7 @@ get_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
     ret <- list()
     attr(ret, 'covar_formula') <- covar_information$covar_formula
 
-    if (gtools::invalid(intcovar)) {
+    if (invalid(intcovar)) {
         if (blup) {
             temp <- qtl2::scan1blup(
                 genoprobs = genoprobs[, chrom],
