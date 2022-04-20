@@ -5,19 +5,19 @@ The QTL Viewer utilizes R and several different libraries in order to calculate 
 
 _Please note that some data element must be pre-computed._
 
-# RData Environment Overview
+# R Environment Overview
 
-The following elements should be contained within the RData file.
+The following elements should be contained within the R environment.  These can be in one or multiple RData and/or Rds files.
 
 Element | Description
  --- | --- 
-`ensembl.version` | the numerical version of Ensembl
+`ensembl_release` | the numerical version of [Ensembl](http://www.ensembl.org)
 `genoprobs` | the genotype probabilities
 `K` | the kinship matric
 `map` | list of one element per chromosome, with the genomic position of each marker
 `markers` | marker names and positions
 
-The following element is a special element and there must be at least one per RData file or in a separate Rds file.
+The following element is a _special_ element.  A good practice is to keep a one to one matching between dataset and Rds file.
 
 Element | Description
  --- | --- 
@@ -32,7 +32,7 @@ _Other meta data can be included in the RData file as long as there are no confl
 ## ensembl.version
 `R data type:` `numeric`
 
-This specifies the genome release version for the genomic marker positions and for annotations attached to molecular phenotypes IF any, i.e. mRNA.  Please see the documentation at [Ensembl](http://www.ensembl.org) for build and version information.
+This specifies the genome release version for the genomic marker positions and for annotations attached to molecular phenotypes IF any, i.e. mRNA.  Please see the documentation at [Ensembl](http://www.ensembl.org) for build and release information.
 
 
 ## genoprobs
@@ -41,13 +41,13 @@ This specifies the genome release version for the genomic marker positions and f
 
 This is the genotype probabilities and must be supplied by the user.  This is a list with one element per chromosome of **N** * **K** * **Mj** arrays, where:
    
-* **N** represents the number of mice
-* **K** represents the number of founders
+* **N** represents the number of samples (i.e. mice)
+* **K** represents the number of strains (i.e. founder strains)
 * **Mj**  represents the number of markers on chromosome **j**
    
-`rownames(genoprobs)` are the same value of the mouse.id column in the samples element
+`rownames(genoprobs)` are the same value of the sample id column in the samples element
    
-`colnames(genoprobs)` are the founder strain symbol (A,B,C,D,E,F,G,H)
+`colnames(genoprobs)` are strains, for the founder strains they are symbols A,B,C,D,E,F,G,H
    
 `dimnames(genoprobs[[j]])` are marker names on chromosome j
 
@@ -60,11 +60,11 @@ _May be produced by_ _qtl2convert::probs_doqtl_to_qtl2.  Please see the document
 
 A list of kinship matrices, with one element per chromosome of **N** * **N** matrices, where:
    
-* **N** represents the number of mice
+* **N** represents the number of samples
    
-`rownames(K)` are the same value of the mouse.id column in the samples element
+`rownames(K)` are the same value of the sample id column in the samples element
    
-`colnames(K)` are the same value of the mouse.id column in the samples element
+`colnames(K)` are the same value of the sample id column in the samples element
 
 _May be produced by_ _qtl2geno::calc_kinship(genoprobs, type=”loco”).  Please see the documentation of R/qtl2geno._
 
@@ -84,7 +84,7 @@ _May be produced by_ _qtl2convert::map_df_to_list.  Please see the documentation
 
 Marker information containing the following information:
 
-* **marker.id** character string, unique name of the marker
+* **marker_id** character string, unique name of the marker
 * **chr** character string, the chromosome
 * **pos** numeric, position in Mbp
 
@@ -99,25 +99,24 @@ The dataset.* element is a list that should contain the following named elements
 
 Element | Description
 --- | ---
-`annot.**datatype**` | annotations, where datatype is one of **mrna**, **protein**, or **phenotype**
-`annot.samples` | annotation data for the samples
-`covar.matrix` | a matrix of covariate data, samples (rows) x covariates (columns)
-`covar.info` | information describing the covariates
+`annot.**datatype**` | annotations, where datatype is one of **mrna**, **protein**, **phos** or **phenotype**
+`annot_samples` | annotation data for the samples
+`covar_info` | _(optional)_ information describing the covariates
 `data` | either a matrix containing data or a list containing several kinds of data
-`datatype` | one of **mrna**, **protein**, or **phenotype**
-`display.name` | name of the dataset, for QTL Viewer display purposes
-`lod.peaks` | a list of LOD peaks over a certain threshold
+`datatype` | one of **mrna**, **protein**, **phos** or **phenotype**
+`display_name` | name of the dataset, for QTL Viewer display purposes
+`lod_peaks` | _(optional)_ a list of LOD peaks over a certain threshold
 
-## annot.datatype
+## annot_datatype
 `R data type:` `tibble`
 
-The annot.**_datatype_** element will have different data and column names depending on whether this is a **mrna**, **protein**, or **phenotype** dataset.
+The annot_**_datatype_** element will have different data and column names depending on whether this is a **mrna**, **protein**, **phos** or **phenotype** dataset.
 
 For **mrna**,  the following fields are required:
 
 Field | Description
 --- | ---
-`gene.id` | character string, Ensembl gene id
+`gene_id` | character string, Ensembl gene id
 `symbol` | character string, Symbol of the gene
 `chr` | character string, chromosome
 `start` | numeric, position in Mbp
@@ -127,41 +126,52 @@ For **protein**, all **mrna** fields _PLUS_ the following field:
 
 Field | Description
 --- | ---
-`protein.id` | character string, Ensembl protein id
+`protein_id` | character string, Ensembl protein id
+
+For **phos**, all **protein** fields _PLUS_ the following field:
+
+Field | Description
+--- | ---
+`phos_id` | character string, Phosphopetide ID
 
 For **phenotype**, the following fields are required:
 
 Field | Description
 --- | ---
-`data.name` | character string, phenotype id
-`short.name` | character string, short descriptive name
-`R.name` | character string, name used by R
-`description` | character string, phenotype description
-`units` | character string, measureing units
+`data_name` | character string, phenotype id
+`short_name` | character string, short descriptive name
 `category` | character string, category if any
-`R.category` | character string, category used by R
-`is.id` | logical, should only be 1 TRUE
-`is.numeric` | logical, is this a numeric field
-`is.date` | logical, does this contain a date
-`is.factor` | logical, is this a factor
-`factor.levels` | character string, “:” separated values
-`is.covar` | logical, is this a covariate
-`is.pheno` | logical, is this an actual phenotype
-`is.derived` | logical, is this phenotype derived
+`description` | character string, phenotype description
+`is_id` | logical, should only be 1 TRUE
+`is_pheno` | logical, is this an actual phenotype
+`is_numeric` | logical, is this a numeric field
 `omit` | logical, T to omit, F to include
-`use.covar` | character string, Ensembl gene id
+`use_covar` | character string, colon seperated covar values
+
+Also for **phenotype**, the following fields are legacy fields (not required):
+
+Field | Description
+--- | ---
+`units` | character string, measureing units
+`R_name` | character string, name used by R
+`R_category` | character string, category used by R
+`is_date` | logical, does this contain a date
+`is_factor` | logical, is this a factor
+`factor_levels` | character string, “:” separated values
+`is_covar` | logical, is this a covariate
+`is_derived` | logical, is this phenotype derived
 
 _Extra information in the_ _tibble_ _will be ignored by the QTL Viewer._
 
-## annot.samples
+## annot_samples
 
 `R data type:` `tibble`
 
-Annotations for the samples in this dataset.  The unique identifying column is **mouse.id**. There should be a unique value for **mouse.id** in every row.
+Annotations for the samples in this dataset.  The unique identifying column is **sample_id**. We use a regular expression to determine the unique **sample_id** column.  Examples that work are mouse.id, mouse_id, sample.id, sample_id. There should be a unique value for **sample_id** in every row.
 
-For the purpose of doing certain scans, there will need to be other columns that match the information stored in the covar.info element.
+For the purpose of doing certain scans, there will need to be other columns that match the information stored in the covar_info element.
 
-## covar.info
+## covar_info
 
 `R data type:` `tibble`
 
@@ -169,11 +179,11 @@ This element controls how we scan and interact with the RData object. The follow
 
 Field | Description
 --- | ---
-`sample.column` | name of the column in the -annot.sample element
-`display.name` | QTL Viewer uses this to display a nice name
-`interactive` | TRUE for an interactive covariate, must also set lod.peaks if TRUE. If FALSE, lod.peaks value should be NA.  This controls whether or not interactive scans are performed for a particular covariate.
+`sample_column` | name of the column in the **annot_samples** element
+`display_name` | QTL Viewer uses this to display a nice name
+`interactive` | TRUE for an interactive covariate, must also set lod_peaks if TRUE. If FALSE, lod_peaks value should be NA.  This controls whether or not interactive scans are performed for a particular covariate.
 `primary` | which covariate to display preselected in the Effect Plot
-`lod.peaks` | named tibble in the lod.peaks element
+`lod_peaks` | named tibble in the lod_peaks element
 
 ## data
 
@@ -202,26 +212,27 @@ This will be used to identify the type of dataset.  This is a controlled vocabul
 
 * **mrna**
 * **protein**
+* **phos**
 * **phenotype**
 
 Based upon the value of this element, the QTL Viewer will treat the data as accordingly.
 
-## display.name
+## display_name
 
 `R data type:` `character`
 
 This will be used to display the name of the dataset to the user in the QTL Viewer.  This will be used in a dropdown menu to switch among the datasets.
 
 
-## lod.peaks
+## lod_peaks
 
 `R data type:` `list`
 
-This is a list with each value in the list being either **additive** (the default) or one of the interactive covariates (if set in covar.info). The **additive** values should always be present.
+This is a list with each value in the list being either **additive** (the default) or one of the interactive covariates (if set in covar_info). The **additive** values should always be present.
 
-The covar.info element should have values with interactive set to TRUE and lod.peaks set to the name of the element in this list.
+The covar_info element should have values with interactive set to TRUE and lod.peaks set to the name of the element in this list.
 
-Depending on the value of datatype (**mrna**, **protein**, **phenotype**), the annotation column identifier will match to the appropriate column in the anot.dataype element.
+Depending on the value of datatype (**mrna**, **protein**, **phos**, **phenotype**), the annotation column identifier will match to the appropriate column in the annot_ _datatype_ element.
 
 The following shows the required fields in each tibble.
 
@@ -229,23 +240,31 @@ If datatype is **mrna**, the following fields are required:
 
 Field | Description
 --- | ---
-`gene.id` | the Ensembl gene identifier in the annot.mrna element
-`marker.id` | the marker identifier in the markers element
+`gene_id` | the Ensembl gene identifier in the annot_mrna element
+`marker_id` | the marker identifier in the markers element
 `lod` | the lod score
 
 If datatype is **protein**, the following fields are required:
 
 Field | Description
 --- | ---
-`protein.id` | the Ensembl protein id in the annot.protein element
-`marker.id` | the marker identifier in the markers element
+`protein_id` | the Ensembl protein id in the annot_protein element
+`marker_id` | the marker identifier in the markers element
+`lod` | the lod score
+
+If datatype is **phos**, the following fields are required:
+
+Field | Description
+--- | ---
+`phos_id` | the Phosphopeptide identifer
+`marker_id` | the marker identifier in the markers element
 `lod` | the lod score
 
 If datatype is **phenotype**, the following fields are required:
 
 Field | Description
 --- | ---
-`data.name` | the unique identifier in the annot.pheno element
-`marker.id` | the marker identifier in the markers element
+`data_name` | the unique identifier in the annot_phenotype element
+`marker_id` | the marker identifier in the markers element
 `lod` | the lod score
 
