@@ -791,7 +791,7 @@ id_exists <- function(id) {
             all_ids <- ds$annot_phenotype$data_name
         }
 
-        if (any(id == colnames(ds$data)) && (id %in% all_ids)) {
+        if (id %in% all_ids) {
             ret[[d]] <- list(
                 dataset_id        = d,
                 datatset_datatype = ds$datatype,
