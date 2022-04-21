@@ -616,25 +616,25 @@ get_dataset_info <- function() {
 
         annotations <- list()
 
-        if (tolower(ds$datatype) == 'mrna') {
+        if (ds$datatype == 'mrna') {
             annotations <-
                 tibble::tibble(
                     gene_id    = ds_synchronized$annots$gene_id
                 )
-        } else if(tolower(ds$datatype) == 'protein') {
+        } else if(ds$datatype == 'protein') {
             annotations <-
                 tibble::tibble(
                     protein_id = ds_synchronized$annots$protein_id,
                     gene_id    = ds_synchronized$annots$gene_id
                 )
-        } else if(tolower(ds$datatype) == 'phos') {
+        } else if(ds$datatype == 'phos') {
             annotations <-
                 tibble::tibble(
                     phos_id    = ds_synchronized$annots$phos_id,
                     protein_id = ds_synchronized$annots$protein_id,
                     gene_id    = ds_synchronized$annots$gene_id
                 )
-        } else if(is_phenotype(ds)) {
+        } else if(ds$datatype == 'phenotype') {
             # this is trickier, we need to send back the is_pheno = FALSE too
             # TODO: Rethink this, do we need is_pheno == FALSE?
             #
@@ -719,19 +719,19 @@ get_dataset_stats <- function() {
 
         annots_field <- NA
 
-        if (tolower(ds$datatype) == 'mrna') {
+        if (ds$datatype == 'mrna') {
             annots_field <- grep("^annots?(\\.|_){1}mrnas?$",
                                  names(ds),
                                  value = TRUE)
-        } else if(tolower(ds$datatype) == 'protein') {
+        } else if(ds$datatype == 'protein') {
             annots_field <- grep("^annots?(\\.|_){1}proteins?$",
                                  names(ds),
                                  value = TRUE)
-        } else if(tolower(ds$datatype) == 'phos') {
+        } else if(ds$datatype == 'phos') {
             annots_field <- grep("^annots?(\\.|_){1}phos?$",
                                  names(ds),
                                  value = TRUE)
-        } else if(is_phenotype(ds)) {
+        } else if(ds$datatype == 'phenotype') {
             annots_field <- grep("^annots?(\\.|_){1}pheno(type)?s?$",
                                  names(ds),
                                  value = TRUE)
@@ -774,24 +774,60 @@ get_dataset_stats <- function() {
 #' @return `TRUE` if id contains data, `FALSE` otherwise
 #' @export
 id_exists <- function(id, ds = NULL) {
-    if (invalid(ds)) {
+    ret <- list()
+
+    if (valid(ds)) {
+        if (is.character(ds)) {
+            ds <- get_dataset_by_id(ds)
+        }
+        ds <- synchronize_dataset(ds)
+
+        if (ds$datatype == 'mrna') {
+            all_ids <- ds$annot_mrna$gene_id
+        } else if(ds$datatype == 'protein') {
+            all_ids <- ds$annot_protein$gene_id
+        } else if(ds$datatype == 'phos') {
+            all_ids <- ds$annot_phos$gene_id
+        } else if(ds$datatype == 'phenotype') {
+            all_ids <- ds$annot_phenotype$data_name
+        }
+
+        if (any(id == colnames(ds$data)) && (id %in% all_ids)) {
+            ret[[d]] <- list(
+                dataset_id   = d,
+                dataset_name = ds$display_name,
+                id           = id
+            )
+        }
+    } else {
         # check all datasets
         datasets <- utils::apropos('^dataset\\.*', ignore.case = TRUE)
 
         for (d in datasets) {
-            dataset <- synchronize_dataset(get_dataset_by_id(d))
-            if (any(id == colnames(dataset$data))) {
-                return(TRUE)
+            ds <- synchronize_dataset(get_dataset_by_id(d))
+            all_ids <- NULL
+
+            if (ds$datatype == 'mrna') {
+                all_ids <- ds$annot_mrna$gene_id
+            } else if(ds$datatype == 'protein') {
+                all_ids <- ds$annot_protein$gene_id
+            } else if(ds$datatype == 'phos') {
+                all_ids <- ds$annot_phos$gene_id
+            } else if(ds$datatype == 'phenotype') {
+                all_ids <- ds$annot_phenotype$data_name
             }
-        }
-    } else {
-        dataset <- synchronize_dataset(ds)
-        if (any(id == colnames(dataset$data))) {
-            return(TRUE)
+
+            if (any(id == colnames(ds$data)) && (id %in% all_ids)) {
+                ret[[d]] <- list(
+                    dataset_id   = d,
+                    dataset_name = ds$display_name,
+                    id           = id
+                )
+            }
         }
     }
 
-    FALSE
+    ret
 }
 
 
