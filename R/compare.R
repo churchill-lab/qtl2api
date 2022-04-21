@@ -1,11 +1,10 @@
-#' Validate the dataset to make sure qtl2api can use it.
+#' Compare 2 datasets.
 #'
 #' @param dataset_a the dataset_id as a string identifier
 #' @param dataset_b the dataset_id as a string identifier
-#' @param extensive TRUE to perform scans on random elements in the data
 #'
 #' @export
-compare_datasets <- function(dataset_a, dataset_b, extensive = FALSE) {
+compare_datasets <- function(dataset_a, dataset_b) {
 
     # get the datasets
     if (is.character(dataset_a)) {
@@ -34,11 +33,13 @@ compare_datasets <- function(dataset_a, dataset_b, extensive = FALSE) {
     }
 
     results$annotations <- compare_annotations(ds_a, ds_b)
-    results$covar_info <- compare_covar_info(ds_a, ds_b)
-    results$samples <- compare_samples(ds_a, ds_b)
+    results$covar_info  <- compare_covar_info(ds_a, ds_b)
+    results$samples     <- compare_samples(ds_a, ds_b)
+    results$data        <- compare_data(ds_a, ds_b, results)
 
     results
 }
+
 
 compare_annotations <- function(ds_a, ds_b) {
     #
@@ -47,7 +48,6 @@ compare_annotations <- function(ds_a, ds_b) {
 
      annots_a <- NULL
      ids_a <- NULL
-     cols_a <- NULL
 
      if (ds_a$datatype == 'mrna') {
          annots_a <- ds_a$annot_mrna
@@ -61,8 +61,6 @@ compare_annotations <- function(ds_a, ds_b) {
      } else if (ds_a$datatype == 'phenotype') {
          annots_a <- ds_a$annot_phenotype
          ids_a <- annots_a$data_name
-     } else {
-         warning('Unknown ds_a$datatype')
      }
 
      cols_a <- colnames(annots_a)
@@ -73,7 +71,6 @@ compare_annotations <- function(ds_a, ds_b) {
 
      annots_b <- NULL
      ids_b <- NULL
-     cols_b <- NULL
 
      if (ds_b$datatype == 'mrna') {
          annots_b <- ds_b$annot_mrna
@@ -87,8 +84,6 @@ compare_annotations <- function(ds_a, ds_b) {
      } else if (ds_b$datatype == 'phenotype') {
          annots_b <- ds_b$annot_phenotype
          ids_b <- annots_b$data_name
-     } else {
-         warning('Unknown ds_b$datatype')
      }
 
      cols_b <- colnames(annots_b)
@@ -110,7 +105,10 @@ compare_annotations <- function(ds_a, ds_b) {
 
     results$annots_only_a <- setdiff(cols_a, cols_b)
     results$annots_only_b <- setdiff(cols_b, cols_a)
-    results$annots_both <- intersect(cols_a, cols_b)
+    results$annots_both   <- intersect(cols_a, cols_b)
+    results$annots_total  <- union(cols_a, cols_b)
+    results$annots_match  <-
+        (length(results$annots_both) / length(results$annots_total)) * 100.0;
 
     #
     # get row (id) information
@@ -127,7 +125,10 @@ compare_annotations <- function(ds_a, ds_b) {
 
     results$ids_only_a <- setdiff(ids_a, ids_b)
     results$ids_only_b <- setdiff(ids_b, ids_a)
-    results$ids_both <- intersect(ids_a, ids_b)
+    results$ids_both   <- intersect(ids_a, ids_b)
+    results$ids_total  <- union(ids_a, ids_b)
+    results$ids_match  <-
+        (length(results$ids_both) / length(results$ids_total)) * 100.0;
 
     #
     # return results
@@ -180,7 +181,10 @@ compare_covar_info <- function(ds_a, ds_b) {
 
     results$covars_only_a <- setdiff(covars_a, covars_b)
     results$covars_only_b <- setdiff(covars_b, covars_a)
-    results$covars_both <- intersect(covars_a, covars_b)
+    results$covars_both   <- intersect(covars_a, covars_b)
+    results$covars_total  <- union(covars_a, covars_b)
+    results$covars_match  <-
+        (length(results$covars_both) / length(results$covars_total)) * 100.0;
 
     #
     # loop through the covar information
@@ -217,15 +221,17 @@ compare_covar_info <- function(ds_a, ds_b) {
                 )
 
             results$covar_matches[[sample_column]] <- list(
+                num_samples    = length(matching_vals$id),
                 samples_only_a = setdiff(sample_vals_a$id, matching_vals$id),
                 samples_only_b = setdiff(sample_vals_b$id, matching_vals$id),
                 samples_both   = matching_vals$id,
-                num_samples    = length(matching_vals$id)
+                samples_total  = union(sample_vals_a$id, sample_vals_b$id),
+                samples_match  =
+                    (length(matching_vals$id) /
+                         length(union(sample_vals_a$id, sample_vals_b$id))) * 100.0
             )
         }
     }
-
-
 
     #
     # return results
@@ -269,7 +275,10 @@ compare_samples <- function(ds_a, ds_b) {
 
     results$annots_only_a <- setdiff(cols_a, cols_b)
     results$annots_only_b <- setdiff(cols_b, cols_a)
-    results$annots_both <- intersect(cols_a, cols_b)
+    results$annots_both   <- intersect(cols_a, cols_b)
+    results$annots_total  <- union(cols_a, cols_b)
+    results$annots_match  <-
+        (length(results$annots_both) / length(results$annots_total)) * 100.0;
 
     #
     # get row (id) information
@@ -286,11 +295,44 @@ compare_samples <- function(ds_a, ds_b) {
 
     results$samples_only_a <- setdiff(ids_a, ids_b)
     results$samples_only_b <- setdiff(ids_b, ids_a)
-    results$samples_both <- intersect(ids_a, ids_b)
+    results$samples_both   <- intersect(ids_a, ids_b)
+    results$samples_total  <- union(ids_a, ids_b)
+    results$samples_match  <-
+        (length(results$samples_both) / length(results$samples_total)) * 100.0;
 
     #
     # return results
     #
 
     results
+}
+
+
+compare_data <- function(ds_a, ds_b, res) {
+    #
+    # check to see if we can do any comparisons
+    #
+
+    if (res$annotations$ids_match == 0) {
+        # no annotations match
+        results$message <- 'No ids match, so no data matches'
+        return(results)
+    }
+
+    if (res$samples$samples_match == 0) {
+        # no samples match
+        results$message <- 'No samples match, so no data matches'
+    }
+
+    #
+    # check data
+    #
+    data_a <- ds_a$data[res$samples$samples_match,
+                        res$annotations$ids_match]
+
+    data_b <- ds_b$data[res$samples$samples_match,
+                        res$annotations$ids_match]
+
+
+    return(all.equal(data_a, data_b))
 }
