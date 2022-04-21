@@ -827,6 +827,10 @@ id_exists <- function(id, ds = NULL) {
         }
     }
 
+    if (invalid(ret)) {
+        ret <- NULL
+    }
+
     ret
 }
 
