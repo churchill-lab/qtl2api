@@ -800,7 +800,7 @@ id_exists <- function(id) {
         }
     }
 
-    if (invalid(ret)) {
+    if (length(ret) == 0) {
         ret <- NULL
     }
 
