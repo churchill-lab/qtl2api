@@ -793,9 +793,10 @@ id_exists <- function(id) {
 
         if (any(id == colnames(ds$data)) && (id %in% all_ids)) {
             ret[[d]] <- list(
-                dataset_id   = d,
-                dataset_name = ds$display_name,
-                id           = id
+                dataset_id        = d,
+                datatset_datatype = ds$datatype,
+                dataset_name      = ds$display_name,
+                id                = id
             )
         }
     }
