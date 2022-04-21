@@ -327,11 +327,11 @@ compare_data <- function(ds_a, ds_b, res) {
     #
     # check data
     #
-    data_a <- ds_a$data[res$samples$samples_match,
-                        res$annotations$ids_match]
+    data_a <- ds_a$data[res$samples$samples_both,
+                        res$annotations$ids_both]
 
-    data_b <- ds_b$data[res$samples$samples_match,
-                        res$annotations$ids_match]
+    data_b <- ds_b$data[res$samples$samples_both,
+                        res$annotations$ids_both]
 
 
     return(all.equal(data_a, data_b))
