@@ -794,7 +794,7 @@ id_exists <- function(id) {
         if (id %in% all_ids) {
             ret[[d]] <- list(
                 dataset_id        = d,
-                datatset_datatype = ds$datatype,
+                dataset_datatype = ds$datatype,
                 dataset_name      = ds$display_name,
                 id                = id
             )
