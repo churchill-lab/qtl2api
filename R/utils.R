@@ -622,13 +622,13 @@ get_dataset_info <- function() {
                 tibble::tibble(
                     gene_id    = ds_synchronized$annots$gene_id
                 )
-        } else if(to_lower(ds$datatype) == 'protein') {
+        } else if(tolower(ds$datatype) == 'protein') {
             annotations <-
                 tibble::tibble(
                     protein_id = ds_synchronized$annots$protein_id,
                     gene_id    = ds_synchronized$annots$gene_id
                 )
-        } else if(to_lower(ds$datatype) == 'phos') {
+        } else if(tolower(ds$datatype) == 'phos') {
             annotations <-
                 tibble::tibble(
                     phos_id    = ds_synchronized$annots$phos_id,
@@ -720,19 +720,19 @@ get_dataset_stats <- function() {
 
         annots_field <- NA
 
-        if (to_lower(ds$datatype) == 'mrna') {
+        if (tolower(ds$datatype) == 'mrna') {
             annots_field <- grep("^annots?(\\.|_){1}mrnas?$",
                                  names(ds),
                                  value = TRUE)
-        } else if(to_lower(ds$datatype) == 'protein') {
+        } else if(tolower(ds$datatype) == 'protein') {
             annots_field <- grep("^annots?(\\.|_){1}proteins?$",
                                  names(ds),
                                  value = TRUE)
-        } else if(to_lower(ds$datatype) == 'phos') {
+        } else if(tolower(ds$datatype) == 'phos') {
             annots_field <- grep("^annots?(\\.|_){1}phos?$",
                                  names(ds),
                                  value = TRUE)
-        } else if(is_phenotype(ds)) {
+        } else if(is_phenotype(ds) == 'phenotype') {
             annots_field <- grep("^annots?(\\.|_){1}pheno(type)?s?$",
                                  names(ds),
                                  value = TRUE)
