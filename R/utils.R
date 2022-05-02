@@ -634,7 +634,7 @@ get_dataset_info <- function() {
                     protein_id = ds_synchronized$annots$protein_id,
                     gene_id    = ds_synchronized$annots$gene_id
                 )
-        } else if(ds$datatype == 'phenotype') {
+        } else if(is_phenotype(ds)) {
             # this is trickier, we need to send back the is_pheno = FALSE too
             # TODO: Rethink this, do we need is_pheno == FALSE?
             #
@@ -794,7 +794,7 @@ id_exists <- function(id) {
         if (id %in% all_ids) {
             ret[[d]] <- list(
                 dataset_id        = d,
-                dataset_datatype = ds$datatype,
+                dataset_datatype  = ds$datatype,
                 dataset_name      = ds$display_name,
                 id                = id
             )
