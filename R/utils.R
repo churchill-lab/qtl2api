@@ -610,24 +610,25 @@ get_dataset_info <- function() {
 
     for (d in datasets) {
         ds <- get(d)
+        print(d)
 
         # make sure samples and annotations are available
         ds_synchronized <- synchronize_data(ds)
 
         annotations <- list()
 
-        if (ds$datatype == 'mrna') {
+        if (tolower(ds$datatype) == 'mrna') {
             annotations <-
                 tibble::tibble(
                     gene_id    = ds_synchronized$annots$gene_id
                 )
-        } else if(ds$datatype == 'protein') {
+        } else if(to_lower(ds$datatype) == 'protein') {
             annotations <-
                 tibble::tibble(
                     protein_id = ds_synchronized$annots$protein_id,
                     gene_id    = ds_synchronized$annots$gene_id
                 )
-        } else if(ds$datatype == 'phos') {
+        } else if(to_lower(ds$datatype) == 'phos') {
             annotations <-
                 tibble::tibble(
                     phos_id    = ds_synchronized$annots$phos_id,
@@ -719,19 +720,19 @@ get_dataset_stats <- function() {
 
         annots_field <- NA
 
-        if (ds$datatype == 'mrna') {
+        if (to_lower(ds$datatype) == 'mrna') {
             annots_field <- grep("^annots?(\\.|_){1}mrnas?$",
                                  names(ds),
                                  value = TRUE)
-        } else if(ds$datatype == 'protein') {
+        } else if(to_lower(ds$datatype) == 'protein') {
             annots_field <- grep("^annots?(\\.|_){1}proteins?$",
                                  names(ds),
                                  value = TRUE)
-        } else if(ds$datatype == 'phos') {
+        } else if(to_lower(ds$datatype) == 'phos') {
             annots_field <- grep("^annots?(\\.|_){1}phos?$",
                                  names(ds),
                                  value = TRUE)
-        } else if(ds$datatype == 'phenotype') {
+        } else if(is_phenotype(ds)) {
             annots_field <- grep("^annots?(\\.|_){1}pheno(type)?s?$",
                                  names(ds),
                                  value = TRUE)
