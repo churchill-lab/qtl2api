@@ -531,22 +531,22 @@ get_covar_matrix <- function(dataset, id = NULL) {
             ds$annot_phenotype %>%
             dplyr::filter(.data$data_name == id)
 
-        if (invalid(pheno)) {
+        if (qtl2api::invalid(pheno)) {
             stop(sprintf("Cannot find phenotype '%s' in dataset", id))
         }
 
-        if (!is.null(pheno$use_covar)) {
+        if (qtl2api::valid(pheno$use_covar)) {
             # create a string (model formula) from the use.covar column
             covar_formula <- paste0("~", gsub(":", "+", pheno$use_covar))
         }
     } else {
-        if (!is.null(ds$covar_info)) {
+        if (qtl2api::valid(ds$covar_info)) {
             covar_formula <- paste0(ds$covar_info$sample_column, collapse="+")
             covar_formula <- paste0("~", covar_formula)
         }
     }
 
-    if (!is.null(covar_formula)) {
+    if (qtl2api::valid(covar_formula)) {
         # get the sample id field
         sample_id_field <- ds$sample_id_field
 

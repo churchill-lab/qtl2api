@@ -257,8 +257,9 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
                              names(ds),
                              value = TRUE)
 
-        ret <- ds[[annots_field]] %>%
-            janitor::clean_names() %>%
+        annots <- ds[[annots_field]] %>% janitor::clean_names()
+
+        ret <- annots %>%
             dplyr::inner_join(
                 peaks,
                 by = "data_name"
@@ -343,11 +344,7 @@ get_lod_peaks_dataset <- function(ds, intcovar = NULL) {
                          names(ds),
                          value = TRUE)
 
-    if (length(annots_field) == 0) {
-        return(NULL)
-    } else if (is.null(ds[[annots_field]])) {
-        return(NULL)
-    } else {
+    if ((length(annots_field) != 0) && (!is.null(ds[[annots_field]]))) {
         covar_info <- ds[[annots_field]] %>% janitor::clean_names()
 
         # get the rest
@@ -360,6 +357,7 @@ get_lod_peaks_dataset <- function(ds, intcovar = NULL) {
             }
         }
 
+        # subset the data if asked for just the intcovar
         if (valid(intcovar)) {
             peaks <- peaks[[intcovar]]
         }
