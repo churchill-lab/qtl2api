@@ -58,6 +58,12 @@ compare_annotations <- function(ds_a, ds_b) {
      } else if (ds_a$datatype == 'phos') {
          annots_a <- ds_a$annot_phos
          ids_a <- annots_a$phos_id
+     } else if (ds_a$datatype == 'ptm') {
+         annots_a <- ds_a$annot_ptm
+         ids_a <- annots_a$ptm_id
+     } else if (ds_a$datatype == 'peptide') {
+         annots_a <- ds_a$annot_peptide
+         ids_a <- annots_a$peptide_id
      } else if (ds_a$datatype == 'phenotype') {
          annots_a <- ds_a$annot_phenotype
          ids_a <- annots_a$data_name
@@ -81,6 +87,12 @@ compare_annotations <- function(ds_a, ds_b) {
      } else if (ds_b$datatype == 'phos') {
          annots_b <- ds_b$annot_phos
          ids_b <- annots_b$phos_id
+     } else if (ds_b$datatype == 'ptm') {
+         annots_b <- ds_b$annot_ptm
+         ids_b <- annots_b$ptm_id
+     } else if (ds_b$datatype == 'peptide') {
+         annots_b <- ds_b$annot_peptide
+         ids_b <- annots_b$peptide_id
      } else if (ds_b$datatype == 'phenotype') {
          annots_b <- ds_b$annot_phenotype
          ids_b <- annots_b$data_name

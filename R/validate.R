@@ -38,6 +38,8 @@ validate_dataset <- function(dataset, extensive = FALSE) {
     is_protein <- FALSE
     is_phos <- FALSE
     is_pheno <- FALSE
+    is_ptm <- FALSE
+    is_peptide <- FALSE
 
     if (tolower(datatype) == 'mrna') {
         is_mrna <- TRUE
@@ -45,6 +47,10 @@ validate_dataset <- function(dataset, extensive = FALSE) {
         is_protein <- TRUE
     } else if (tolower(datatype) == 'phos') {
         is_phos <- TRUE
+    } else if (tolower(datatype) == 'ptm') {
+        is_ptm <- TRUE
+    } else if (tolower(datatype) == 'peptide') {
+        is_peptide <- TRUE
     } else if (is_phenotype(ds_orig)) {
         is_pheno <- TRUE
     } else {
@@ -449,6 +455,36 @@ validate_annotations <- function(dataset) {
         }
 
         annots_orig <- ds_orig[[annots_field]]
+    } else if (tolower(ds_orig$datatype) == "ptm") {
+        annots_field <- grep("^annots?(\\.|_){1}ptm$",
+                             names(ds_orig),
+                             value = TRUE)
+
+        if (length(annots_field) == 0) {
+            message("ERROR   : annot_ptm not found in dataset.")
+            return()
+        }
+
+        if (!tibble::is_tibble(ds_orig[[annots_field]])) {
+            message("ERROR   : annot_ptm should be a tibble, but found: ", class(ds[[annots_field]]))
+        }
+
+        annots_orig <- ds_orig[[annots_field]]
+    } else if (tolower(ds_orig$datatype) == "peptide") {
+        annots_field <- grep("^annots?(\\.|_){1}peptide$",
+                             names(ds_orig),
+                             value = TRUE)
+
+        if (length(annots_field) == 0) {
+            message("ERROR   : annot_peptide not found in dataset.")
+            return()
+        }
+
+        if (!tibble::is_tibble(ds_orig[[annots_field]])) {
+            message("ERROR   : annot_peptide should be a tibble, but found: ", class(ds[[annots_field]]))
+        }
+
+        annots_orig <- ds_orig[[annots_field]]
     } else if (is_phenotype(ds_orig)) {
         annots_field <- grep("^annots?(\\.|_){1}pheno(type)?s?$",
                              names(dataset),
@@ -511,6 +547,18 @@ validate_annotations <- function(dataset) {
 
         if (any(duplicated(annots$phos_id))) {
             message("ERROR   : There are duplicated phos identifiers in annot_phos")
+        }
+    } else if (tolower(ds$datatype) == "ptm") {
+        annots <- ds$annot_ptm
+
+        if (any(duplicated(annots$ptm_id))) {
+            message("ERROR   : There are duplicated ptm identifiers in annot_ptm")
+        }
+    } else if (tolower(ds$datatype) == "peptide") {
+        annots <- ds$annot_peptide
+
+        if (any(duplicated(annots$peptide_id))) {
+            message("ERROR   : There are duplicated peptide identifiers in annot_peptide")
         }
     } else if (is_phenotype(ds)) {
         annots <- ds$annot_phenotype
@@ -588,10 +636,20 @@ validate_annotations <- function(dataset) {
                 message("ERROR   : protein_id not found in annot_phos")
             }
 
-            annot_name <- 'annot_phos'
-
             if ('phos_id' %not in% names(annots)) {
                 message("ERROR   : phos_id not found in annot_phos")
+            }
+        } else if (tolower(ds$datatype) == "ptm") {
+            annot_name <- 'annot_ptm'
+
+            if ('ptm_id' %not in% names(annots)) {
+                message("ERROR   : ptm_id not found in annot_ptm")
+            }
+        } else if (tolower(ds$datatype) == "peptide") {
+            annot_name <- 'annot_peptide'
+
+            if ('peptide_id' %not in% names(annots)) {
+                message("ERROR   : peptide_id not found in annot_peptide")
             }
         }
 
@@ -921,6 +979,22 @@ validate_lod_peaks <- function(dataset) {
                     if (length(setdiff(peaks$marker_id, markers$marker.id))) {
                         cat("WARNING : not all lod_peaks$marker_id are in markers\n")
                     }
+                } else if (tolower(ds$datatype) == "ptm") {
+                    if (length(setdiff(peaks$ptm_id, ds$annot_ptm$ptm_id))) {
+                        cat("WARNING : not all lod_peaks$ptm_id are in annot_ptm$ptm_id\n")
+                    }
+
+                    if (length(setdiff(peaks$marker_id, markers$marker.id))) {
+                        cat("WARNING : not all lod_peaks$marker_id are in markers\n")
+                    }
+                } else if (tolower(ds$datatype) == "peptide") {
+                    if (length(setdiff(peaks$peptide_id, ds$annot_peptide$peptide_id))) {
+                        cat("WARNING : not all lod_peaks$peptide_id are in annot_peptide$peptide_id\n")
+                    }
+
+                    if (length(setdiff(peaks$marker_id, markers$marker.id))) {
+                        cat("WARNING : not all lod_peaks$marker_id are in markers\n")
+                    }
                 } else if (tolower(ds$datatype) == "mrna") {
                     if (length(setdiff(peaks$gene_id, ds$annot_mrna$gene_id))) {
                         cat("WARNING : not all lod_peaks$gene_id are in annot_mrna$gene_id\n")
@@ -968,6 +1042,10 @@ validate_data <- function(dataset) {
         annot_ids <- ds$annot_protein$protein_id
     } else if (tolower(ds$datatype) == "phos") {
         annot_ids <- ds$annot_phos$phos_id
+    } else if (tolower(ds$datatype) == "ptm") {
+        annot_ids <- ds$annot_ptm$ptm_id
+    } else if (tolower(ds$datatype) == "peptide") {
+        annot_ids <- ds$annot_peptide$peptide_id
     } else {
         annots_temp <-
             ds$annot_phenotype %>%

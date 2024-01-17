@@ -116,6 +116,75 @@ get_rankings <- function(dataset, chrom = NULL,
             )
 
         return(ret)
+    } else if (tolower(ds$datatype) == "ptm") {
+        if (!is.null(chrom)) {
+            # filter the data to just return the chromosome asked for
+            ptm_ids <-
+                ds$annot_ptm %>%
+                dplyr::filter(.data$chr == chrom)
+
+            tmp <- tmp[ptm_ids$ptm_id]
+        }
+
+        ret <- tibble::tibble(
+            id = names(tmp),
+            ranking = as.integer(tmp)
+        )
+
+        # group by uniprot_id and than take the uniprot_id ranking value
+        ret <- ret %>%
+            dplyr::inner_join(
+                ds$annot_ptm,
+                by = c("id" = "ptm_id")
+            ) %>%
+            dplyr::select(
+                ptm_id     = .data$id,
+                peptide_id = .data$peptide_id,
+                protein_id = .data$protein_id,
+                gene_id    = .data$gene_id,
+                uniprot_id = .data$uniprot_id,
+                ranking    = .data$ranking
+            ) %>%
+            dplyr::group_by(.data$uniprot_id) %>%
+            dplyr::summarise(
+                ranking = max(.data$ranking)
+            )
+
+        return(ret)
+    } else if (tolower(ds$datatype) == "peptide") {
+        if (!is.null(chrom)) {
+            # filter the data to just return the chromosome asked for
+            peptide_ids <-
+                ds$annot_peptide %>%
+                dplyr::filter(.data$chr == chrom)
+
+            tmp <- tmp[peptide_ids$peptide_id]
+        }
+
+        ret <- tibble::tibble(
+            id = names(tmp),
+            ranking = as.integer(tmp)
+        )
+
+        # group by uniprot_id and than take the uniprot_id ranking value
+        ret <- ret %>%
+            dplyr::inner_join(
+                ds$annot_ptm,
+                by = c("id" = "peptide_id")
+            ) %>%
+            dplyr::select(
+                peptide_id = .data$id,
+                protein_id = .data$protein_id,
+                gene_id    = .data$gene_id,
+                uniprot_id = .data$uniprot_id,
+                ranking    = .data$ranking
+            ) %>%
+            dplyr::group_by(.data$uniprot_id) %>%
+            dplyr::summarise(
+                ranking = max(.data$ranking)
+            )
+
+        return(ret)
     } else {
         stop(paste0(ds$datatype, ' datatype not supported'))
     }

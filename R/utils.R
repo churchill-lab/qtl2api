@@ -131,6 +131,26 @@ synchronize_data <- function(dataset) {
             janitor::clean_names()
 
         annot_ids <- annots$phos_id
+    } else if (tolower(dataset$datatype) == 'ptm') {
+        annots_field <- grep("^annots?(\\.|_){1}ptm?$",
+                             names(dataset),
+                             value = TRUE)
+
+        annots <-
+            dataset[[annots_field]] %>%
+            janitor::clean_names()
+
+        annot_ids <- annots$ptm_id
+    } else if (tolower(dataset$datatype) == 'peptide') {
+        annots_field <- grep("^annots?(\\.|_){1}peptide?$",
+                             names(dataset),
+                             value = TRUE)
+
+        annots <-
+            dataset[[annots_field]] %>%
+            janitor::clean_names()
+
+        annot_ids <- annots$peptide_id        
     } else if (is_phenotype(dataset)) {
         annots_field <- grep("^annots?(\\.|_){1}pheno(type)?s?$",
                              names(dataset),
@@ -185,6 +205,10 @@ synchronize_data <- function(dataset) {
         annots <- annots %>% dplyr::filter(.data$protein_id %in% annot_ids)
     } else if (tolower(dataset$datatype) == 'phos') {
         annots <- annots %>% dplyr::filter(.data$phos_id %in% annot_ids)
+    } else if (tolower(dataset$datatype) == 'ptm') {
+        annots <- annots %>% dplyr::filter(.data$ptm_id %in% annot_ids)
+    } else if (tolower(dataset$datatype) == 'peptide') {
+        annots <- annots %>% dplyr::filter(.data$peptide_id %in% annot_ids)
     } else if (is_phenotype(dataset)) {
         annots <- annots %>% dplyr::filter(.data$data_name %in% annot_ids)
     }
@@ -326,6 +350,42 @@ synchronize_dataset <- function(dataset) {
         }
 
         ds$annot_phos <- ds_synch$annots
+    } else if (tolower(dataset$datatype) == 'ptm') {
+        ds_synch$annots$start <- 
+            ds_synch$annots$start %>% 
+            tidyr::replace_na(0)
+
+        if (all(ds_synch$annots$start < 1000)) {
+            ds_synch$annots$start <- ds_synch$annots$start * 1000000
+        }
+
+        ds_synch$annots$end <- 
+            ds_synch$annots$end %>% 
+            tidyr::replace_na(0)
+
+        if (all(ds_synch$annots$end < 1000)) {
+            ds_synch$annots$end <- ds_synch$annots$end * 1000000
+        }
+
+        ds$annot_ptm <- ds_synch$annots
+    } else if (tolower(dataset$datatype) == 'peptide') {
+        ds_synch$annots$start <- 
+            ds_synch$annots$start %>% 
+            tidyr::replace_na(0)
+
+        if (all(ds_synch$annots$start < 1000)) {
+            ds_synch$annots$start <- ds_synch$annots$start * 1000000
+        }
+
+        ds_synch$annots$end <- 
+            ds_synch$annots$end %>% 
+            tidyr::replace_na(0)
+
+        if (all(ds_synch$annots$end < 1000)) {
+            ds_synch$annots$end <- ds_synch$annots$end * 1000000
+        }
+
+        ds$annot_peptide <- ds_synch$annots
     } else if (startsWith(tolower(dataset$datatype), "pheno")) {
         ds$annot_phenotype <- ds_synch$annots
 
@@ -478,6 +538,32 @@ get_random_id <- function(dataset) {
         }
 
         annot_ids <- annot_ids$phos_id
+    } else if (tolower(dataset$datatype) == "ptm") {
+        if (invalid(dataset$is_synchronized)) {
+            annots_field <- grep("^annots?(\\.|_){1}ptm$",
+                                 names(dataset),
+                                 value = TRUE)
+            annot_ids <-
+                dataset[[annots_field]] %>%
+                janitor::clean_names()
+        } else {
+            annot_ids <- dataset$annot_ptm
+        }
+
+        annot_ids <- annot_ids$ptm_id
+    } else if (tolower(dataset$datatype) == "peptide") {
+        if (invalid(dataset$is_synchronized)) {
+            annots_field <- grep("^annots?(\\.|_){1}peptide$",
+                                 names(dataset),
+                                 value = TRUE)
+            annot_ids <-
+                dataset[[annots_field]] %>%
+                janitor::clean_names()
+        } else {
+            annot_ids <- dataset$annot_peptide
+        }
+
+        annot_ids <- annot_ids$peptide_id
     } else if (is_phenotype(dataset)) {
         if (invalid(dataset$is_synchronized)) {
             annots_field <- grep("^annots?(\\.|_){1}pheno(type)?s?$",
@@ -635,6 +721,23 @@ get_dataset_info <- function() {
                     protein_id = ds_synchronized$annots$protein_id,
                     gene_id    = ds_synchronized$annots$gene_id
                 )
+        } else if(tolower(ds$datatype) == 'ptm') {
+            annotations <-
+                tibble::tibble(
+                    ptm_id     = ds_synchronized$annots$ptm_id,
+                    peptide_id = ds_synchronized$annots$peptide_id,
+                    protein_id = ds_synchronized$annots$protein_id,
+                    gene_id    = ds_synchronized$annots$gene_id,
+                    uniprot_id = ds_synchronized$annots$uniprot_id
+                )
+        } else if(tolower(ds$datatype) == 'peptide') {
+            annotations <-
+                tibble::tibble(
+                    peptide_id = ds_synchronized$annots$peptide_id,
+                    protein_id = ds_synchronized$annots$protein_id,
+                    gene_id    = ds_synchronized$annots$gene_id,
+                    uniprot_id = ds_synchronized$annots$uniprot_id
+                )
         } else if(is_phenotype(ds)) {
             # this is trickier, we need to send back the is_pheno = FALSE too
             # TODO: Rethink this, do we need is_pheno == FALSE?
@@ -732,6 +835,14 @@ get_dataset_stats <- function() {
             annots_field <- grep("^annots?(\\.|_){1}phos?$",
                                  names(ds),
                                  value = TRUE)
+        } else if(tolower(ds$datatype) == 'ptm') {
+            annots_field <- grep("^annots?(\\.|_){1}ptm?$",
+                                 names(ds),
+                                 value = TRUE)
+        } else if(tolower(ds$datatype) == 'peptide') {
+            annots_field <- grep("^annots?(\\.|_){1}peptide?$",
+                                 names(ds),
+                                 value = TRUE)
         } else if(is_phenotype(ds) == 'phenotype') {
             annots_field <- grep("^annots?(\\.|_){1}pheno(type)?s?$",
                                  names(ds),
@@ -788,6 +899,10 @@ id_exists <- function(id) {
             all_ids <- ds$annot_protein$gene_id
         } else if(ds$datatype == 'phos') {
             all_ids <- ds$annot_phos$gene_id
+        } else if(ds$datatype == 'ptm') {
+            all_ids <- ds$annot_ptm$gene_id
+        } else if(ds$datatype == 'peptide') {
+            all_ids <- ds$annot_peptide$gene_id
         } else if(ds$datatype == 'phenotype') {
             all_ids <- ds$annot_phenotype$data_name
         }
