@@ -2,7 +2,7 @@ Package: qtl2api
 Type: Package
 Title: QTL2 API Library
 Version: 0.3.0
-Author: person("Matthew", "Vincent", email = "mvincent@jax.org",
+Author: person("Matthew", "Vincent", email = "matt.vincent@jax.org",
   role = c("aut", "cre"))
 Maintainer: Matthew Vincent <matt.vincent@jax.org>
 Description: Wraps Karl Broman's rqtl/qtl2 package to provide friendlier
@@ -20,7 +20,7 @@ Imports:
     magrittr (>= 2.0.1),
     missMDA (>= 1.18),
     pryr (>= 0.1.5),
-    qtl2 (>= 0.28),
+    qtl2 (>= 0.34),
     rlang (>= 0.4.12),
     RSQLite (>= 2.2.7),
     stringr (>= 1.4.0),
