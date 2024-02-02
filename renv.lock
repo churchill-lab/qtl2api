@@ -464,7 +464,7 @@
     },
     "dbplyr": {
       "Package": "dbplyr",
-      "Version": "2.3.2",
+      "Version": "2.4.0",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -488,7 +488,7 @@
         "vctrs",
         "withr"
       ],
-      "Hash": "d24305b92db333726aed162a2c23a147"
+      "Hash": "59351f28a81f0742720b85363c4fdd61"
     },
     "desc": {
       "Package": "desc",
@@ -1386,7 +1386,7 @@
     },
     "qtl2": {
       "Package": "qtl2",
-      "Version": "0.32",
+      "Version": "0.34",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -1403,7 +1403,7 @@
         "utils",
         "yaml"
       ],
-      "Hash": "662f77fc416592d35248611e6cd6a204"
+      "Hash": "709c5bdc3be8068a8fba58a64dedb180"
     },
     "quantreg": {
       "Package": "quantreg",
@@ -1722,7 +1722,7 @@
     },
     "vctrs": {
       "Package": "vctrs",
-      "Version": "0.6.2",
+      "Version": "0.6.5",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -1732,7 +1732,7 @@
         "lifecycle",
         "rlang"
       ],
-      "Hash": "a745bda7aff4734c17294bb41d4e4607"
+      "Hash": "c03fa420630029418f7e6da3667aac4a"
     },
     "viridisLite": {
       "Package": "viridisLite",

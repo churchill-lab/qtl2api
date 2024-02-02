@@ -568,14 +568,6 @@ validate_annotations <- function(dataset) {
         }
     }
 
-
-
-
-
-
-
-
-
     if (is_phenotype(ds)) {
         expected_names <- c('data_name', 'short_name', 'description', 'is_id',
                             'category', 'is_numeric', 'is_date', 'is_factor',

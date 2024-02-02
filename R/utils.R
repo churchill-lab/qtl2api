@@ -724,11 +724,13 @@ get_dataset_info <- function() {
         } else if(tolower(ds$datatype) == 'ptm') {
             annotations <-
                 tibble::tibble(
-                    ptm_id     = ds_synchronized$annots$ptm_id,
-                    peptide_id = ds_synchronized$annots$peptide_id,
-                    protein_id = ds_synchronized$annots$protein_id,
-                    gene_id    = ds_synchronized$annots$gene_id,
-                    uniprot_id = ds_synchronized$annots$uniprot_id
+                    ptm_id      = ds_synchronized$annots$ptm_id,
+                    ptm         = nvl(ds_synchronized$annots$ptm, NULL),
+                    peptide_id  = ds_synchronized$annots$peptide_id,
+                    protein_id  = ds_synchronized$annots$protein_id,
+                    gene_id     = ds_synchronized$annots$gene_id,
+                    uniprot_id  = ds_synchronized$annots$uniprot_id,
+                    gene_symbol = ds_synchronized$annots$symbol
                 )
         } else if(tolower(ds$datatype) == 'peptide') {
             annotations <-
@@ -736,7 +738,8 @@ get_dataset_info <- function() {
                     peptide_id = ds_synchronized$annots$peptide_id,
                     protein_id = ds_synchronized$annots$protein_id,
                     gene_id    = ds_synchronized$annots$gene_id,
-                    uniprot_id = ds_synchronized$annots$uniprot_id
+                    uniprot_id = ds_synchronized$annots$uniprot_id,
+                    gene_symbol = ds_synchronized$annots$symbol
                 )
         } else if(is_phenotype(ds)) {
             # this is trickier, we need to send back the is_pheno = FALSE too

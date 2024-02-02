@@ -20,7 +20,7 @@ Imports:
     magrittr (>= 2.0.1),
     missMDA (>= 1.18),
     pryr (>= 0.1.5),
-    qtl2 (>= 0.34),
+    qtl2 (>= 0.28),
     rlang (>= 0.4.12),
     RSQLite (>= 2.2.7),
     stringr (>= 1.4.0),

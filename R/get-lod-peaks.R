@@ -252,6 +252,147 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
                     by = c("phos_id", "marker_id", "lod")
                 )
         }
+    } else if (tolower(ds$datatype) == "peptide") {
+        annots_field <- grep("^annots?(\\.|_){1}peptide$",
+                             names(ds),
+                             value = TRUE)
+
+        annots <- ds[[annots_field]] %>% janitor::clean_names()
+
+        annots$start <- annots$start %>% tidyr::replace_na(0)
+
+        if (all(annots$start < 1000)) {
+            annots$start <- as.integer(annots$start * 1000000)
+        }
+
+        annots$end <- annots$end %>% tidyr::replace_na(0)
+
+        if (all(annots$end < 1000)) {
+            annots$end <- as.integer(annots$end * 1000000)
+        }
+
+        ret <- annots %>%
+            dplyr::inner_join(
+                peaks,
+                by = "peptide_id"
+            ) %>%
+            dplyr::select(
+                peptide_id = .data$peptide_id,
+                protein_id = .data$protein_id,
+                gene_id    = .data$gene_id,
+                symbol     = .data$symbol,
+                uniprot_id = .data$uniprot_id,
+                gene_chr   = .data$chr,
+                start      = .data$start,
+                end        = .data$end,
+                marker_id  = .data$marker_id,
+                lod        = .data$lod
+            ) %>%
+            dplyr::mutate(
+                gene_pos = round((.data$start + .data$end) / 2)
+            ) %>%
+            dplyr::inner_join(
+                markers_cleaned,
+                by = "marker_id"
+            ) %>%
+            dplyr::select(
+                marker_id  = .data$marker_id,
+                chr        = .data$chr,
+                pos        = .data$pos,
+                peptide_id = .data$peptide_id,
+                protein_id = .data$protein_id,
+                gene_id    = .data$gene_id,
+                uniprot_id = .data$uniprot_id,
+                symbol     = .data$symbol,
+                gene_chr   = .data$gene_chr,
+                gene_pos   = .data$gene_pos,
+                lod        = .data$lod
+            ) %>%
+            dplyr::arrange(
+                .data$chr,
+                .data$pos
+            )
+
+        # now add A-H for additive if they exist
+        if (all(tolower(LETTERS[1:8]) %in% colnames(peaks))) {
+            ret <- ret %>%
+                dplyr::inner_join(
+                    peaks,
+                    by = c("peptide_id", "marker_id", "lod")
+                )
+        }
+    } else if (tolower(ds$datatype) == "ptm") {
+        annots_field <- grep("^annots?(\\.|_){1}ptm$",
+                             names(ds),
+                             value = TRUE)
+
+        annots <- ds[[annots_field]] %>% janitor::clean_names()
+
+        annots$start <- annots$start %>% tidyr::replace_na(0)
+
+        if (all(annots$start < 1000)) {
+            annots$start <- as.integer(annots$start * 1000000)
+        }
+
+        annots$end <- annots$end %>% tidyr::replace_na(0)
+
+        if (all(annots$end < 1000)) {
+            annots$end <- as.integer(annots$end * 1000000)
+        }
+
+        ret <- annots %>%
+            dplyr::inner_join(
+                peaks,
+                by = "ptm_id"
+            ) %>%
+            dplyr::select(
+                ptm_id     = .data$ptm_id,
+                peptide_id = .data$peptide_id,
+                protein_id = .data$protein_id,
+                gene_id    = .data$gene_id,
+                symbol     = .data$symbol,
+                uniprot_id = .data$uniprot_id,
+                gene_chr   = .data$chr,
+                start      = .data$start,
+                end        = .data$end,
+                marker_id  = .data$marker_id,
+                lod        = .data$lod
+            ) %>%
+            dplyr::mutate(
+                gene_pos = round((.data$start + .data$end) / 2)
+            ) %>%
+            dplyr::inner_join(
+                markers_cleaned,
+                by = "marker_id"
+            ) %>%
+            dplyr::select(
+                marker_id  = .data$marker_id,
+                chr        = .data$chr,
+                pos        = .data$pos,
+                ptm_id     = .data$ptm_id,
+                peptide_id = .data$peptide_id,
+                protein_id = .data$protein_id,
+                gene_id    = .data$gene_id,
+                uniprot_id = .data$uniprot_id,
+                symbol     = .data$symbol,
+                uniprot_id = .data$uniprot_id,
+                gene_chr   = .data$gene_chr,
+                gene_pos   = .data$gene_pos,
+                lod        = .data$lod
+            ) %>%
+            dplyr::arrange(
+                .data$chr,
+                .data$pos
+            )
+
+        # now add A-H for additive if they exist
+        if (all(tolower(LETTERS[1:8]) %in% colnames(peaks))) {
+            ret <- ret %>%
+                dplyr::inner_join(
+                    peaks,
+                    by = c("ptm_id", "marker_id", "lod")
+                )
+        }
     } else if (is_phenotype(ds)) {
         annots_field <- grep("^annots?(\\.|_){1}pheno(type)?s?$",
                              names(ds),

@@ -28,7 +28,7 @@ get_sample_id_field <- function(dataset) {
                              value = TRUE)
 
         sample_id_field <- grep(
-            "^mouse(\\.|_){1}?id$|^sample(\\.|_){1}?id$",
+            "^mouse(\\.|_){0,1}?id$|^sample(\\.|_){0,1}?id$",
             colnames(dataset[[annots_field]]),
             value = TRUE,
             ignore.case = TRUE
