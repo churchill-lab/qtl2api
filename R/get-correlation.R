@@ -178,6 +178,58 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
         if (all(correlations$end < 1000)) {
             correlations$end <- as.integer(correlations$end * 1000000)
         }
+    } else if (tolower(ds$datatype) == "ptm") {
+        # get the indices into the annotype data
+        annot_ptm <- ds_correlate$annot_ptm
+        idxs <- match(names(pcor), annot_ptm$ptm_id)
+
+        correlations <- tibble::tibble(
+            cor        = pcor,
+            id         = names(pcor),
+            ptm_id     = annot_ptm$ptm_id[idxs],
+            peptide_id = annot_ptm$peptide_id[idxs],
+            protein_id = annot_ptm$protein_id[idxs],
+            gene_id    = annot_ptm$gene_id[idxs],
+            symbol     = annot_ptm$symbol[idxs],
+            uniprot_id = annot_ptm$uniprot_id[idxs],
+            chr        = annot_ptm$chr[idxs],
+            start      = as.integer(nvl(annot_ptm$start[idxs], 0),
+            end        = as.integer(nvl(annot_ptm$end[idxs], 0)
+        )
+
+        if (all(correlations$start < 1000)) {
+            correlations$start <- as.integer(correlations$start * 1000000)
+        }
+
+        if (all(correlations$end < 1000)) {
+            correlations$end <- as.integer(correlations$end * 1000000)
+        }    
+    } else if (tolower(ds$datatype) == "peptide") {
+        # get the indices into the annotype data
+        annot_peptide <- ds_correlate$annot_peptide
+        idxs <- match(names(pcor), annot_peptide$ptm_id)
+
+        correlations <- tibble::tibble(
+            cor        = pcor,
+            id         = names(pcor),
+            peptide_id = annot_peptide$peptide_id[idxs],
+            protein_id = annot_peptide$protein_id[idxs],
+            gene_id    = annot_peptide$gene_id[idxs],
+            symbol     = annot_peptide$symbol[idxs],
+            uniprot_id = annot_peptide$uniprot_id[idxs],
+            chr        = annot_peptide$chr[idxs],
+            start      = as.integer(nvl(annot_peptide$start[idxs], 0),
+            end        = as.integer(nvl(annot_peptide$end[idxs], 0)
+        )
+
+        if (all(correlations$start < 1000)) {
+            correlations$start <- as.integer(correlations$start * 1000000)
+        }
+
+        if (all(correlations$end < 1000)) {
+            correlations$end <- as.integer(correlations$end * 1000000)
+        }    
+
     } else if (is_phenotype(ds_correlate)) {
         correlations <- tibble::tibble(
             cor = pcor,
