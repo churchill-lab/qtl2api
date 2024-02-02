@@ -193,8 +193,8 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
             symbol     = annot_ptm$symbol[idxs],
             uniprot_id = annot_ptm$uniprot_id[idxs],
             chr        = annot_ptm$chr[idxs],
-            start      = as.integer(nvl(annot_ptm$start[idxs], 0),
-            end        = as.integer(nvl(annot_ptm$end[idxs], 0)
+            start      = as.integer(nvl(annot_ptm$start[idxs], 0)),
+            end        = as.integer(nvl(annot_ptm$end[idxs], 0))
         )
 
         if (all(correlations$start < 1000)) {
@@ -218,8 +218,8 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
             symbol     = annot_peptide$symbol[idxs],
             uniprot_id = annot_peptide$uniprot_id[idxs],
             chr        = annot_peptide$chr[idxs],
-            start      = as.integer(nvl(annot_peptide$start[idxs], 0),
-            end        = as.integer(nvl(annot_peptide$end[idxs], 0)
+            start      = as.integer(nvl(annot_peptide$start[idxs], 0)),
+            end        = as.integer(nvl(annot_peptide$end[idxs], 0))
         )
 
         if (all(correlations$start < 1000)) {
