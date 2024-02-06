@@ -196,6 +196,9 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
 
         annots <- ds[[annots_field]] %>% janitor::clean_names()
 
+        annots$start <- annots$start %>% tidyr::replace_na(0)
+        annots$end <- annots$end %>% tidyr::replace_na(0)
+
         if (all(annots$start < 1000)) {
             annots$start <- as.integer(annots$start * 1000000)
         }
@@ -258,6 +261,9 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
                              value = TRUE)
 
         annots <- ds[[annots_field]] %>% janitor::clean_names()
+
+        annots$start <- annots$start %>% tidyr::replace_na(0)
+        annots$end <- annots$end %>% tidyr::replace_na(0)
 
         if (all(annots$start < 1000)) {
             annots$start <- as.integer(annots$start * 1000000)
@@ -323,12 +329,11 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
         annots <- ds[[annots_field]] %>% janitor::clean_names()
 
         annots$start <- annots$start %>% tidyr::replace_na(0)
+        annots$end <- annots$end %>% tidyr::replace_na(0)
 
         if (all(annots$start < 1000)) {
             annots$start <- as.integer(annots$start * 1000000)
         }
-
-        annots$end <- annots$end %>% tidyr::replace_na(0)
 
         if (all(annots$end < 1000)) {
             annots$end <- as.integer(annots$end * 1000000)
@@ -392,12 +397,11 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
         annots <- ds[[annots_field]] %>% janitor::clean_names()
 
         annots$start <- annots$start %>% tidyr::replace_na(0)
+        annots$end <- annots$end %>% tidyr::replace_na(0)
 
         if (all(annots$start < 1000)) {
             annots$start <- as.integer(annots$start * 1000000)
         }
-
-        annots$end <- annots$end %>% tidyr::replace_na(0)
 
         if (all(annots$end < 1000)) {
             annots$end <- as.integer(annots$end * 1000000)
