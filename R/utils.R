@@ -760,9 +760,10 @@ get_dataset_info <- function() {
         } else if(tolower(ds$datatype) == 'protein_uniprot') {
             annotations <-
                 tibble::tibble(
-                    uniprot_id = ds_synchronized$annots$uniprot_id,
-                    protein_id = ds_synchronized$annots$protein_id,
-                    gene_id    = ds_synchronized$annots$gene_id
+                    uniprot_id  = ds_synchronized$annots$uniprot_id,
+                    protein_id  = ds_synchronized$annots$protein_id,
+                    gene_id     = ds_synchronized$annots$gene_id,
+                    gene_symbol = ds_synchronized$annots$symbol
                 )
         } else if(tolower(ds$datatype) == 'phos') {
             annotations <-
