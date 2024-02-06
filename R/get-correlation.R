@@ -125,14 +125,6 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
             start  = as.integer(annot_mrna$start[idxs]),
             end    = as.integer(annot_mrna$end[idxs])
         )
-
-        if (all(correlations$start < 1000)) {
-            correlations$start <- as.integer(correlations$start * 1000000)
-        }
-
-        if (all(correlations$end < 1000)) {
-            ret$end <- as.integer(correlations$end * 1000000)
-        }
     } else if (tolower(ds_correlate$datatype) == "protein") {
         # get the indices into the annotype data
         annot_protein <- ds_correlate$annot_protein
@@ -147,14 +139,21 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
             start   = as.integer(annot_protein$start[idxs]),
             end     = as.integer(annot_protein$end[idxs])
         )
+    } else if (tolower(ds_correlate$datatype) == "protein_uniprot") {
+        # get the indices into the annotype data
+        annot_protein_uniprot <- ds_correlate$annot_protein_uniprot
+        idxs <- match(names(pcor), annot_protein_uniprot$uniprot_id)
 
-        if (all(correlations$start < 1000)) {
-            correlations$start <- as.integer(correlations$start * 1000000)
-        }
-
-        if (all(correlations$end < 1000)) {
-            correlations$end <- as.integer(correlations$end * 1000000)
-        }
+        correlations <- tibble::tibble(
+            cor        = pcor,
+            id         = names(pcor),
+            protein_id = annot_protein_uniprot$protein_id[idxs],
+            gene_id    = annot_protein_uniprot$gene_id[idxs],
+            symbol     = annot_protein_uniprot$symbol[idxs],
+            chr        = annot_protein_uniprot$chr[idxs],
+            start      = as.integer(annot_protein_uniprot$start[idxs]),
+            end        = as.integer(annot_protein_uniprot$end[idxs])
+        )
     } else if (tolower(ds_correlate$datatype) == "phos") {
         # get the indices into the annotype data
         annot_phos <- ds_correlate$annot_phos
@@ -170,15 +169,7 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
             start      = as.integer(annot_phos$start[idxs]),
             end        = as.integer(annot_phos$end[idxs])
         )
-
-        if (all(correlations$start < 1000)) {
-            correlations$start <- as.integer(correlations$start * 1000000)
-        }
-
-        if (all(correlations$end < 1000)) {
-            correlations$end <- as.integer(correlations$end * 1000000)
-        }
-    } else if (tolower(ds$datatype) == "ptm") {
+    } else if (tolower(ds_correlate$datatype) == "ptm") {
         # get the indices into the annotype data
         annot_ptm <- ds_correlate$annot_ptm
         idxs <- match(names(pcor), annot_ptm$ptm_id)
@@ -196,15 +187,7 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
             start      = as.integer(nvl(annot_ptm$start[idxs], 0)),
             end        = as.integer(nvl(annot_ptm$end[idxs], 0))
         )
-
-        if (all(correlations$start < 1000)) {
-            correlations$start <- as.integer(correlations$start * 1000000)
-        }
-
-        if (all(correlations$end < 1000)) {
-            correlations$end <- as.integer(correlations$end * 1000000)
-        }    
-    } else if (tolower(ds$datatype) == "peptide") {
+    } else if (tolower(ds_correlate$datatype) == "peptide") {
         # get the indices into the annotype data
         annot_peptide <- ds_correlate$annot_peptide
         idxs <- match(names(pcor), annot_peptide$ptm_id)
@@ -221,7 +204,14 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
             start      = as.integer(nvl(annot_peptide$start[idxs], 0)),
             end        = as.integer(nvl(annot_peptide$end[idxs], 0))
         )
+    } else if (is_phenotype(ds_correlate)) {
+        correlations <- tibble::tibble(
+            cor = pcor,
+            id = names(pcor)
+        )
+    }
 
+    if (!is_phenotype(ds_correlate)) {
         if (all(correlations$start < 1000)) {
             correlations$start <- as.integer(correlations$start * 1000000)
         }
@@ -229,12 +219,6 @@ get_correlation <- function(dataset, id, dataset_correlate = NULL,
         if (all(correlations$end < 1000)) {
             correlations$end <- as.integer(correlations$end * 1000000)
         }    
-
-    } else if (is_phenotype(ds_correlate)) {
-        correlations <- tibble::tibble(
-            cor = pcor,
-            id = names(pcor)
-        )
     }
 
     if (valid(correlations)) {

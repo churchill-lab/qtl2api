@@ -36,6 +36,7 @@ validate_dataset <- function(dataset, extensive = FALSE) {
     datatype = ds_orig[['datatype']]
     is_mrna <- FALSE
     is_protein <- FALSE
+    is_protein_uniprot <- FALSE
     is_phos <- FALSE
     is_pheno <- FALSE
     is_ptm <- FALSE
@@ -45,6 +46,8 @@ validate_dataset <- function(dataset, extensive = FALSE) {
         is_mrna <- TRUE
     } else if (tolower(datatype) == 'protein') {
         is_protein <- TRUE
+    } else if (tolower(datatype) == 'protein_uniprot') {
+        is_protein_uniprot <- TRUE
     } else if (tolower(datatype) == 'phos') {
         is_phos <- TRUE
     } else if (tolower(datatype) == 'ptm') {
@@ -440,6 +443,21 @@ validate_annotations <- function(dataset) {
         }
 
         annots_orig <- ds_orig[[annots_field]]
+    } else if (tolower(ds_orig$datatype) == "protein_uniprot") {
+        annots_field <- grep("^annots?(\\.|_){1}proteins?(\\.|_){1}uniprots?$",
+                             names(ds_orig),
+                             value = TRUE)
+
+        if (length(annots_field) == 0) {
+            message("ERROR   : annot_protein_uniprot not found in dataset.")
+            return()
+        }
+
+        if (!tibble::is_tibble(ds_orig[[annots_field]])) {
+            message("ERROR   : annot_protein_uniprot should be a tibble, but found: ", class(ds[[annots_field]]))
+        }
+
+        annots_orig <- ds_orig[[annots_field]]
     } else if (tolower(ds_orig$datatype) == "phos") {
         annots_field <- grep("^annots?(\\.|_){1}phos$",
                              names(ds_orig),
@@ -542,6 +560,12 @@ validate_annotations <- function(dataset) {
         if (any(duplicated(annots$protein_id))) {
             message("ERROR   : There are duplicated protein identifiers in annot_protein")
         }
+    } else if (tolower(ds$datatype) == "protein_uniprot") {
+        annots <- ds$annot_protein_uniprot
+
+        if (any(duplicated(annots$uniprot_id))) {
+            message("ERROR   : There are duplicated uniprot identifiers in annot_protein_uniprot")
+        }
     } else if (tolower(ds$datatype) == "phos") {
         annots <- ds$annot_phos
 
@@ -620,6 +644,16 @@ validate_annotations <- function(dataset) {
 
             if ('protein_id' %not in% names(annots)) {
                 message("ERROR   : protein_id not found in annot_protein")
+            }
+        } else if (tolower(ds$datatype) == "protein_uniprot") {
+            annot_name <- 'annot_protein_uniprot'
+
+            if ('uniprot_id' %not in% names(annots)) {
+                message("ERROR   : uniprot_id not found in annot_protein_uniprot")
+            }
+
+            if ('protein_id' %not in% names(annots)) {
+                message("ERROR   : protein_id not found in annot_protein_uniprot")
             }
         } else if (tolower(ds$datatype) == "phos") {
             annot_name <- 'annot_phos'
@@ -955,9 +989,25 @@ validate_lod_peaks <- function(dataset) {
                 peaks <- peaks %>%
                     janitor::clean_names()
 
-                if (tolower(ds$datatype) == "protein") {
+                if (tolower(ds$datatype) == "mrna") {
+                    if (length(setdiff(peaks$gene_id, ds$annot_mrna$gene_id))) {
+                        cat("WARNING : not all lod_peaks$gene_id are in annot_mrna$gene_id\n")
+                    }
+
+                    if (length(setdiff(peaks$marker_id, markers$marker.id))) {
+                        cat("WARNING : not all lod_peaks$marker_id are in markers\n")
+                    }
+                } else if (tolower(ds$datatype) == "protein") {
                     if (length(setdiff(peaks$protein_id, ds$annot_protein$protein_id))) {
                         cat("WARNING : not all lod_peaks$protein_id are in annot_protein$protein_id\n")
+                    }
+
+                    if (length(setdiff(peaks$marker_id, markers$marker.id))) {
+                        cat("WARNING : not all lod_peaks$marker_id are in markers\n")
+                    }
+                } else if (tolower(ds$datatype) == "protein_uniprot") {
+                    if (length(setdiff(peaks$uniprot_id, ds$annot_protein_uniprot$uniprot_id))) {
+                        cat("WARNING : not all lod_peaks$uniprot_id are in annot_protein_uniprot$uniprot_id\n")
                     }
 
                     if (length(setdiff(peaks$marker_id, markers$marker.id))) {
@@ -982,14 +1032,6 @@ validate_lod_peaks <- function(dataset) {
                 } else if (tolower(ds$datatype) == "peptide") {
                     if (length(setdiff(peaks$peptide_id, ds$annot_peptide$peptide_id))) {
                         cat("WARNING : not all lod_peaks$peptide_id are in annot_peptide$peptide_id\n")
-                    }
-
-                    if (length(setdiff(peaks$marker_id, markers$marker.id))) {
-                        cat("WARNING : not all lod_peaks$marker_id are in markers\n")
-                    }
-                } else if (tolower(ds$datatype) == "mrna") {
-                    if (length(setdiff(peaks$gene_id, ds$annot_mrna$gene_id))) {
-                        cat("WARNING : not all lod_peaks$gene_id are in annot_mrna$gene_id\n")
                     }
 
                     if (length(setdiff(peaks$marker_id, markers$marker.id))) {
@@ -1032,6 +1074,8 @@ validate_data <- function(dataset) {
         annot_ids <- ds$annot_mrna$gene_id
     } else if (tolower(ds$datatype) == "protein") {
         annot_ids <- ds$annot_protein$protein_id
+    } else if (tolower(ds$datatype) == "protein_uniprot") {
+        annot_ids <- ds$annot_protein_uniprot$uniprot_id
     } else if (tolower(ds$datatype) == "phos") {
         annot_ids <- ds$annot_phos$phos_id
     } else if (tolower(ds$datatype) == "ptm") {
@@ -1138,7 +1182,6 @@ validate_data <- function(dataset) {
                     cat("WARNING : # data with no annotations:", length(y), "\n")
                 }
             }
-
 
             #perc_missing = (sum(is.na(ds_orig$data[data_names[i]])) * 100) / prod(dim(ds_orig$data[data_names[i]]))
             #cat("STATUS  : Percentage of missing original data: ", perc_missing, "\n")

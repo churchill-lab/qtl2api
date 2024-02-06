@@ -189,6 +189,69 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
                     by = c("protein_id", "marker_id", "lod")
                 )
         }
+    } else if (tolower(ds$datatype) == "protein_uniprot") {
+        annots_field <- grep("^annots?(\\.|_){1}proteins?(\\.|_){1}uniprots?$",
+                             names(ds),
+                             value = TRUE)
+
+        annots <- ds[[annots_field]] %>% janitor::clean_names()
+
+        if (all(annots$start < 1000)) {
+            annots$start <- as.integer(annots$start * 1000000)
+        }
+
+        if (all(annots$end < 1000)) {
+            annots$end <- as.integer(annots$end * 1000000)
+        }
+
+        ret <- annots %>%
+            dplyr::inner_join(
+                peaks,
+                by = "uniprot_id"
+            ) %>%
+            dplyr::select(
+                uniprot_id = .data$uniprot_id,
+                protein_id = .data$protein_id,
+                gene_id    = .data$gene_id,
+                symbol     = .data$symbol,
+                gene_chr   = .data$chr,
+                start      = .data$start,
+                end        = .data$end,
+                marker_id  = .data$marker_id,
+                lod        = .data$lod
+            ) %>%
+            dplyr::mutate(
+                gene_pos = round((.data$start + .data$end) / 2)
+            ) %>%
+            dplyr::inner_join(
+                markers_cleaned,
+                by = "marker_id"
+            ) %>%
+            dplyr::select(
+                marker_id  = .data$marker_id,
+                chr        = .data$chr,
+                pos        = .data$pos,
+                uniprot_id = .data$uniprot_id,
+                protein_id = .data$protein_id,
+                gene_id    = .data$gene_id,
+                symbol     = .data$symbol,
+                gene_chr   = .data$gene_chr,
+                gene_pos   = .data$gene_pos,
+                lod        = .data$lod
+            ) %>%
+            dplyr::arrange(
+                .data$chr,
+                .data$pos
+            )
+
+        # now add A-H for additive if they exist
+        if (all(tolower(LETTERS[1:8]) %in% colnames(peaks))) {
+            ret <- ret %>%
+                dplyr::inner_join(
+                    peaks,
+                    by = c("uniprot_id", "marker_id", "lod")
+                )
+        }
     } else if (tolower(ds$datatype) == "phos") {
         annots_field <- grep("^annots?(\\.|_){1}phos$",
                              names(ds),

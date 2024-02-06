@@ -55,6 +55,9 @@ compare_annotations <- function(ds_a, ds_b) {
      } else if (ds_a$datatype == 'protein') {
          annots_a <- ds_a$annot_protein
          ids_a <- annots_a$protein_id
+     } else if (ds_a$datatype == 'protein_uniprot') {
+         annots_a <- ds_a$annot_protein_uniprot
+         ids_a <- annots_a$uniprot_id
      } else if (ds_a$datatype == 'phos') {
          annots_a <- ds_a$annot_phos
          ids_a <- annots_a$phos_id
@@ -84,6 +87,9 @@ compare_annotations <- function(ds_a, ds_b) {
      } else if (ds_b$datatype == 'protein') {
          annots_b <- ds_b$annot_protein
          ids_b <- annots_b$protein_id
+     } else if (ds_b$datatype == 'protein_uniprot') {
+         annots_b <- ds_b$annot_protein_uniprot
+         ids_b <- annots_b$uniprot_id
      } else if (ds_b$datatype == 'phos') {
          annots_b <- ds_b$annot_phos
          ids_b <- annots_b$phos_id

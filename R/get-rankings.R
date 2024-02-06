@@ -83,6 +83,39 @@ get_rankings <- function(dataset, chrom = NULL,
             )
 
         return(ret)
+    } else if (tolower(ds$datatype) == "protein_uniprot") {
+        if (!is.null(chrom)) {
+            # filter the data to just return the chromosome asked for
+            uniprot_ids <-
+                ds$annot_protein_uniprot %>%
+                dplyr::filter(.data$chr == chrom)
+
+            tmp <- tmp[uniprot_ids$uniprot_id]
+        }
+
+        ret <- tibble::tibble(
+            id = names(tmp),
+            ranking = as.integer(tmp)
+        )
+
+        # group by gene_id and than take the gene_id ranking value
+        ret <- ret %>%
+            dplyr::inner_join(
+                ds$annot_protein,
+                by = c("id" = "uniprot_id")
+            ) %>%
+            dplyr::select(
+                uniprot_id = .data$id,
+                protein_id = .data$protein_id,
+                gene_id    = .data$gene_id,
+                ranking    = .data$ranking
+            ) %>%
+            dplyr::group_by(.data$gene_id) %>%
+            dplyr::summarise(
+                ranking = max(.data$ranking)
+            )
+
+        return(ret)
     } else if (tolower(ds$datatype) == "phos") {
         if (!is.null(chrom)) {
             # filter the data to just return the chromosome asked for
