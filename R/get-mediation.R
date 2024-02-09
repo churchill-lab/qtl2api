@@ -48,6 +48,8 @@ get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
         # grab the annotations, create middle_point, and select what is needed
         annot <-
             ds_mediate$annot_mrna %>%
+            dplyr::filter(!is.na(chr) & !is.na(start) & !is.na(end)) %>%
+            janitor::clean_names() %>%
             dplyr::inner_join(
                 tibble::enframe(colnames(ds_mediate$data), name = NULL),
                 by = c("gene_id" = "value")
@@ -65,6 +67,7 @@ get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
         # grab the annotations, create middle_point, and select what is needed
         annot <-
             ds_mediate$annot_protein %>%
+            dplyr::filter(!is.na(chr) & !is.na(start) & !is.na(end)) %>%
             janitor::clean_names() %>%
             dplyr::inner_join(
                 tibble::enframe(colnames(ds_mediate$data), name = NULL),
@@ -84,6 +87,7 @@ get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
         # grab the annotations, create middle_point, and select what is needed
         annot <-
             ds_mediate$annot_protein_uniprot %>%
+            dplyr::filter(!is.na(chr) & !is.na(start) & !is.na(end)) %>%
             janitor::clean_names() %>%
             dplyr::inner_join(
                 tibble::enframe(colnames(ds_mediate$data), name = NULL),
@@ -104,6 +108,7 @@ get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
         # grab the annotations, create middle_point, and select what is needed
         annot <-
             ds_mediate$annot_phos %>%
+            dplyr::filter(!is.na(chr) & !is.na(start) & !is.na(end)) %>%
             janitor::clean_names() %>%
             dplyr::inner_join(
                 tibble::enframe(colnames(ds_mediate$data), name = NULL),
@@ -114,6 +119,51 @@ get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
             ) %>%
             dplyr::select(
                 phos_id      = .data$phos_id,
+                protein_id   = .data$protein_id,
+                gene_id      = .data$gene_id,
+                symbol       = .data$symbol,
+                chr          = .data$chr,
+                middle_point = .data$mid_point
+            )
+    } else if (tolower(ds_mediate$datatype) == "ptm") {
+        # grab the annotations, create middle_point, and select what is needed
+        annot <-
+            ds_mediate$annot_ptm %>%
+            dplyr::filter(!is.na(chr) & !is.na(start) & !is.na(end)) %>%
+            janitor::clean_names() %>%
+            dplyr::inner_join(
+                tibble::enframe(colnames(ds_mediate$data), name = NULL),
+                by = c("phos_id" = "value")
+            ) %>%
+            dplyr::mutate(
+                mid_point = round((.data$start + .data$end) / 2)
+            ) %>%
+            dplyr::select(
+                uniprot_id   = .data$uniprot_id,
+                peptide_id   = .data$peptide_id,
+                ptm_id       = .data$ptm_id,
+                protein_id   = .data$protein_id,
+                gene_id      = .data$gene_id,
+                symbol       = .data$symbol,
+                chr          = .data$chr,
+                middle_point = .data$mid_point
+            )
+    } else if (tolower(ds_mediate$datatype) == "peptide") {
+        # grab the annotations, create middle_point, and select what is needed
+        annot <-
+            ds_mediate$annot_ptm %>%
+            dplyr::filter(!is.na(chr) & !is.na(start) & !is.na(end)) %>%
+            janitor::clean_names() %>%
+            dplyr::inner_join(
+                tibble::enframe(colnames(ds_mediate$data), name = NULL),
+                by = c("phos_id" = "value")
+            ) %>%
+            dplyr::mutate(
+                mid_point = round((.data$start + .data$end) / 2)
+            ) %>%
+            dplyr::select(
+                uniprot_id   = .data$uniprot_id,
+                peptide_id   = .data$peptide_id,
                 protein_id   = .data$protein_id,
                 gene_id      = .data$gene_id,
                 symbol       = .data$symbol,

@@ -74,7 +74,9 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
                              names(ds),
                              value = TRUE)
 
-        annots <- ds[[annots_field]] %>% janitor::clean_names()
+        annots <- ds[[annots_field]] %>%
+            dplyr::filter(!is.na(chr) & !is.na(start) & !is.na(end)) %>%
+            janitor::clean_names()
 
         if (all(annots$start < 1000)) {
             annots$start <- as.integer(annots$start * 1000000)
@@ -133,7 +135,9 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
                              names(ds),
                              value = TRUE)
 
-        annots <- ds[[annots_field]] %>% janitor::clean_names()
+        annots <- ds[[annots_field]] %>%
+            dplyr::filter(!is.na(chr) & !is.na(start) & !is.na(end)) %>%
+            janitor::clean_names()
 
         if (all(annots$start < 1000)) {
             annots$start <- as.integer(annots$start * 1000000)
@@ -194,10 +198,12 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
                              names(ds),
                              value = TRUE)
 
-        annots <- ds[[annots_field]] %>% janitor::clean_names()
+        annots <- ds[[annots_field]] %>%
+            dplyr::filter(!is.na(chr) & !is.na(start) & !is.na(end)) %>%
+            janitor::clean_names()
 
-        annots$start <- annots$start %>% tidyr::replace_na(0)
-        annots$end <- annots$end %>% tidyr::replace_na(0)
+        #annots$start <- annots$start %>% tidyr::replace_na(0)
+        #annots$end <- annots$end %>% tidyr::replace_na(0)
 
         if (all(annots$start < 1000)) {
             annots$start <- as.integer(annots$start * 1000000)
@@ -260,10 +266,12 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
                              names(ds),
                              value = TRUE)
 
-        annots <- ds[[annots_field]] %>% janitor::clean_names()
+        annots <- ds[[annots_field]] %>%
+            dplyr::filter(!is.na(chr) & !is.na(start) & !is.na(end)) %>%
+            janitor::clean_names()
 
-        annots$start <- annots$start %>% tidyr::replace_na(0)
-        annots$end <- annots$end %>% tidyr::replace_na(0)
+        #annots$start <- annots$start %>% tidyr::replace_na(0)
+        #annots$end <- annots$end %>% tidyr::replace_na(0)
 
         if (all(annots$start < 1000)) {
             annots$start <- as.integer(annots$start * 1000000)
@@ -326,10 +334,12 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
                              names(ds),
                              value = TRUE)
 
-        annots <- ds[[annots_field]] %>% janitor::clean_names()
+        annots <- ds[[annots_field]] %>%
+            dplyr::filter(!is.na(chr) & !is.na(start) & !is.na(end)) %>%
+            janitor::clean_names()
 
-        annots$start <- annots$start %>% tidyr::replace_na(0)
-        annots$end <- annots$end %>% tidyr::replace_na(0)
+        #annots$start <- annots$start %>% tidyr::replace_na(0)
+        #annots$end <- annots$end %>% tidyr::replace_na(0)
 
         if (all(annots$start < 1000)) {
             annots$start <- as.integer(annots$start * 1000000)
@@ -394,10 +404,12 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
                              names(ds),
                              value = TRUE)
 
-        annots <- ds[[annots_field]] %>% janitor::clean_names()
+        annots <- ds[[annots_field]] %>%
+            dplyr::filter(!is.na(chr) & !is.na(start) & !is.na(end)) %>%
+            janitor::clean_names()
 
-        annots$start <- annots$start %>% tidyr::replace_na(0)
-        annots$end <- annots$end %>% tidyr::replace_na(0)
+        #annots$start <- annots$start %>% tidyr::replace_na(0)
+        #annots$end <- annots$end %>% tidyr::replace_na(0)
 
         if (all(annots$start < 1000)) {
             annots$start <- as.integer(annots$start * 1000000)
