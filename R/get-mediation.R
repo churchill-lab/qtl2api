@@ -133,7 +133,7 @@ get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
             janitor::clean_names() %>%
             dplyr::inner_join(
                 tibble::enframe(colnames(ds_mediate$data), name = NULL),
-                by = c("phos_id" = "value")
+                by = c("ptm_id" = "value")
             ) %>%
             dplyr::mutate(
                 mid_point = round((.data$start + .data$end) / 2)
@@ -151,12 +151,12 @@ get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
     } else if (tolower(ds_mediate$datatype) == "peptide") {
         # grab the annotations, create middle_point, and select what is needed
         annot <-
-            ds_mediate$annot_ptm %>%
+            ds_mediate$annot_peptide %>%
             dplyr::filter(!is.na(chr) & !is.na(start) & !is.na(end)) %>%
             janitor::clean_names() %>%
             dplyr::inner_join(
                 tibble::enframe(colnames(ds_mediate$data), name = NULL),
-                by = c("phos_id" = "value")
+                by = c("peptide_id" = "value")
             ) %>%
             dplyr::mutate(
                 mid_point = round((.data$start + .data$end) / 2)
@@ -181,14 +181,23 @@ get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
 
     chrom <- as.character(markers[mrkx, "chr"])
 
+    samples <-
+        ds_mediate$annot_samples %>%
+        dplyr::select(dplyr::matches(ds_mediate$sample_id_field))
+
+    # subset to the intersecting data
+    sample_names <- intersect(samples[[1]], rownames(K[[chrom]]))
+    sample_names <- intersect(sample_names, rownames(ds$data))
+    sample_names <- intersect(sample_names, rownames(ds_mediate$data))
+
     filtered_genoprobs <-
-        genoprobs[[chrom]][rownames(ds_mediate$data), , marker_id]
+        genoprobs[[chrom]][sample_names, , marker_id]
 
     data <- mediation.scan(
-        target     = ds$data[, id, drop = FALSE],
-        mediator   = ds_mediate$data,
+        target     = ds$data[sample_names, id, drop = FALSE],
+        mediator   = ds_mediate$data[sample_names,],
         annotation = annot,
-        covar      = covar_information$covar_matrix,
+        covar      = covar_information$covar_matrix[sample_names, ],
         qtl.geno   = filtered_genoprobs,
         verbose    = FALSE
     )
