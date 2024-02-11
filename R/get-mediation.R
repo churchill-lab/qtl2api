@@ -140,8 +140,8 @@ get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
             ) %>%
             dplyr::select(
                 uniprot_id   = .data$uniprot_id,
-                peptide_id   = .data$peptide_id,
                 ptm_id       = .data$ptm_id,
+                peptide_id   = .data$peptide_id,
                 protein_id   = .data$protein_id,
                 gene_id      = .data$gene_id,
                 symbol       = .data$symbol,

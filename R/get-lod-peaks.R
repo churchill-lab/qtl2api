@@ -108,14 +108,14 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
                 by = "marker_id"
             ) %>%
             dplyr::select(
-                marker_id = .data$marker_id,
-                chr       = .data$chr,
-                pos       = .data$pos,
-                gene_id   = .data$gene_id,
-                symbol    = .data$symbol,
-                gene_chr  = .data$gene_chr,
-                gene_pos  = .data$gene_pos,
-                lod       = .data$lod
+                lod        = .data$lod,
+                marker_id  = .data$marker_id,
+                chr        = .data$chr,
+                pos        = .data$pos,
+                gene_chr   = .data$gene_chr,
+                gene_pos   = .data$gene_pos,
+                gene_id    = .data$gene_id,
+                symbol     = .data$symbol,
             ) %>%
             dplyr::arrange(
                 .data$chr,
@@ -170,15 +170,15 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
                 by = "marker_id"
             ) %>%
             dplyr::select(
+                lod        = .data$lod,
                 marker_id  = .data$marker_id,
                 chr        = .data$chr,
                 pos        = .data$pos,
-                protein_id = .data$protein_id,
-                gene_id    = .data$gene_id,
-                symbol     = .data$symbol,
                 gene_chr   = .data$gene_chr,
                 gene_pos   = .data$gene_pos,
-                lod        = .data$lod
+                gene_id    = .data$gene_id,
+                symbol     = .data$symbol,
+                protein_id = .data$protein_id
             ) %>%
             dplyr::arrange(
                 .data$chr,
@@ -237,16 +237,16 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
                 by = "marker_id"
             ) %>%
             dplyr::select(
+                lod        = .data$lod,
                 marker_id  = .data$marker_id,
                 chr        = .data$chr,
                 pos        = .data$pos,
-                uniprot_id = .data$uniprot_id,
-                protein_id = .data$protein_id,
-                gene_id    = .data$gene_id,
-                symbol     = .data$symbol,
                 gene_chr   = .data$gene_chr,
                 gene_pos   = .data$gene_pos,
-                lod        = .data$lod
+                gene_id    = .data$gene_id,
+                symbol     = .data$symbol,
+                protein_id = .data$protein_id,
+                uniprot_id = .data$uniprot_id
             ) %>%
             dplyr::arrange(
                 .data$chr,
@@ -305,16 +305,16 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
                 by = "marker_id"
             ) %>%
             dplyr::select(
+                lod        = .data$lod,
                 marker_id  = .data$marker_id,
                 chr        = .data$chr,
                 pos        = .data$pos,
-                phos_id    = .data$phos_id,
-                protein_id = .data$protein_id,
-                gene_id    = .data$gene_id,
-                symbol     = .data$symbol,
                 gene_chr   = .data$gene_chr,
                 gene_pos   = .data$gene_pos,
-                lod        = .data$lod
+                gene_id    = .data$gene_id,
+                symbol     = .data$symbol,
+                protein_id = .data$protein_id,
+                phos_id.   = .data$phos_id
             ) %>%
             dplyr::arrange(
                 .data$chr,
@@ -374,17 +374,17 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
                 by = "marker_id"
             ) %>%
             dplyr::select(
+                lod        = .data$lod,
                 marker_id  = .data$marker_id,
                 chr        = .data$chr,
                 pos        = .data$pos,
-                peptide_id = .data$peptide_id,
-                protein_id = .data$protein_id,
-                gene_id    = .data$gene_id,
-                uniprot_id = .data$uniprot_id,
-                symbol     = .data$symbol,
                 gene_chr   = .data$gene_chr,
                 gene_pos   = .data$gene_pos,
-                lod        = .data$lod
+                gene_id    = .data$gene_id,
+                symbol     = .data$symbol,
+                protein_id = .data$protein_id,
+                peptide_id = .data$peptide_id,
+                uniprot_id = .data$uniprot_id
             ) %>%
             dplyr::arrange(
                 .data$chr,
@@ -445,19 +445,18 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
                 by = "marker_id"
             ) %>%
             dplyr::select(
+                lod        = .data$lod,
                 marker_id  = .data$marker_id,
                 chr        = .data$chr,
                 pos        = .data$pos,
-                ptm_id     = .data$ptm_id,
-                peptide_id = .data$peptide_id,
-                protein_id = .data$protein_id,
-                gene_id    = .data$gene_id,
-                uniprot_id = .data$uniprot_id,
-                symbol     = .data$symbol,
-                uniprot_id = .data$uniprot_id,
                 gene_chr   = .data$gene_chr,
                 gene_pos   = .data$gene_pos,
-                lod        = .data$lod
+                gene_id    = .data$gene_id,
+                symbol     = .data$symbol,
+                protein_id = .data$protein_id,
+                peptide_id = .data$peptide_id,
+                ptm_id     = .data$ptm_id,
+                uniprot_id = .data$uniprot_id
             ) %>%
             dplyr::arrange(
                 .data$chr,
