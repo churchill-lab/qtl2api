@@ -145,6 +145,7 @@ get_lod_scan <- function(dataset, id, intcovar = NULL, cores = 0,
 }
 
 
+
 #' Perform the LOD scan for each "value" of the interactive covariate.
 #'
 #' @param dataset the dataset object

@@ -739,7 +739,6 @@ get_dataset_info <- function() {
 
     for (d in datasets) {
         ds <- get(d)
-        print(d)
 
         # make sure samples and annotations are available
         ds_synchronized <- synchronize_data(ds)
@@ -813,9 +812,16 @@ get_dataset_info <- function() {
                              value = TRUE)
 
         covar_info <- NULL
+        covar_info_order <- NULL
 
         if ((length(annots_field) != 0) && (!is.null(ds[[annots_field]]))) {
             covar_info <- ds[[annots_field]] %>% janitor::clean_names()
+            covar_info_order <- list()
+
+            for (sample_col in covar_info$sample_column) {
+                covar_info_order[[sample_col]] <-
+                    levels(ds_synchronized$samples[[sample_col]])
+            }
         }
 
         display_name_field <- grep(
@@ -845,14 +851,15 @@ get_dataset_info <- function() {
         }
 
         temp <- list(
-            id              = d,
-            annotations     = annotations,
-            covar_info      = covar_info,
-            datatype        = ds$datatype,
-            display_name    = display_name,
-            ensembl_version = ds_ensembl_version,
-            samples         = ds_synchronized$samples,
-            sample_id_field = get_sample_id_field(ds)
+            id               = d,
+            annotations      = annotations,
+            covar_info       = covar_info,
+            covar_info_order = covar_info_order,
+            datatype         = ds$datatype,
+            display_name     = display_name,
+            ensembl_version  = ds_ensembl_version,
+            samples          = ds_synchronized$samples,
+            sample_id_field  = get_sample_id_field(ds)
         )
 
         ret <- c(ret, list(temp))
