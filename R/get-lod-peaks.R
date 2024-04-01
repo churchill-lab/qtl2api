@@ -101,7 +101,7 @@ get_lod_peaks <- function(ds, intcovar = NULL) {
                 lod        = .data$lod
             ) %>%
             dplyr::mutate(
-                gene_pos = round((.data$start + .data$end) / 2)
+                gene_pos = as.integer(round((.data$start + .data$end) / 2))
             ) %>%
             dplyr::inner_join(
                 markers_cleaned,

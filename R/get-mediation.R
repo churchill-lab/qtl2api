@@ -211,7 +211,6 @@ get_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
     attr(data, 'covar_formula') <- covar_information$covar_formula
 
     data
-
 }
 
 #' Mediation Scan.

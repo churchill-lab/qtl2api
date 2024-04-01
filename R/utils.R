@@ -31,7 +31,7 @@ invalid <- function(val) {
 
 #' Test if `val` is valid.
 #'
-#' @param x value to be tested
+#' @param val value to be tested
 #' @return TRUE if valid, FALSE otherwise
 #'
 #' @export
@@ -100,6 +100,7 @@ nvl_int <- function(value, default) {
 #'
 #' @export
 synchronize_data <- function(dataset) {
+    print(dataset$display.name)
     # first thing is to get the annotation ids
     if (tolower(dataset$datatype) == 'mrna') {
         annots_field <- grep("^annots?(\\.|_){1}mrnas?$",
@@ -189,6 +190,22 @@ synchronize_data <- function(dataset) {
         rownames(data),
         dataset[[annots_field]][[sample_id_field]]
     )
+    samples_only_in_data <- setdiff(
+        rownames(data),
+        dataset[[annots_field]][[sample_id_field]]
+    )
+    samples_only_in_samples <- setdiff(
+        dataset[[annots_field]][[sample_id_field]],
+        rownames(data)
+    )
+
+    if(length(samples_only_in_data) > 0) {
+        print(samples_only_in_data)
+    }
+    if(length(samples_only_in_samples) > 0) {
+        print(samples_only_in_samples)
+    }
+
 
     if (length(sample_ids) == 0) {
         message("There are no samples in common")
@@ -199,6 +216,22 @@ synchronize_data <- function(dataset) {
         colnames(data),
         annot_ids
     )
+    annots_only_in_data <- setdiff(
+        colnames(data),
+        annot_ids
+    )
+    annots_only_in_annots <- setdiff(
+        annot_ids,
+        colnames(data)
+    )
+
+    if(length(annots_only_in_data) > 0) {
+        print(annots_only_in_data)
+    }
+    if(length(annots_only_in_annots) > 0) {
+        print(annots_only_in_annots)
+    }
+
 
     if (length(annot_ids) == 0) {
         message("There are no annotations in common")
@@ -238,9 +271,14 @@ synchronize_data <- function(dataset) {
         dplyr::filter(!!as.name(sample_id_field) %in% sample_ids)
 
     list(
-        annots  = annots,
-        data    = data,
-        samples = samples
+        annots                  = annots,
+        annots_only_in_data     = annots_only_in_data,
+        annots_only_in_annots   = annots_only_in_annots,
+        data                    = data,
+        samples                 = samples,
+        samples_only_in_data    = samples_only_in_data,
+        samples_only_in_samples = samples_only_in_samples,
+        sample_id_field         = sample_id_field
     )
 }
 
@@ -322,33 +360,37 @@ synchronize_dataset <- function(dataset) {
     }
 
     ds <- list(
-        annot_samples   = ds_synch$samples,
-        covar_info      = covar_info,
-        data            = ds_synch$data,
-        datatype        = datatype,
-        display_name    = dataset[[display_name_field]],
-        ensembl_version = ensembl_version,
-        sample_id_field = sample_id_field,
-        is_synchronized = TRUE
+        annot_samples            = ds_synch$samples,
+        annots_only_in_data      = ds_synch$annots_only_in_data,
+        annots_only_in_annots    = ds_synch$annots_only_in_annots,
+        samples_only_in_data     = ds_synch$samples_only_in_data,
+        samples_only_in_samples  = ds_synch$samples_only_in_samples,
+        covar_info               = covar_info,
+        data                     = ds_synch$data,
+        datatype                 = datatype,
+        display_name             = dataset[[display_name_field]],
+        ensembl_version          = ensembl_version,
+        sample_id_field          = sample_id_field,
+        is_synchronized          = TRUE
     )
 
     if (tolower(dataset$datatype) == 'mrna') {
         if (all(ds_synch$annots$start < 1000)) {
-            ds_synch$annots$start <- ds_synch$annots$start * 1000000
+            ds_synch$annots$start <- as.integer(ds_synch$annots$start * 1000000)
         }
 
         if (all(ds_synch$annots$end < 1000)) {
-            ds_synch$annots$end <- ds_synch$annots$end * 1000000
+            ds_synch$annots$end <- as.integer(ds_synch$annots$end * 1000000)
         }
 
         ds$annot_mrna <- ds_synch$annots
     } else if (tolower(dataset$datatype) == 'protein') {
         if (all(ds_synch$annots$start < 1000)) {
-            ds_synch$annots$start <- ds_synch$annots$start * 1000000
+            ds_synch$annots$start <- as.integer(ds_synch$annots$start * 1000000)
         }
 
         if (all(ds_synch$annots$end < 1000)) {
-            ds_synch$annots$end <- ds_synch$annots$end * 1000000
+            ds_synch$annots$end <- as.integer(ds_synch$annots$end * 1000000)
         }
 
         ds$annot_protein <- ds_synch$annots
@@ -358,7 +400,7 @@ synchronize_dataset <- function(dataset) {
             tidyr::replace_na(0)
 
         if (all(ds_synch$annots$start < 1000)) {
-            ds_synch$annots$start <- ds_synch$annots$start * 1000000
+            ds_synch$annots$start <- as.integer(ds_synch$annots$start * 1000000)
         }
 
         ds_synch$annots$end <-
@@ -366,17 +408,17 @@ synchronize_dataset <- function(dataset) {
             tidyr::replace_na(0)
 
         if (all(ds_synch$annots$end < 1000)) {
-            ds_synch$annots$end <- ds_synch$annots$end * 1000000
+            ds_synch$annots$end <- as.integer(ds_synch$annots$end * 1000000)
         }
 
         ds$annot_protein_uniprot <- ds_synch$annots
     } else if (tolower(dataset$datatype) == 'phos') {
         if (all(ds_synch$annots$start < 1000)) {
-            ds_synch$annots$start <- ds_synch$annots$start * 1000000
+            ds_synch$annots$start <- as.integer(ds_synch$annots$start * 1000000)
         }
 
         if (all(ds_synch$annots$end < 1000)) {
-            ds_synch$annots$end <- ds_synch$annots$end * 1000000
+            ds_synch$annots$end <- as.integer(ds_synch$annots$end * 1000000)
         }
 
         ds$annot_phos <- ds_synch$annots
@@ -386,7 +428,7 @@ synchronize_dataset <- function(dataset) {
             tidyr::replace_na(0)
 
         if (all(ds_synch$annots$start < 1000)) {
-            ds_synch$annots$start <- ds_synch$annots$start * 1000000
+            ds_synch$annots$start <- as.integer(ds_synch$annots$start * 1000000)
         }
 
         ds_synch$annots$end <-
@@ -394,7 +436,7 @@ synchronize_dataset <- function(dataset) {
             tidyr::replace_na(0)
 
         if (all(ds_synch$annots$end < 1000)) {
-            ds_synch$annots$end <- ds_synch$annots$end * 1000000
+            ds_synch$annots$end <- as.integer(ds_synch$annots$end * 1000000)
         }
 
         ds$annot_ptm <- ds_synch$annots
@@ -404,7 +446,7 @@ synchronize_dataset <- function(dataset) {
             tidyr::replace_na(0)
 
         if (all(ds_synch$annots$start < 1000)) {
-            ds_synch$annots$start <- ds_synch$annots$start * 1000000
+            ds_synch$annots$start <- as.integer(ds_synch$annots$start * 1000000)
         }
 
         ds_synch$annots$end <-
@@ -412,7 +454,7 @@ synchronize_dataset <- function(dataset) {
             tidyr::replace_na(0)
 
         if (all(ds_synch$annots$end < 1000)) {
-            ds_synch$annots$end <- ds_synch$annots$end * 1000000
+            ds_synch$annots$end <- as.integer(ds_synch$annots$end * 1000000)
         }
 
         ds$annot_peptide <- ds_synch$annots
@@ -775,20 +817,23 @@ get_dataset_info <- function() {
             annotations <-
                 tibble::tibble(
                     ptm_id      = ds_synchronized$annots$ptm_id,
-                    ptm         = nvl(ds_synchronized$annots$ptm, NULL),
                     peptide_id  = ds_synchronized$annots$peptide_id,
                     protein_id  = ds_synchronized$annots$protein_id,
                     gene_id     = ds_synchronized$annots$gene_id,
                     uniprot_id  = ds_synchronized$annots$uniprot_id,
                     gene_symbol = ds_synchronized$annots$symbol
                 )
+
+                if('ptm' %in% colnames(ds_synchronized$annots)) {
+                    annotations['ptm'] = ds_synchronized$annots$ptm
+                }
         } else if(tolower(ds$datatype) == 'peptide') {
             annotations <-
                 tibble::tibble(
-                    peptide_id = ds_synchronized$annots$peptide_id,
-                    protein_id = ds_synchronized$annots$protein_id,
-                    gene_id    = ds_synchronized$annots$gene_id,
-                    uniprot_id = ds_synchronized$annots$uniprot_id,
+                    peptide_id  = ds_synchronized$annots$peptide_id,
+                    protein_id  = ds_synchronized$annots$protein_id,
+                    gene_id     = ds_synchronized$annots$gene_id,
+                    uniprot_id  = ds_synchronized$annots$uniprot_id,
                     gene_symbol = ds_synchronized$annots$symbol
                 )
         } else if(is_phenotype(ds)) {
@@ -851,15 +896,19 @@ get_dataset_info <- function() {
         }
 
         temp <- list(
-            id               = d,
-            annotations      = annotations,
-            covar_info       = covar_info,
-            covar_info_order = covar_info_order,
-            datatype         = ds$datatype,
-            display_name     = display_name,
-            ensembl_version  = ds_ensembl_version,
-            samples          = ds_synchronized$samples,
-            sample_id_field  = get_sample_id_field(ds)
+            id                       = d,
+            annotations              = annotations,
+            annots_only_in_data      = ds_synchronized$annots_only_in_data,
+            annots_only_in_annots    = ds_synchronized$annots_only_in_annots,
+            covar_info               = covar_info,
+            covar_info_order         = covar_info_order,
+            datatype                 = ds$datatype,
+            display_name             = display_name,
+            ensembl_version          = ds_ensembl_version,
+            samples                  = ds_synchronized$samples,
+            sample_id_field          = get_sample_id_field(ds),
+            samples_only_in_data     = ds_synchronized$samples_only_in_data,
+            samples_only_in_samples  = ds_synchronized$samples_only_in_samples
         )
 
         ret <- c(ret, list(temp))
@@ -934,7 +983,9 @@ get_dataset_stats <- function() {
         temp <- list(id              = d,
                      display_name    = display_name,
                      datatype        = ds$datatype,
+                     annotations     = annots_field,
                      num_annotations = NROW(ds[[annots_field]]),
+                     samples         = annots_field_samples,
                      num_samples     = NROW(ds[[annots_field_samples]]))
 
         ret <- c(ret, list(temp))
