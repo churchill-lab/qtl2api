@@ -4,12 +4,10 @@
 \alias{id_exists}
 \title{Check if id exists and has data in dataset.}
 \usage{
-id_exists(id, ds = NULL)
+id_exists(id)
 }
 \arguments{
 \item{id}{the id to check}
-
-\item{ds}{a dataset object}
 }
 \value{
 \code{TRUE} if id contains data, \code{FALSE} otherwise

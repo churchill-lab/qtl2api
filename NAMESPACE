@@ -3,6 +3,7 @@
 export("%<>%")
 export("%>%")
 export(compare_datasets)
+export(get_analysis)
 export(get_correlation)
 export(get_correlation_plot_data)
 export(get_data)

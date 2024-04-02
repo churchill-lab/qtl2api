@@ -100,7 +100,6 @@ nvl_int <- function(value, default) {
 #'
 #' @export
 synchronize_data <- function(dataset) {
-    print(dataset$display.name)
     # first thing is to get the annotation ids
     if (tolower(dataset$datatype) == 'mrna') {
         annots_field <- grep("^annots?(\\.|_){1}mrnas?$",
@@ -768,7 +767,7 @@ get_covar_matrix <- function(dataset, id = NULL) {
 #' @export
 get_dataset_info <- function() {
     datasets <- utils::apropos('^dataset\\.*', ignore.case = TRUE)
-    ret <- c()
+    ret <- list()
 
     ensembl_version_field <-
         utils::apropos("^ensembl(\\.|_){1}version$", ignore.case = TRUE)

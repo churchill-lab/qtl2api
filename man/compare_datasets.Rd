@@ -2,17 +2,15 @@
 % Please edit documentation in R/compare.R
 \name{compare_datasets}
 \alias{compare_datasets}
-\title{Validate the dataset to make sure qtl2api can use it.}
+\title{Compare 2 datasets.}
 \usage{
-compare_datasets(dataset_a, dataset_b, extensive = FALSE)
+compare_datasets(dataset_a, dataset_b)
 }
 \arguments{
 \item{dataset_a}{the dataset_id as a string identifier}
 
 \item{dataset_b}{the dataset_id as a string identifier}
-
-\item{extensive}{TRUE to perform scans on random elements in the data}
 }
 \description{
-Validate the dataset to make sure qtl2api can use it.
+Compare 2 datasets.
 }

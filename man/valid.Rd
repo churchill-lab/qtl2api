@@ -7,7 +7,7 @@
 valid(val)
 }
 \arguments{
-\item{x}{value to be tested}
+\item{val}{value to be tested}
 }
 \value{
 TRUE if valid, FALSE otherwise
