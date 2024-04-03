@@ -2,4 +2,4 @@
 .Rhistory
 .Rproj*
 .Rproj.user
-renv/
+renv/staging
