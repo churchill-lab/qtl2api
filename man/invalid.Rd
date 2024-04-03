@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{invalid}
 \alias{invalid}
-\title{Test if \code{val} is invalid.}
+\title{Test if `val` is invalid.}
 \usage{
 invalid(val)
 }
@@ -13,5 +13,5 @@ invalid(val)
 TRUE if invalid, FALSE otherwise
 }
 \description{
-Test if \code{val} is invalid.
+Test if `val` is invalid.
 }

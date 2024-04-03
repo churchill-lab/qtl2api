@@ -12,10 +12,10 @@ get_expression(dataset, id)
 \item{id}{The unique id in the dataset.}
 }
 \value{
-a named \code{list} with 2 elements.
+a named `list` with 2 elements.
 \itemize{
-\item data - a \code{tibble} with samples and data
-\item datatypes - a \code{list} of all the types and the unique values
+  \item data - a `tibble` with samples and data
+  \item datatypes - a `list` of all the types and the unique values
 }
 }
 \description{

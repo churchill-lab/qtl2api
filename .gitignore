@@ -1,9 +1,5 @@
 .DS_Store
-data
-packrat
 .Rhistory
 .Rproj*
-temp/
-packrat/lib*/
 .Rproj.user
 renv/

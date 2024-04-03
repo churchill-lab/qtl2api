@@ -13,18 +13,18 @@ get_lod_peaks_dataset(ds, intcovar = NULL)
 covariate.}
 }
 \value{
-A named \code{list} of either all the LOD peaks or the specified
-\code{intcovar}. Each element in the \code{list} is a \code{tibble} with the following
-columns depending upon \code{dataset$datatype}:
+A named `list` of either all the LOD peaks or the specified
+`intcovar`. Each element in the `list` is a `tibble` with the following
+columns depending upon `dataset$datatype`:
 \itemize{
-\item mRNA - \verb{marker,chr,pos,gene_id,symbol,gene_chrom,middle,lod}
-\item protein - \verb{marker,chr,pos,protein_id,gene_id,symbol,gene_chrom,middle,lod}
-\item phenotype - \verb{marker,chr,pos,data_name,short_name,description,lod}
+  \item mRNA - `marker,chr,pos,gene_id,symbol,gene_chrom,middle,lod`
+  \item protein - `marker,chr,pos,protein_id,gene_id,symbol,gene_chrom,middle,lod`
+  \item phenotype - `marker,chr,pos,data_name,short_name,description,lod`
 }
 
-If the allele effects are stored, values \code{A-H} will also be included.
+If the allele effects are stored, values `A-H` will also be included.
 }
 \description{
-By default, this will get all LOD peaks stored in the \code{dataset$lod_peaks}
-\code{list}.  If \code{intcovar} is specified, only the peaks for that are returned.
+By default, this will get all LOD peaks stored in the `dataset$lod_peaks`
+`list`.  If `intcovar` is specified, only the peaks for that are returned.
 }

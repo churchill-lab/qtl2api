@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{valid}
 \alias{valid}
-\title{Test if \code{val} is valid.}
+\title{Test if `val` is valid.}
 \usage{
 valid(val)
 }
@@ -13,5 +13,5 @@ valid(val)
 TRUE if valid, FALSE otherwise
 }
 \description{
-Test if \code{val} is valid.
+Test if `val` is valid.
 }

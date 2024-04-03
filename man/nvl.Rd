@@ -12,7 +12,7 @@ nvl(value, default)
 \item{default}{default value to use if value is "invalid"}
 }
 \value{
-\code{value} if it is valid, \code{default} otherwise
+`value` if it is valid, `default` otherwise
 }
 \description{
 Check value for validity and return it or a default

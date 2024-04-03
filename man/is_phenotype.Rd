@@ -10,7 +10,7 @@ is_phenotype(ds)
 \item{ds}{a dataset object}
 }
 \value{
-\code{TRUE} if the datatype is phenotype, \code{FALSE} otherwise
+`TRUE` if the datatype is phenotype, `FALSE` otherwise
 }
 \description{
 Check dataset to see if the datatype value is "phenotype"
