@@ -13,6 +13,7 @@ LazyData: true
 Imports: 
     DBI (>= 1.2.2),
     RSQLite (>= 2.3.6),
+    dbplyr (>= 2.5.0),
     dplyr (>= 1.1.4),
     gtools (>= 3.9.5),
     janitor (>= 2.2.0),
