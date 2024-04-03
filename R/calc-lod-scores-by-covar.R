@@ -12,7 +12,7 @@
 #'
 #' @importFrom rlang .data
 #' @export
-get_lod_scores_by_covar <- function(dataset, id, chrom, intcovar, cores = 0) {
+calc_lod_scores_by_covar <- function(dataset, id, chrom, intcovar, cores = 0) {
     # make sure annotations, data, and samples are synchronized
     ds <- synchronize_dataset(dataset)
 

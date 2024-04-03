@@ -4,17 +4,14 @@
 \alias{get_lod_peaks}
 \title{Get the LOD peaks for a dataset.}
 \usage{
-get_lod_peaks(ds, intcovar = NULL)
+get_lod_peaks(ds)
 }
 \arguments{
 \item{ds}{The dataset object to get the LOD peaks for.}
-
-\item{intcovar}{NULL for 'additive' or a value representing the interactive
-covariate.}
 }
 \value{
-A a `tibble` with the following columns depending upon
-`dataset$datatype`:
+A named `list` of all the LOD peaks. Each element in the `list` is a
+`tibble` with the following columns depending upon `dataset$datatype`:
 \itemize{
   \item mRNA - `marker,chr,pos,gene_id,symbol,gene_chrom,middle,lod`
   \item protein - `marker,chr,pos,protein_id,gene_id,symbol,gene_chrom,middle,lod`
@@ -24,9 +21,6 @@ A a `tibble` with the following columns depending upon
 If the allele effects are stored, values `A-H` will also be included.
 }
 \description{
-Used internally to the package.
-}
-\details{
 By default, this will get all LOD peaks stored in the `dataset$lod_peaks`
 `list`.  If `intcovar` is specified, only the peaks for that are returned.
 }

@@ -3,7 +3,7 @@
 #' @param extensive TRUE to perform scans on random elements in the data
 #'
 #' @export
-validate_environment <- function(extensive = FALSE) {
+validate_environment <- function(by_api = FALSE) {
     cat("\n")
     cat("qtl2api tries to use gene_id/gene.id, protein_id/protein.id,\n")
     cat("data_name/data.name along as trying to figure out annotations for\n")
@@ -62,6 +62,6 @@ validate_environment <- function(extensive = FALSE) {
     }
 
     for (ds in datasets) {
-        validate_dataset(ds, extensive)
+        validate_dataset(ds, by_api)
     }
 }

@@ -6,7 +6,7 @@ magrittr::`%>%`
 #' @export
 magrittr::`%<>%`
 
-genoprobs <- K <- map <- markers <- NULL
+utils::globalVariables(c("genoprobs", "K", "map", "markers"))
 
 #'
 "_PACKAGE"

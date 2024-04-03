@@ -1,0 +1,11 @@
+source(paste0(getwd(), "/scripts/validate-annotations.R"))
+source(paste0(getwd(), "/scripts/validate-covar-info.R"))
+source(paste0(getwd(), "/scripts/validate-data.R"))
+source(paste0(getwd(), "/scripts/validate-lod-peaks.R"))
+source(paste0(getwd(), "/scripts/validate-samples.R"))
+source(paste0(getwd(), "/scripts/validate-dataset.R"))
+source(paste0(getwd(), "/scripts/validate-dataset-by-api.R"))
+source(paste0(getwd(), "/scripts/validate-environment.R"))
+validate_environment(TRUE)
+rm(list=grep("^validate_.*$", ls(), value=TRUE))
+
