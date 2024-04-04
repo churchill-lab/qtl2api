@@ -104,14 +104,6 @@ synchronize_data <- function(dataset) {
         rownames(data)
     )
 
-    if(length(samples_only_in_data) > 0) {
-        print(samples_only_in_data)
-    }
-    if(length(samples_only_in_samples) > 0) {
-        print(samples_only_in_samples)
-    }
-
-
     if (length(sample_ids) == 0) {
         message("There are no samples in common")
     }
@@ -129,14 +121,6 @@ synchronize_data <- function(dataset) {
         annot_ids,
         colnames(data)
     )
-
-    if(length(annots_only_in_data) > 0) {
-        print(annots_only_in_data)
-    }
-    if(length(annots_only_in_annots) > 0) {
-        print(annots_only_in_annots)
-    }
-
 
     if (length(annot_ids) == 0) {
         message("There are no annotations in common")
