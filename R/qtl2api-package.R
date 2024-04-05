@@ -6,6 +6,11 @@ magrittr::`%>%`
 #' @export
 magrittr::`%<>%`
 
+# To avoid NOote on R CMD check
+#' @import dbplyr
+NULL
+
+
 utils::globalVariables(c("genoprobs", "K", "map", "markers"))
 
 #'

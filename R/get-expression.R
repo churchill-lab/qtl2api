@@ -24,12 +24,14 @@ get_expression <- function(dataset, id) {
     } else {
         datatypes <- list()
         for (i in ds$covar_info$sample_column) {
+            print(i)
 
             stopifnot(!is.null(ds$annot_samples[[i]]))
 
             if (is.factor(ds$annot_samples[[i]])) {
+                # preserve order
                 datatypes[[i]] <-
-                    gtools::mixedsort(levels(ds$annot_samples[[i]]))
+                    levels(ds$annot_samples[[i]])
             } else {
                 datatypes[[i]] <-
                     gtools::mixedsort(unique(ds$annot_samples[[i]]))
