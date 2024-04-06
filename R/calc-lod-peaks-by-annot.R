@@ -7,14 +7,15 @@
 #' @param thresholdX if set, qtl2::find_peaks is used
 #' @param peakdropX if set, qtl2::find_peaks is used
 #' @param n_cores number of cores to use (0=ALL)
+#' @param calc_diff compute the difference between additive and covariate
 #'
 #' @return a tibble of the peaks.
 #'
 #' @export
-get_lod_peaks_by_annot <- function(dataset, id,
-                                   threshold = 6.0, peakdrop = 2,
-                                   thresholdX = 6.0, peakdropX = 2,
-                                   n_cores = 0) {
+calc_lod_peaks_by_annot <- function(dataset, id,
+                                    threshold = 6.0, peakdrop = 2,
+                                    thresholdX = 6.0, peakdropX = 2,
+                                    n_cores = 0, calc_diff = FALSE) {
 
     # make sure samples and annotations are available
     ds <- synchronize_dataset(dataset)
@@ -76,8 +77,12 @@ get_lod_peaks_by_annot <- function(dataset, id,
 
             lods_covar$lod_scores$scan <- inf$sample_column
 
-            # DO NOT STORE LOD, SCORE LOD DIFF
-            temp <- lods_covar$scan1 - lods_additive$scan1
+            if (calc_diff) {
+                # DO NOT STORE LOD, STORE LOD DIFF
+                temp <- lods_covar$scan1 - lods_additive$scan1
+            } else {
+                temp <- lods_covar$scan1
+            }
 
             peaks_covar <- qtl2::find_peaks(
                 temp,

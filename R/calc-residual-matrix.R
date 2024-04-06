@@ -81,3 +81,5 @@ calc_residual_matrix <- function(variable_matrix,
 
     residual_matrix
 }
+
+
