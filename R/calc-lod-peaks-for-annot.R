@@ -12,10 +12,10 @@
 #' @return a tibble of the peaks.
 #'
 #' @export
-calc_lod_peaks_by_annot <- function(dataset, id,
-                                    threshold = 6.0, peakdrop = 2,
-                                    thresholdX = 6.0, peakdropX = 2,
-                                    n_cores = 0, calc_diff = FALSE) {
+calc_lod_peaks_for_annot <- function(dataset, id,
+                                     threshold = 6.0, peakdrop = 2,
+                                     thresholdX = 6.0, peakdropX = 2,
+                                     n_cores = 0, calc_diff = FALSE) {
 
     # make sure samples and annotations are available
     ds <- synchronize_dataset(dataset)
