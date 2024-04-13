@@ -5,17 +5,14 @@
 #' @param marker_id The unique marker identifier.
 #' @param dataset_mediate The dataset object to mediate against (defaults to
 #'   dataset)
+#' @param full_annotations `TRUE` to send back full annotations.
 #'
-#' @return A `tibble` with the following columns depending on datatype:
-#' \itemize{
-#'   \item mRNA - gene_id, symbol, chr, pos, LOD
-#'   \item protein = protein_id, gene_id, symbol, chr, pos, LOD
-#'   \item phenotype = NONE
-#' }
+#' @return A `tibble` with the following columns depending on datatype
 #'
 #' @importFrom rlang .data
 #' @export
-calc_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
+calc_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL,
+                           full_annotations = FALSE) {
     # make sure annotations, data, and samples are synchronized
     ds <- synchronize_dataset(dataset)
 
@@ -26,16 +23,17 @@ calc_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
         ds_mediate <- synchronize_dataset(dataset_mediate)
     }
 
+    if (is_phenotype(ds_mediate)) {
+        stop("dataset is a phenotype dataset and is not supported")
+    }
+
     # check if id exists
     if (!any(id == colnames(ds$data))) {
         stop(sprintf("Cannot find id '%s' in dataset", id))
     }
 
     # get the marker index and check it
-    markers_cleaned <-
-        markers %>%
-        dplyr::filter(!is.na(.data$pos)) %>%
-        janitor::clean_names()
+    markers_cleaned <- get_markers()
 
     mrkx <- which(markers_cleaned$marker_id == marker_id)
 
@@ -43,138 +41,27 @@ calc_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
         stop(sprintf("Cannot find marker '%s' in markers", marker_id))
     }
 
-    # get the annotations
-    if (tolower(ds_mediate$datatype) == "mrna") {
-        # grab the annotations, create middle_point, and select what is needed
-        annot <-
-            ds_mediate$annot_mrna %>%
-            dplyr::filter(!is.na(.data$chr) & !is.na(.data$start) & !is.na(.data$end)) %>%
-            janitor::clean_names() %>%
-            dplyr::inner_join(
-                tibble::enframe(colnames(ds_mediate$data), name = NULL),
-                by = c("gene_id" = "value")
-            ) %>%
-            dplyr::mutate(
-                mid_point = round((.data$start + .data$end) / 2)
-            ) %>%
-            dplyr::select(
-                gene_id      = .data$gene_id,
-                symbol       = .data$symbol,
-                chr          = .data$chr,
-                middle_point = .data$mid_point
-            )
-    } else if (tolower(ds_mediate$datatype) == "protein") {
-        # grab the annotations, create middle_point, and select what is needed
-        annot <-
-            ds_mediate$annot_protein %>%
-            dplyr::filter(!is.na(.data$chr) & !is.na(.data$start) & !is.na(.data$end)) %>%
-            janitor::clean_names() %>%
-            dplyr::inner_join(
-                tibble::enframe(colnames(ds_mediate$data), name = NULL),
-                by = c("protein_id" = "value")
-            ) %>%
-            dplyr::mutate(
-                mid_point = round((.data$start + .data$end) / 2)
-            ) %>%
-            dplyr::select(
-                protein_id   = .data$protein_id,
-                gene_id      = .data$gene_id,
-                symbol       = .data$symbol,
-                chr          = .data$chr,
-                middle_point = .data$mid_point
-            )
-    } else if (tolower(ds_mediate$datatype) == "protein_uniprot") {
-        # grab the annotations, create middle_point, and select what is needed
-        annot <-
-            ds_mediate$annot_protein_uniprot %>%
-            dplyr::filter(!is.na(.data$chr) & !is.na(.data$start) & !is.na(.data$end)) %>%
-            janitor::clean_names() %>%
-            dplyr::inner_join(
-                tibble::enframe(colnames(ds_mediate$data), name = NULL),
-                by = c("uniprot_id" = "value")
-            ) %>%
-            dplyr::mutate(
-                mid_point = round((.data$start + .data$end) / 2)
-            ) %>%
-            dplyr::select(
-                uniprot_id   = .data$uniprot_id,
-                protein_id   = .data$protein_id,
-                gene_id      = .data$gene_id,
-                symbol       = .data$symbol,
-                chr          = .data$chr,
-                middle_point = .data$mid_point
-            )
-    } else if (tolower(ds_mediate$datatype) == "phos") {
-        # grab the annotations, create middle_point, and select what is needed
-        annot <-
-            ds_mediate$annot_phos %>%
-            dplyr::filter(!is.na(.data$chr) & !is.na(.data$start) & !is.na(.data$end)) %>%
-            janitor::clean_names() %>%
-            dplyr::inner_join(
-                tibble::enframe(colnames(ds_mediate$data), name = NULL),
-                by = c("phos_id" = "value")
-            ) %>%
-            dplyr::mutate(
-                mid_point = round((.data$start + .data$end) / 2)
-            ) %>%
-            dplyr::select(
-                phos_id      = .data$phos_id,
-                protein_id   = .data$protein_id,
-                gene_id      = .data$gene_id,
-                symbol       = .data$symbol,
-                chr          = .data$chr,
-                middle_point = .data$mid_point
-            )
-    } else if (tolower(ds_mediate$datatype) == "ptm") {
-        # grab the annotations, create middle_point, and select what is needed
-        annot <-
-            ds_mediate$annot_ptm %>%
-            dplyr::filter(!is.na(.data$chr) & !is.na(.data$start) & !is.na(.data$end)) %>%
-            janitor::clean_names() %>%
-            dplyr::inner_join(
-                tibble::enframe(colnames(ds_mediate$data), name = NULL),
-                by = c("ptm_id" = "value")
-            ) %>%
-            dplyr::mutate(
-                mid_point = round((.data$start + .data$end) / 2)
-            ) %>%
-            dplyr::select(
-                uniprot_id   = .data$uniprot_id,
-                ptm_id       = .data$ptm_id,
-                peptide_id   = .data$peptide_id,
-                protein_id   = .data$protein_id,
-                gene_id      = .data$gene_id,
-                symbol       = .data$symbol,
-                chr          = .data$chr,
-                middle_point = .data$mid_point
-            )
-    } else if (tolower(ds_mediate$datatype) == "peptide") {
-        # grab the annotations, create middle_point, and select what is needed
-        annot <-
-            ds_mediate$annot_peptide %>%
-            dplyr::filter(!is.na(.data$chr) & !is.na(.data$start) & !is.na(.data$end)) %>%
-            janitor::clean_names() %>%
-            dplyr::inner_join(
-                tibble::enframe(colnames(ds_mediate$data), name = NULL),
-                by = c("peptide_id" = "value")
-            ) %>%
-            dplyr::mutate(
-                mid_point = round((.data$start + .data$end) / 2)
-            ) %>%
-            dplyr::select(
-                uniprot_id   = .data$uniprot_id,
-                peptide_id   = .data$peptide_id,
-                protein_id   = .data$protein_id,
-                gene_id      = .data$gene_id,
-                symbol       = .data$symbol,
-                chr          = .data$chr,
-                middle_point = .data$mid_point
-            )
-    } else if (is_phenotype(ds_mediate)) {
-        stop("dataset is a phenotype dataset and is not supported")
-    } else {
-        stop(sprintf("invalid dataset datatype: '%s'", ds_mediate$datatype))
+    vars_to_select <- c("annotation_id", "chr", "middle_point")
+
+    if (full_annotations) {
+        vars_to_select <- c("annotation_id")
+        if (valid(ds_mediate$annotation_info)) {
+            vars_to_select <- c(vars_to_select, ds_mediate$annotation_info$column)
+        }
+        vars_to_select <- c(vars_to_select, "symbol", "chr", "middle_point")
     }
+
+    annot <-
+        ds_mediate$annotations %>%
+        dplyr::filter(!is.na(.data$chr) & !is.na(.data$start) & !is.na(.data$end)) %>%
+        dplyr::inner_join(
+            tibble::enframe(colnames(ds_mediate$data), name = NULL),
+            by = c("annotation_id" = "value")
+        ) %>%
+        dplyr::mutate(
+            middle_point = round((.data$start + .data$end) / 2)
+        ) %>%
+        dplyr::select(dplyr::all_of(vars_to_select))
 
     # get the covar information
     covar_information <- get_covar_matrix(ds_mediate)
@@ -182,8 +69,8 @@ calc_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
     chrom <- as.character(markers[mrkx, "chr"])
 
     samples <-
-        ds_mediate$annot_samples %>%
-        dplyr::select(dplyr::matches(ds_mediate$sample_id_field))
+        ds_mediate$samples %>%
+        dplyr::select(sample_id = .data$sample_id)
 
     # subset to the intersecting data
     sample_names <- intersect(samples[[1]], rownames(K[[chrom]]))
@@ -203,10 +90,6 @@ calc_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
     )
 
     data$middle_point <- as.integer(data$middle_point)
-
-    if (all(data$middle_point < 1000)) {
-        data$middle_point <- as.integer(data$middle_point * 1000000)
-    }
 
     attr(data, 'covar_formula') <- covar_information$covar_formula
 

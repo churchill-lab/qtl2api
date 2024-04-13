@@ -62,6 +62,7 @@ validate_environment <- function(by_api = FALSE) {
     }
 
     for (ds in datasets) {
+        cat("\nSTATUS  : Checking dataset: ", ds, " ...\n")
         validate_dataset(ds, by_api)
     }
 }

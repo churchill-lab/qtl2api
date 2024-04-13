@@ -42,22 +42,8 @@ validate_dataset <- function(dataset, by_api = FALSE) {
     is_ptm <- FALSE
     is_peptide <- FALSE
 
-    if (tolower(datatype) == 'mrna') {
-        is_mrna <- TRUE
-    } else if (tolower(datatype) == 'protein') {
-        is_protein <- TRUE
-    } else if (tolower(datatype) == 'protein_uniprot') {
-        is_protein_uniprot <- TRUE
-    } else if (tolower(datatype) == 'phos') {
-        is_phos <- TRUE
-    } else if (tolower(datatype) == 'ptm') {
-        is_ptm <- TRUE
-    } else if (tolower(datatype) == 'peptide') {
-        is_peptide <- TRUE
-    } else if (is_phenotype(ds_orig)) {
+    if (is_phenotype(ds_orig)) {
         is_pheno <- TRUE
-    } else {
-        message("ERROR   : datatype is invalid: ", datatype)
     }
 
     validate_annotations(ds_orig)
@@ -69,7 +55,7 @@ validate_dataset <- function(dataset, by_api = FALSE) {
         return()
     }
 
-    validate_covar_info(ds_orig)
+    #validate_covar_info(ds_orig)
 
     validate_samples(ds_orig)
 

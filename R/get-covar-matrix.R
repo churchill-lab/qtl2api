@@ -17,8 +17,8 @@ get_covar_matrix <- function(dataset, id = NULL) {
         # get the annot_phenotype row to get use_covar variable from the
         # annotations
         pheno <-
-            ds$annot_phenotype %>%
-            dplyr::filter(.data$data_name == id)
+            ds$annotations %>%
+            dplyr::filter(.data$annotation_id == id)
 
         if (qtl2api::invalid(pheno)) {
             stop(sprintf("Cannot find phenotype '%s' in dataset", id))
@@ -36,13 +36,10 @@ get_covar_matrix <- function(dataset, id = NULL) {
     }
 
     if (qtl2api::valid(covar_formula)) {
-        # get the sample id field
-        sample_id_field <- ds$sample_id_field
-
         # convert samples to data.frame because QTL2 relies heavily
         # on rownames and colnames, rownames currently are or will
         # soon be deprecated in tibbles
-        samples <- as.data.frame(ds$annot_samples)
+        samples <- as.data.frame(ds$samples)
 
         # create the model matrix, we use na.action = stats::na.pass so we can set
         # the rownames below.  We than use na.omit to filter down the data.
@@ -64,7 +61,7 @@ get_covar_matrix <- function(dataset, id = NULL) {
         covar_matrix <- as.matrix(covar_matrix)
 
         rownames(covar_matrix) <-
-            (samples %>% dplyr::select(dplyr::matches(sample_id_field)))[[1]]
+            (samples %>% dplyr::select(.data$sample_id))[[1]]
 
         # do not need NA values
         covar_matrix <- stats::na.omit(covar_matrix)

@@ -43,6 +43,8 @@ validate_dataset_by_api <- function(dataset) {
 
     marker <- markers_temp$marker.id
 
+
+
     cat("STATUS  : Checking qtl2api::get_lod_peaks\n")
     tryCatch(
         {
@@ -224,12 +226,14 @@ validate_dataset_by_api <- function(dataset) {
         cat(paste0("STATUS  : Checking qtl2api::calc_mediation ", id, " marker: ", marker, "\n"))
         tryCatch(
             {
-                temp <- calc_mediation(ds, id, marker)
+                #temp <-
+                    calc_mediation(ds, id, marker)
             },
             error = function(cond) {
                 message("ERROR   : ", cond$message)
             },
             warning = function(cond) {
+                message("WARNING  : ", cond$message)
             },
             finally = {
             }

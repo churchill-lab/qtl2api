@@ -15,32 +15,37 @@ validate_data <- function(dataset) {
 
     ds <- synchronize_dataset(ds_orig)
 
-    annots_field <- grep("^annots?(\\.|_){1}samples?$",
+    samples_name <- grep("^samples?$",
                          names(ds_orig),
                          value = TRUE)
 
-    num_annot_samples <- nrow(ds_orig[[annots_field]])
+    num_annot_samples <- nrow(ds_orig[[samples_name]])
 
-    if (tolower(ds$datatype) == "mrna") {
-        annot_ids <- ds$annot_mrna$gene_id
-    } else if (tolower(ds$datatype) == "protein") {
-        annot_ids <- ds$annot_protein$protein_id
-    } else if (tolower(ds$datatype) == "protein_uniprot") {
-        annot_ids <- ds$annot_protein_uniprot$uniprot_id
-    } else if (tolower(ds$datatype) == "phos") {
-        annot_ids <- ds$annot_phos$phos_id
-    } else if (tolower(ds$datatype) == "ptm") {
-        annot_ids <- ds$annot_ptm$ptm_id
-    } else if (tolower(ds$datatype) == "peptide") {
-        annot_ids <- ds$annot_peptide$peptide_id
-    } else {
+
+    annotations_name <- grep("^annots?$|annotations?$",
+                             names(ds_orig),
+                             value = TRUE)
+
+    annotations_orig <- ds_orig[[annotations_name]]
+
+    # again allow some play in the column name
+    annotations_id_field <- grep(
+        "^annots?(\\.|_){0,1}ids?$|^annotations?(\\.|_){0,1}ids?$",
+        colnames(annotations_orig),
+        value = TRUE,
+        ignore.case = TRUE
+    )
+
+    annotation_ids <- ds[[annotations_name]][[annotations_id_field]]
+
+    if (is_phenotype(ds)) {
         annots_temp <-
-            ds$annot_phenotype %>%
+            ds[[annotations_name]] %>%
             dplyr::filter(
                 .data$omit == FALSE,
                 .data$is_pheno == TRUE
             )
-        annot_ids <- annots_temp$data_name
+        annotation_ids <- annots_temp[[annotations_id_field]]
     }
 
     if ("data" %not in% names(ds)) {
@@ -60,12 +65,12 @@ validate_data <- function(dataset) {
                 "number of data rows (", nrow(ds$data), ")\n")
         }
 
-        if (NCOL(ds$data) != NROW(annot_ids)) {
-            cat('WARNING : number of annotations (', NROW(annot_ids), ') != ',
+        if (NCOL(ds$data) != NROW(annotation_ids)) {
+            cat('WARNING : number of annotations (', NROW(annotation_ids), ') != ',
                 'number of data cols (', NCOL(ds$data), ")\n")
 
-            x <- setdiff(annot_ids, colnames(ds$data))
-            y <- setdiff(colnames(ds$data), annot_ids)
+            x <- setdiff(annotation_ids, colnames(ds$data))
+            y <- setdiff(colnames(ds$data), annotation_ids)
 
             if (length(x) > 0) {
                 #cat("WARNING : annotations with no data:", paste(x, sep = ",", collapse = ","), "\n")

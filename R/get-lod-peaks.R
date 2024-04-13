@@ -21,6 +21,8 @@ get_lod_peaks <- function(ds) {
         stop("dataset should not be synchronized")
     }
 
+    ds_synch <- synchronize_dataset(ds)
+
     peaks <- list()
 
     # get the additive LOD peaks
@@ -30,21 +32,13 @@ get_lod_peaks <- function(ds) {
         peaks <- list(additive = peaks_additive)
     }
 
-    annots_field <- grep("^covar(\\.|_){1}info$",
-                         names(ds),
-                         value = TRUE)
+    # get the rest
+    for (i in seq(nrow(ds_synch$covar_info))) {
+        cov_inf <- ds_synch$covar_info[i, ]
 
-    if ((length(annots_field) != 0) && (!is.null(ds[[annots_field]]))) {
-        covar_info <- ds[[annots_field]] %>% janitor::clean_names()
-
-        # get the rest
-        for (i in seq(nrow(covar_info))) {
-            cov_inf <- covar_info[i, ]
-
-            if (cov_inf$interactive == TRUE) {
-                peaks[[cov_inf$sample_column]] <-
-                    get_lod_peaks_by_covar(ds, cov_inf$sample_column)
-            }
+        if (cov_inf$interactive == TRUE) {
+            peaks[[cov_inf$sample_column]] <-
+                get_lod_peaks_by_covar(ds, cov_inf$sample_column)
         }
     }
 

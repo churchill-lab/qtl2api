@@ -4,22 +4,19 @@
 \alias{get_lod_peaks_by_covar}
 \title{Get the LOD peaks for a dataset.}
 \usage{
-get_lod_peaks_by_covar(ds, intcovar = NULL)
+get_lod_peaks_by_covar(ds, intcovar = NULL, full_annotations = FALSE)
 }
 \arguments{
 \item{ds}{The dataset object to get the LOD peaks for.}
 
 \item{intcovar}{NULL for 'additive' or a value representing the interactive
 covariate.}
+
+\item{full_annotations}{`TRUE` to send back full annotations.}
 }
 \value{
 A a `tibble` with the following columns depending upon
-`dataset$datatype`:
-\itemize{
-  \item mRNA - `marker,chr,pos,gene_id,symbol,gene_chrom,middle,lod`
-  \item protein - `marker,chr,pos,protein_id,gene_id,symbol,gene_chrom,middle,lod`
-  \item phenotype - `marker,chr,pos,data_name,short_name,description,lod`
-}
+`dataset$datatype`.
 
 If the allele effects are stored, values `A-H` will also be included.
 }

@@ -11,13 +11,14 @@
 #' @param intcovar The interactive covariate.
 #' @param use_qr `TRUE` to use qr decomposition.
 #' @param backfill_NA `TRUE` if we need to impute, we backfill the NAs.
+#' @param full_annotations `TRUE` to send back full annotations.
 #'
 #' @return A `tibble` with the correlation and annotations.
 #'
 #' @export
 calc_correlation <- function(dataset, id, dataset_correlate = NULL,
                              intcovar = NULL, use_qr = TRUE,
-                             backfill_NA = TRUE) {
+                             backfill_NA = TRUE, full_annotations = FALSE) {
     # make sure annotations, data, and samples are synchronized
     ds <- synchronize_dataset(dataset)
 
@@ -34,7 +35,7 @@ calc_correlation <- function(dataset, id, dataset_correlate = NULL,
         stop(sprintf("Cannot find id '%s' in dataset", id))
     }
 
-    # make sure we have the same samples
+    # make sure we have the same samples between datasets
     samples <- intersect(rownames(ds$data), rownames(ds_correlate$data))
 
     if (length(samples) == 0) {
@@ -108,117 +109,46 @@ calc_correlation <- function(dataset, id, dataset_correlate = NULL,
     # reorder in decreasing order
     pcor <- pcor[1, order(abs(pcor), decreasing = TRUE)]
 
-    correlations <- NULL
+    correlations <- tibble::tibble(
+        annotation_id = names(pcor),
+        cor           = pcor
+    )
 
     # attach some annotations to the correlation data
+    if (is_phenotype(ds_correlate)) {
+        correlations <-
+            correlations %>%
+            dplyr::inner_join(
+                ds_correlate$annotations,
+                by = c("annotation_id")
+            ) %>%
+            dplyr::select(
+                snnotation_id = .data$annotation_id,
+                short_name    = .data$short_name,
+                cor           = .data$cor
+            )
+    } else {
+        vars_to_select <- c("annotation_id", "cor")
 
-    if (tolower(ds_correlate$datatype) == "mrna") {
-        # get the indices into the annotype data
-        annot_mrna <- ds_correlate$annot_mrna
-        idxs <- match(names(pcor), annot_mrna$gene_id)
-
-        correlations <- tibble::tibble(
-            cor    = pcor,
-            id     = names(pcor),
-            symbol = annot_mrna$symbol[idxs],
-            chr    = annot_mrna$chr[idxs],
-            start  = as.integer(annot_mrna$start[idxs]),
-            end    = as.integer(annot_mrna$end[idxs])
-        )
-    } else if (tolower(ds_correlate$datatype) == "protein") {
-        # get the indices into the annotype data
-        annot_protein <- ds_correlate$annot_protein
-        idxs <- match(names(pcor), annot_protein$protein_id)
-
-        correlations <- tibble::tibble(
-            cor     = pcor,
-            id      = names(pcor),
-            gene_id = annot_protein$gene_id[idxs],
-            symbol  = annot_protein$symbol[idxs],
-            chr     = annot_protein$chr[idxs],
-            start   = as.integer(annot_protein$start[idxs]),
-            end     = as.integer(annot_protein$end[idxs])
-        )
-    } else if (tolower(ds_correlate$datatype) == "protein_uniprot") {
-        # get the indices into the annotype data
-        annot_protein_uniprot <- ds_correlate$annot_protein_uniprot
-        idxs <- match(names(pcor), annot_protein_uniprot$uniprot_id)
-
-        correlations <- tibble::tibble(
-            cor        = pcor,
-            id         = names(pcor),
-            protein_id = annot_protein_uniprot$protein_id[idxs],
-            gene_id    = annot_protein_uniprot$gene_id[idxs],
-            symbol     = annot_protein_uniprot$symbol[idxs],
-            chr        = annot_protein_uniprot$chr[idxs],
-            start      = as.integer(annot_protein_uniprot$start[idxs]),
-            end        = as.integer(annot_protein_uniprot$end[idxs])
-        )
-    } else if (tolower(ds_correlate$datatype) == "phos") {
-        # get the indices into the annotype data
-        annot_phos <- ds_correlate$annot_phos
-        idxs <- match(names(pcor), annot_phos$phos_id)
-
-        correlations <- tibble::tibble(
-            cor        = pcor,
-            id         = names(pcor),
-            protein_id = annot_phos$protein_id[idxs],
-            gene_id    = annot_phos$gene_id[idxs],
-            symbol     = annot_phos$symbol[idxs],
-            chr        = annot_phos$chr[idxs],
-            start      = as.integer(annot_phos$start[idxs]),
-            end        = as.integer(annot_phos$end[idxs])
-        )
-    } else if (tolower(ds_correlate$datatype) == "ptm") {
-        # get the indices into the annotype data
-        annot_ptm <- ds_correlate$annot_ptm
-        idxs <- match(names(pcor), annot_ptm$ptm_id)
-
-        correlations <- tibble::tibble(
-            cor        = pcor,
-            id         = names(pcor),
-            ptm_id     = annot_ptm$ptm_id[idxs],
-            peptide_id = annot_ptm$peptide_id[idxs],
-            protein_id = annot_ptm$protein_id[idxs],
-            gene_id    = annot_ptm$gene_id[idxs],
-            symbol     = annot_ptm$symbol[idxs],
-            uniprot_id = annot_ptm$uniprot_id[idxs],
-            chr        = annot_ptm$chr[idxs],
-            start      = as.integer(nvl(annot_ptm$start[idxs], 0)),
-            end        = as.integer(nvl(annot_ptm$end[idxs], 0))
-        )
-    } else if (tolower(ds_correlate$datatype) == "peptide") {
-        # get the indices into the annotype data
-        annot_peptide <- ds_correlate$annot_peptide
-        idxs <- match(names(pcor), annot_peptide$ptm_id)
-
-        correlations <- tibble::tibble(
-            cor        = pcor,
-            id         = names(pcor),
-            peptide_id = annot_peptide$peptide_id[idxs],
-            protein_id = annot_peptide$protein_id[idxs],
-            gene_id    = annot_peptide$gene_id[idxs],
-            symbol     = annot_peptide$symbol[idxs],
-            uniprot_id = annot_peptide$uniprot_id[idxs],
-            chr        = annot_peptide$chr[idxs],
-            start      = as.integer(nvl(annot_peptide$start[idxs], 0)),
-            end        = as.integer(nvl(annot_peptide$end[idxs], 0))
-        )
-    } else if (is_phenotype(ds_correlate)) {
-        correlations <- tibble::tibble(
-            cor = pcor,
-            id = names(pcor)
-        )
-    }
-
-    if (!is_phenotype(ds_correlate)) {
-        if (all(correlations$start < 1000)) {
-            correlations$start <- as.integer(correlations$start * 1000000)
+        if (full_annotations) {
+            vars_to_select <- c("annotation_id")
+            if (valid(ds_correlate$annotation_info)) {
+                vars_to_select <- c(vars_to_select, ds_correlate$annotation_info$column)
+            }
+            vars_to_select <- c(vars_to_select, "symbol", "chr", "start", "end", "cor")
         }
 
-        if (all(correlations$end < 1000)) {
-            correlations$end <- as.integer(correlations$end * 1000000)
-        }
+        # get the indices into the annotype data
+        annotations <- ds_correlate$annotations
+        idxs <- match(names(pcor), annotations$annotation_id)
+
+        correlations <-
+            correlations %>%
+            dplyr::inner_join(
+                ds_correlate$annotations,
+                by = c("annotation_id")
+            ) %>%
+            dplyr::select(vars_to_select)
     }
 
     if (valid(correlations)) {

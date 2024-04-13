@@ -20,10 +20,10 @@ calc_correlation_plot <- function(dataset, id,
                                   dataset_correlate, id_correlate,
                                   intcovar = NULL, use_qr = TRUE,
                                   backfill_NA = TRUE) {
-    # make sure samples and annotations are available
+    # make sure samples and annotations are synchronized
     ds <- synchronize_dataset(dataset)
 
-    # get the dataset we are correlating against
+    # get the dataset we are correlating against, itself if NULL
     if (is.null(dataset_correlate)) {
         ds_correlate <- ds
     } else {
@@ -108,7 +108,7 @@ calc_correlation_plot <- function(dataset, id,
 
     # get the intersecting samples and indices
     samples <- intersect(rownames(data), rownames(data_correlate))
-    samples_idx <- which(ds$annot_samples[[ds$sample_id_field]] %in% samples)
+    samples_idx <- which(ds$samples$sample_id %in% samples)
 
     # get the covar factors and their data levels
     sample_info <- list()
@@ -118,15 +118,15 @@ calc_correlation_plot <- function(dataset, id,
         datatypes <- list()
 
         for (s in ds$covar_info$sample_column) {
-            stopifnot(!is.null(ds$annot_samples[[s]]))
-            sample_info[[toString(s)]] <- ds$annot_samples[samples_idx, ][[s]]
+            stopifnot(!is.null(ds$samples[[s]]))
+            sample_info[[toString(s)]] <- ds$samples[samples_idx, ][[s]]
 
-            if (is.factor(ds$annot_samples[[s]])) {
+            if (is.factor(ds$samples[[s]])) {
                 datatypes[[toString(s)]] <-
-                    gtools::mixedsort(levels(ds$annot_samples[[s]]))
+                    levels(ds$annot_samples[[s]])
             } else {
                 datatypes[[toString(s)]] <-
-                    gtools::mixedsort(unique(ds$annot_samples[[s]]))
+                    gtools::mixedsort(unique(ds$samples[[s]]))
             }
         }
 

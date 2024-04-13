@@ -4,7 +4,13 @@
 \alias{calc_mediation}
 \title{Perform mediation.}
 \usage{
-calc_mediation(dataset, id, marker_id, dataset_mediate = NULL)
+calc_mediation(
+  dataset,
+  id,
+  marker_id,
+  dataset_mediate = NULL,
+  full_annotations = FALSE
+)
 }
 \arguments{
 \item{dataset}{The dataset object.}
@@ -15,14 +21,11 @@ calc_mediation(dataset, id, marker_id, dataset_mediate = NULL)
 
 \item{dataset_mediate}{The dataset object to mediate against (defaults to
 dataset)}
+
+\item{full_annotations}{`TRUE` to send back full annotations.}
 }
 \value{
-A `tibble` with the following columns depending on datatype:
-\itemize{
-  \item mRNA - gene_id, symbol, chr, pos, LOD
-  \item protein = protein_id, gene_id, symbol, chr, pos, LOD
-  \item phenotype = NONE
-}
+A `tibble` with the following columns depending on datatype
 }
 \description{
 Perform mediation.

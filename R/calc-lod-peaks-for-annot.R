@@ -120,19 +120,21 @@ calc_lod_peaks_for_annot <- function(dataset, id,
             H         = numeric()
         )
 
+        markers_cleaned <- get_markers()
+
         lod_peaks <-
             dplyr::left_join(
                 peaks_all,
-                markers,
+                markers_cleaned,
                 by = c('chr', 'pos')
             ) %>%
             dplyr::select(
-                annot_id  = .data$lodcolumn,
-                marker_id = .data$marker.id,
-                chr       = .data$chr,
-                pos       = .data$pos,
-                lod       = .data$lod,
-                scan      = .data$scan
+                annotation_id  = .data$lodcolumn,
+                marker_id      = .data$marker_id,
+                chr            = .data$chr,
+                pos            = .data$pos,
+                lod            = .data$lod,
+                scan           = .data$scan
             ) %>%
             dplyr::mutate_at(
                 c("lod"), as.numeric
@@ -150,9 +152,9 @@ calc_lod_peaks_for_annot <- function(dataset, id,
                     peak$pos
                 )
 
-                mrk <- markers %>%
+                mrk <- markers_cleaned %>%
                     dplyr::filter(
-                        .data$marker.id == mrk_id
+                        .data$marker_id == mrk_id
                     )
 
                 peak$marker_id <- mrk_id
@@ -182,10 +184,6 @@ calc_lod_peaks_for_annot <- function(dataset, id,
                         dplyr::bind_cols(tibble::tibble(A=NA,B=NA,C=NA,D=NA,E=NA,F=NA,G=NA,H=NA))
                 )
             }
-        }
-
-        if (all(output$pos < 1000)) {
-            output$pos <- as.integer(output$pos * 1000000)
         }
     }
 

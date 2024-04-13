@@ -83,8 +83,8 @@ validate_covar_info <- function(dataset) {
     for(i in 1:nrow(ds$covar_info)) {
         row <- ds$covar_info[i, ]
 
-        if (row$sample_column %not in% colnames(ds$annot_samples)) {
-            message("ERROR   : covar_info$sample_column ('", row$sample_column, "') is not a column name in annot_samples")
+        if (row$sample_column %not in% colnames(ds$samples)) {
+            message("ERROR   : covar_info$sample_column ('", row$sample_column, "') is not a column name in samples")
         }
 
         if (invalid(row$display_name)) {
@@ -128,7 +128,7 @@ validate_covar_info <- function(dataset) {
     cat("STATUS  : Checking covar_matrix\n")
 
     if (is_phenotype(ds)) {
-        phenos <- ds$annot_phenotype %>% dplyr::filter(.data$is_pheno == TRUE)
+        phenos <- ds$annotations %>% dplyr::filter(.data$is_pheno == TRUE)
         phenos <- phenos$data_name
 
         i <- 0

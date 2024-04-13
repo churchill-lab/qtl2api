@@ -35,7 +35,7 @@ calc_lod_scores_by_covar <- function(dataset, id, chrom, intcovar, cores = 0) {
 
     # get all the unique values for the interactive.covar and sort them
     if (is.factor(ds$annot_samples[[intcovar]])) {
-        covar_unique <- gtools::mixedsort(levels(ds$annot_samples[[intcovar]]))
+        covar_unique <- levels(ds$annot_samples[[intcovar]])
     } else {
         covar_unique <- gtools::mixedsort(unique(ds$annot_samples[[intcovar]]))
     }
@@ -43,16 +43,13 @@ calc_lod_scores_by_covar <- function(dataset, id, chrom, intcovar, cores = 0) {
     # convert samples to data.frame because QTL2 relies heavily
     # on rownames and colnames, rownames currently are or will
     # soon be deprecated in tibbles
-    samples <- as.data.frame(ds$annot_samples)
+    samples <- as.data.frame(ds$samples)
 
     # set the rownames so scan1 will work
     rownames(samples) <-
-        (samples %>% dplyr::select(dplyr::matches(ds$sample_id_field)))[[1]]
+        (samples %>% dplyr::select(sample_id = .data$sample_id))[[1]]
 
-    markers_cleaned <-
-        markers %>%
-        dplyr::filter(!is.na(.data$pos)) %>%
-        janitor::clean_names()
+    markers_cleaned <- get_markers()
 
     # ret will be a named list of tibbles with LOD scores
     # each name is a unique sample value
@@ -64,10 +61,12 @@ calc_lod_scores_by_covar <- function(dataset, id, chrom, intcovar, cores = 0) {
         # take all samples
         # filter rows by value, i.e. sex = "F"
         # select just the sample id field column
+        #TODO: must be an easier way
+        sample_id_field <- "sample_id"
         sample_names <-
             ds$annot_samples %>%
             dplyr::filter(!!as.name(intcovar) == u) %>%
-            dplyr::select(dplyr::matches(ds$sample_id_field))
+            dplyr::select(dplyr::matches(sample_id_field))
 
         sample_names <- c(sample_names[[1]])
 

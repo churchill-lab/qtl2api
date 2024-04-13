@@ -24,25 +24,23 @@ get_expression <- function(dataset, id) {
     } else {
         datatypes <- list()
         for (i in ds$covar_info$sample_column) {
-            print(i)
+            stopifnot(!is.null(ds$samples[[i]]))
 
-            stopifnot(!is.null(ds$annot_samples[[i]]))
-
-            if (is.factor(ds$annot_samples[[i]])) {
+            if (is.factor(ds$samples[[i]])) {
                 # preserve order
                 datatypes[[i]] <-
-                    levels(ds$annot_samples[[i]])
+                    levels(ds$samples[[i]])
             } else {
                 datatypes[[i]] <-
-                    gtools::mixedsort(unique(ds$annot_samples[[i]]))
+                    gtools::mixedsort(unique(ds$samples[[i]]))
             }
         }
     }
 
     # only pass back the columns we need
-    samples <- ds$annot_samples %>%
+    samples <- ds$samples %>%
         dplyr::select(
-            sample_id = ds$sample_id_field,
+            sample_id = .data$sample_id,
             dplyr::all_of(names(datatypes))
         )
 

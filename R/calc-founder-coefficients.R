@@ -34,12 +34,8 @@ calc_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
     covar_information <- get_covar_matrix(ds, id)
     covar_matrix <- covar_information$covar_matrix
 
-    # this is a little extra work because we are trying to be nice for users
-    # who separate with '.' or '_'
-    markers_cleaned <-
-        markers %>%
-        janitor::clean_names() %>%
-        dplyr::filter(!is.na(.data$pos))
+    # get the markers
+    markers_cleaned <- get_markers()
 
     ret <- list()
     attr(ret, 'covar_formula') <- covar_information$covar_formula
@@ -84,11 +80,6 @@ calc_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
                 as.numeric
             )
 
-        # convert from Mbp to bp
-        if (all(ret[["additive"]]$pos < 1000)) {
-            ret[["additive"]]$pos <- as.integer(ret[["additive"]]$pos * 1000000)
-        }
-
         attr(ret[["additive"]], 'samples') <-
             intersect(rownames(ds$data), rownames(covar_matrix))
     } else {
@@ -99,7 +90,7 @@ calc_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
         # get all the unique values for the intcovar and sort them
         if (is.factor(ds$annot_samples[[intcovar]])) {
             covar_unique <-
-                gtools::mixedsort(levels(ds$annot_samples[[intcovar]]))
+                levels(ds$annot_samples[[intcovar]])
         } else {
             covar_unique <-
                 gtools::mixedsort(unique(ds$annot_samples[[intcovar]]))
@@ -108,11 +99,11 @@ calc_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
         # convert samples to data.frame because QTL2 relies heavily
         # on rownames and colnames, rownames currently are or will
         # soon be deprecated in tibbles
-        samples <- as.data.frame(ds$annot_samples)
+        samples <- as.data.frame(ds$samples)
 
         # set the rownames so scan1 will work
         rownames(samples) <-
-            (samples %>% dplyr::select(dplyr::matches(ds$sample_id_field)))[[1]]
+            (samples %>% dplyr::select(sample_id = .data$sample_id))[[1]]
 
         # loop through the unique values for the interactive.covar
         for (u in covar_unique) {
@@ -120,10 +111,11 @@ calc_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
             # take all samples
             # filter rows by value, i.e. sex = "F
             # select just need the sample id field column
+            # TODO: this should be easier
             sample_names <-
                 samples %>%
                 dplyr::filter(!!as.name(intcovar) == u) %>%
-                dplyr::select(dplyr::matches(ds$sample_id_field))
+                dplyr::select(sample_id = .data$sample_id)
 
             sample_names <- c(sample_names[[1]])
 
@@ -176,10 +168,6 @@ calc_founder_coefficients <- function(dataset, id, chrom, intcovar = NULL,
                     dplyr::vars(-c("id", "chr", "pos")),
                     as.numeric
                 )
-
-            if (all(ret[[toString(u)]]$pos < 1000)) {
-                ret[[toString(u)]]$pos <- as.integer(ret[[toString(u)]]$pos * 1000000)
-            }
 
             attr(ret[[toString(u)]], 'samples') <- sample_names
         }

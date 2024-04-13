@@ -10,7 +10,8 @@ calc_correlation(
   dataset_correlate = NULL,
   intcovar = NULL,
   use_qr = TRUE,
-  backfill_NA = TRUE
+  backfill_NA = TRUE,
+  full_annotations = FALSE
 )
 }
 \arguments{
@@ -26,6 +27,8 @@ or NULL.}
 \item{use_qr}{`TRUE` to use qr decomposition.}
 
 \item{backfill_NA}{`TRUE` if we need to impute, we backfill the NAs.}
+
+\item{full_annotations}{`TRUE` to send back full annotations.}
 }
 \value{
 A `tibble` with the correlation and annotations.

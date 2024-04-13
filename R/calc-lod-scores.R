@@ -80,10 +80,7 @@ calc_lod_scores <- function(dataset, id, intcovar = NULL, cores = 0,
         peakdropX  = filter_peak_dropX
     )
 
-    markers_cleaned <-
-        markers %>%
-        dplyr::filter(!is.na(.data$pos)) %>%
-        janitor::clean_names()
+    markers_cleaned <- get_markers()
 
     # construct a 2 dimensional array of data with id, chr, pos, lod as columns
     # we perform a left join here to make sure that the number of elements match
@@ -122,15 +119,6 @@ calc_lod_scores <- function(dataset, id, intcovar = NULL, cores = 0,
             as.numeric
         ) %>%
         tibble::as_tibble()
-
-    # convert to bp
-    if (all(lod_scores_mod$pos < 1000)) {
-        lod_scores_mod$pos <- as.integer(lod_scores_mod$pos * 1000000)
-    }
-
-    if (all(lod_peaks$pos < 1000)) {
-        lod_peaks$pos <- as.integer(lod_peaks$pos * 1000000)
-    }
 
     ret <- list(
         lod_peaks     = lod_peaks,
