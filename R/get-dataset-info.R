@@ -26,7 +26,13 @@ get_dataset_info <- function() {
 
             annotations <-
                 ds_synchronized$annotations %>%
-                dplyr::select(anotation_columns)
+                dplyr::select(
+                    anotation_columns,
+                    symbol  = .data$symbol,
+                    chr     = .data$chr,
+                    start   = .data$start,
+                    end     = .data$end
+                )
         }
 
         covar_info_order <- list()
