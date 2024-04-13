@@ -20,7 +20,7 @@ get_dataset_info <- function() {
         } else {
             anotation_columns <-
                 ds_synchronized$annotation_info %>%
-                dplyr::arrange(order)
+                dplyr::arrange(.data$order)
 
             anotation_columns <- c('annotation_id', anotation_columns$column)
 
