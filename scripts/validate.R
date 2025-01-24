@@ -8,4 +8,3 @@ source(paste0(getwd(), "/scripts/validate-dataset-by-api.R"))
 source(paste0(getwd(), "/scripts/validate-environment.R"))
 validate_environment(TRUE)
 rm(list=grep("^validate_.*$", ls(), value=TRUE))
-

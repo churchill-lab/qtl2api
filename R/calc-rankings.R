@@ -17,16 +17,12 @@ calc_rankings <- function(dataset, chrom = NULL,
     # make sure annotations, data, and samples are synchronized
     ds <- synchronize_dataset(dataset)
 
-    # get the mean for each gene/protein/phenotype
-    data_mean <- colMeans(ds$data, na.rm = TRUE)
+    # calculate column means and create ranks
+    data_ranks <- rank(colMeans(ds$data, na.rm = TRUE))
 
-    # grab the min and max values
-    min_data_mean <- min(data_mean)
-    max_data_mean <- max(data_mean)
-
-    # scale the values between [min_value, max_value]
-    tmp <- (data_mean - min_data_mean) / (max_data_mean - min_data_mean)
-    tmp <- (max_value - min_value) * tmp + min_value
+    # Scale ranks to range min_value to max_value
+    tmp <- min_value + ((data_ranks - min(data_ranks)) * (max_value - min_value)) / (max(data_ranks) - min(data_ranks))
+    names(tmp) <- colnames(ds$data)
 
     if (tolower(ds$datatype) == "mrna") {
         if (!is.null(chrom)) {
@@ -178,7 +174,7 @@ calc_rankings <- function(dataset, chrom = NULL,
                 uniprot_id = .data$uniprot_id,
                 ranking    = .data$ranking
             ) %>%
-            dplyr::group_by(.data$uniprot_id) %>%
+            dplyr::group_by(.data$gene_id) %>%
             dplyr::summarise(
                 ranking = max(.data$ranking)
             )
@@ -202,7 +198,7 @@ calc_rankings <- function(dataset, chrom = NULL,
         # group by uniprot_id and than take the uniprot_id ranking value
         ret <- ret %>%
             dplyr::inner_join(
-                ds$annot_ptm,
+                ds$annot_peptide,
                 by = c("id" = "peptide_id")
             ) %>%
             dplyr::select(
@@ -212,7 +208,7 @@ calc_rankings <- function(dataset, chrom = NULL,
                 uniprot_id = .data$uniprot_id,
                 ranking    = .data$ranking
             ) %>%
-            dplyr::group_by(.data$uniprot_id) %>%
+            dplyr::group_by(.data$gene_id) %>%
             dplyr::summarise(
                 ranking = max(.data$ranking)
             )
@@ -222,3 +218,5 @@ calc_rankings <- function(dataset, chrom = NULL,
         stop(paste0(ds$datatype, ' datatype not supported'))
     }
 }
+
+

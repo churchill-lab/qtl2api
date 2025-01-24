@@ -41,7 +41,7 @@ validate_dataset_by_api <- function(dataset) {
     markers_temp <- markers %>%
         dplyr::sample_n(1)
 
-    marker <- markers_temp$marker.id
+    marker <- markers_temp$marker_id
 
     cat("STATUS  : Checking qtl2api::get_lod_peaks\n")
     tryCatch(
@@ -92,9 +92,9 @@ validate_dataset_by_api <- function(dataset) {
     }
 
     if (invalid(intcovar)) {
-        cat("WARNING : unable to test qtl2api::get_lod_scan_by_sample with intcovar\n")
+        cat("WARNING : unable to test qtl2api::calc_lod_scores_by_covar with intcovar\n")
     } else {
-        cat(paste0("STATUS  : Checking qtl2api::get_lod_scan_by_sample: ", id, " chrom: ", chrom, " intcovar: ", intcovar, "\n"))
+        cat(paste0("STATUS  : Checking qtl2api::calc_lod_scores_by_covar: ", id, " chrom: ", chrom, " intcovar: ", intcovar, "\n"))
         tryCatch(
             {
                 temp <- calc_lod_scores_by_covar(ds, id, chrom, intcovar)

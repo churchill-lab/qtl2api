@@ -83,7 +83,6 @@ calc_snp_assoc_mapping <- function(dataset, id, chrom, location,
     DBI::dbDisconnect(db_snps)
 
     window_snps$pos <- window_snps$pos / 1000000.0
-
     colnames(window_snps)[c(1, 3)] <- c("snp", "pos")
     window_snps <- qtl2::index_snps(map = map, window_snps)
 
