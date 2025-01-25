@@ -24,8 +24,6 @@ get_expression <- function(dataset, id) {
     } else {
         datatypes <- list()
         for (i in ds$covar_info$sample_column) {
-            print(i)
-
             stopifnot(!is.null(ds$annot_samples[[i]]))
 
             if (is.factor(ds$annot_samples[[i]])) {
