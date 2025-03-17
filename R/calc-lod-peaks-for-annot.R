@@ -60,42 +60,44 @@ calc_lod_peaks_for_annot <- function(dataset, id,
     peaks_all <- peaks_additive
 
     # loop through interactive covariates
-    for (i in 1:nrow(ds$covar_info)) {
-        inf <- ds$covar_info[i, ]
-        if (inf$interactive) {
+    if ('covar_info' %in% names(dataset.proteins.liver.v5)) {
+        for (i in 1:nrow(ds$covar_info)) {
+            inf <- ds$covar_info[i, ]
+            if (inf$interactive) {
 
-            lods_covar <- calc_lod_scores(
-                ds, id,
-                intcovar          = inf$sample_column,
-                cores             = n_cores,
-                filter_threshold  = threshold,
-                filter_peak_drop  = peakdrop,
-                filter_thresholdX = thresholdX,
-                filter_peak_dropX = peakdropX,
-                scan1_output      = TRUE
-            )
+                lods_covar <- calc_lod_scores(
+                    ds, id,
+                    intcovar          = inf$sample_column,
+                    cores             = n_cores,
+                    filter_threshold  = threshold,
+                    filter_peak_drop  = peakdrop,
+                    filter_thresholdX = thresholdX,
+                    filter_peak_dropX = peakdropX,
+                    scan1_output      = TRUE
+                )
 
-            lods_covar$lod_scores$scan <- inf$sample_column
+                lods_covar$lod_scores$scan <- inf$sample_column
 
-            if (calc_diff) {
-                # DO NOT STORE LOD, STORE LOD DIFF
-                temp <- lods_covar$scan1 - lods_additive$scan1
-            } else {
-                temp <- lods_covar$scan1
-            }
+                if (calc_diff) {
+                    # DO NOT STORE LOD, STORE LOD DIFF
+                    temp <- lods_covar$scan1 - lods_additive$scan1
+                } else {
+                    temp <- lods_covar$scan1
+                }
 
-            peaks_covar <- qtl2::find_peaks(
-                temp,
-                map,
-                threshold  = threshold,
-                peakdrop   = peakdrop,
-                thresholdX = thresholdX,
-                peakdropX  = peakdropX
-            )
+                peaks_covar <- qtl2::find_peaks(
+                    temp,
+                    map,
+                    threshold  = threshold,
+                    peakdrop   = peakdrop,
+                    thresholdX = thresholdX,
+                    peakdropX  = peakdropX
+                )
 
-            if(valid(peaks_covar)) {
-                peaks_covar$scan = inf$sample_column
-                peaks_all <- peaks_all %>% dplyr::bind_rows(peaks_covar)
+                if(valid(peaks_covar)) {
+                    peaks_covar$scan = inf$sample_column
+                    peaks_all <- peaks_all %>% dplyr::bind_rows(peaks_covar)
+                }
             }
         }
     }
