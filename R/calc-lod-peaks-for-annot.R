@@ -60,7 +60,7 @@ calc_lod_peaks_for_annot <- function(dataset, id,
     peaks_all <- peaks_additive
 
     # loop through interactive covariates
-    if ('covar_info' %in% names(dataset.proteins.liver.v5)) {
+    if ('covar_info' %in% names(ds)) {
         for (i in 1:nrow(ds$covar_info)) {
             inf <- ds$covar_info[i, ]
             if (inf$interactive) {

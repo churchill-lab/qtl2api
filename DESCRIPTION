@@ -1,7 +1,7 @@
 Package: qtl2api
 Type: Package
 Title: QTL2 API Library
-Version: 0.6.1
+Version: 0.6.2
 Author: person("Matthew", "Vincent", email = "matt.vincent@jax.org",
   role = c("aut", "cre"))
 Maintainer: Matthew Vincent <matt.vincent@jax.org>
