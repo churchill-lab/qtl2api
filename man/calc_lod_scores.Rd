@@ -13,7 +13,8 @@ calc_lod_scores(
   filter_peak_drop = Inf,
   filter_thresholdX = NULL,
   filter_peak_dropX = NULL,
-  scan1_output = FALSE
+  scan1_output = FALSE,
+  cis_window = 1e+07
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ calc_lod_scores(
 \item{filter_peak_dropX}{If set, qtl2::find_peaks is used.}
 
 \item{scan1_output}{If `TRUE`, original `qtl2::scan1` data is included.}
+
+\item{cis_window}{cis defined window}
 }
 \value{
 a `list` with the following elements:
