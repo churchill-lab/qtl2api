@@ -97,7 +97,7 @@ calc_rankings <- function(dataset, chrom = NULL,
         # group by gene_id and than take the gene_id ranking value
         ret <- ret %>%
             dplyr::inner_join(
-                ds$annot_protein,
+                ds$annot_protein_uniprot,
                 by = c("id" = "uniprot_id")
             ) %>%
             dplyr::select(
