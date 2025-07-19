@@ -296,3 +296,104 @@ calc_lod_scores <- function(dataset, id, intcovar = NULL, cores = 0,
 
     ret
 }
+
+
+calc_lod_scores_perm <- function(dataset, id, intcovar = NULL, cores = 0, n_perm = 1000) {
+    # make sure samples and annotations are available
+    ds <- synchronize_dataset(dataset)
+
+    # check if id exists
+    if (!any(id == colnames(ds$data))) {
+        stop(sprintf("Cannot find id '%s' in dataset", id))
+    }
+
+    annot_info <- NULL
+
+    if (tolower(ds$datatype) == "mrna") {
+        annot_info <-
+            ds$annot_mrna %>%
+            dplyr::filter(.data$gene_id == id)
+    } else if (tolower(ds$datatype) == "protein") {
+        annot_info <-
+            ds$annot_protein %>%
+            dplyr::filter(.data$protein_id == id)
+    } else if (tolower(ds$datatype) == "protein_uniprot") {
+        annot_info <-
+            ds$annot_protein_uniprot %>%
+            dplyr::filter(.data$uniprot_id == id)
+    } else if (tolower(ds$datatype) == "phos") {
+        annot_info <-
+            ds$annot_phos %>%
+            dplyr::filter(.data$phos_id == id)
+    } else if (tolower(ds$datatype) == "ptm") {
+        annot_info <-
+            ds$annot_ptm %>%
+            dplyr::filter(.data$ptm_id == id)
+    } else if (tolower(ds$datatype) == "peptide") {
+        annot_info <-
+            ds$annot_peptide %>%
+            dplyr::filter(.data$peptide_id == id)
+    } else if (tolower(ds$datatype) == "phenotype") {
+        annot_info <-
+            ds$annot_phenotype %>%
+            dplyr::filter(.data$data_name == id)
+    }
+
+    if (is.null(annot_info) || nrow(annot_info) == 0) {
+        stop(sprintf("Cannot find annotation for id '%s' in dataset", id))
+    } else {
+        # for now, just take the first one
+        annot_info <-
+            annot_info %>%
+            dplyr::slice(1) %>%
+            as.list()
+    }
+
+    # make sure num_cores is appropriate
+    num_cores <- nvl_int(cores, 0)
+
+    # get the covar information
+    covar_information <- get_covar_matrix(ds, id)
+    covar_matrix <- covar_information$covar_matrix
+    covar_formula <- covar_information$covar_formula
+
+    # set the interactive.covariate, to be used in scan1
+    interactive_covariate <- NULL
+
+    if (!is.null(intcovar)) {
+        if (!any(intcovar == ds$covar_info$sample_column)) {
+            stop(sprintf("intcovar '%s' not found in covar_info", intcovar))
+        }
+
+        if (is.null(covar_matrix)) {
+            stop(sprintf("no covar_matrix, but intcovar '%s' specified", intcovar))
+        }
+
+        # grabbing all the columns from covar (covar.matrix) that
+        # match, i.e., "batch" will match "batch2", "BATCH3", etc
+        interactive_covariate <-
+            covar_matrix[, which(grepl(intcovar, colnames(covar_matrix), ignore.case = T))]
+    }
+
+    # perform the scan using QTL2,
+    # - addcovar should always be ALL covars
+    # - intcovar should be just the interactive covariate column
+    lod_scores <- qtl2::scan1perm(
+        genoprobs = genoprobs,
+        kinship   = K,
+        pheno     = ds$data[, id, drop = FALSE],
+        addcovar  = covar_matrix,
+        intcovar  = interactive_covariate,
+        cores     = num_cores,
+        reml      = TRUE,
+        n_perm    = n_perm
+    )
+
+    ret <- list(
+        lod_scores = lod_scores
+    )
+
+    attr(ret, 'covar_formula') <- covar_formula
+
+    ret
+}
