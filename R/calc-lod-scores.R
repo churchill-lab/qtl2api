@@ -1,4 +1,4 @@
-' Summarize LOD scores for cis, distal, and trans associations.
+#' Summarize LOD scores for cis, distal, and trans associations.
 #'
 #' Given LOD scores at markers for a single gene and that gene's annotation,
 #' this function extracts the maximum LOD score, and also determines the
@@ -27,17 +27,18 @@ lod_summarize <- function(lod_scores_mod, annot_info, cis_window = 10e6) {
     # Find the index of the maximum LOD score across all markers
     max_idx <- which.max(lod_scores_mod$lod)
 
-    # Extract the maximum LOD score and the corresponding marker ID
-    max_lod <- lod_scores_mod$lod[max_idx]
-    max_marker <- lod_scores_mod$id[max_idx]
+    # Extract the maximum LOD score and the corresponding marker info
+    lod_max <- list(
+        lod    = lod_scores_mod$lod[max_idx],
+        marker = lod_scores_mod$id[max_idx],
+        chr    = lod_scores_mod$chr[max_idx],
+        pos    = lod_scores_mod$pos[max_idx]
+    )
 
-    # Initialize cis, distal, and trans values as NA
-    cis_lod <- NA
-    cis_marker <- NA
-    distal_lod <- NA
-    distal_marker <- NA
-    trans_lod <- NA
-    trans_marker <- NA
+    # Initialize cis, distal, and trans data as NA
+    lod_cis    <- NA
+    lod_distal <- NA
+    lod_trans  <- NA
 
     # Continue only if annotation has necessary information
     if (!is.null(annot_info) && ('chr' %in% names(annot_info)) && ('start' %in% names(annot_info))) {
@@ -62,43 +63,58 @@ lod_summarize <- function(lod_scores_mod, annot_info, cis_window = 10e6) {
         if (any(is_cis)) {
             # If there are cis markers, get the one with the highest LOD score
             cis_idx <- which.max(lod_scores_mod$lod[is_cis])
-            cis_lod <- lod_scores_mod$lod[is_cis][cis_idx]
-            cis_marker <- lod_scores_mod$id[is_cis][cis_idx]
+
+            lod_cis <- list(
+                lod    = lod_scores_mod$lod[is_cis][cis_idx],
+                marker = lod_scores_mod$id[is_cis][cis_idx],
+                chr    = lod_scores_mod$chr[is_cis][cis_idx],
+                pos    = lod_scores_mod$pos[is_cis][cis_idx]
+            )
         } else if (any(is_same_chr)) {
             # Fallback: if no markers in cis window, find nearest marker on same chromosome
             dists <- abs(lod_scores_mod$pos[is_same_chr] - annot_info$start)
             nearest_idx <- which.min(dists)
             same_chr_rows <- which(is_same_chr)
             nearest_row <- same_chr_rows[nearest_idx]
-            cis_lod <- lod_scores_mod$lod[nearest_row]
-            cis_marker <- lod_scores_mod$id[nearest_row]
+            # Use the nearest marker as a proxy for cis
+            lod_cis <- list(
+                lod    = lod_scores_mod$lod[nearest_row],
+                marker = lod_scores_mod$id[nearest_row],
+                chr    = lod_scores_mod$chr[nearest_row],
+                pos    = lod_scores_mod$pos[nearest_row]
+            )
         }
 
         ## ---- DISTAL LOGIC ----
         if (any(is_distal)) {
             distal_idx <- which.max(lod_scores_mod$lod[is_distal])
-            distal_lod <- lod_scores_mod$lod[is_distal][distal_idx]
-            distal_marker <- lod_scores_mod$id[is_distal][distal_idx]
+
+            lod_distal <- list(
+                lod    = lod_scores_mod$lod[is_distal][distal_idx],
+                marker = lod_scores_mod$id[is_distal][distal_idx],
+                chr    = lod_scores_mod$chr[is_distal][distal_idx],
+                pos    = lod_scores_mod$pos[is_distal][distal_idx]
+            )
         }
 
         ## ---- TRANS LOGIC ----
         if (any(is_trans)) {
             trans_idx <- which.max(lod_scores_mod$lod[is_trans])
-            trans_lod <- lod_scores_mod$lod[is_trans][trans_idx]
-            trans_marker <- lod_scores_mod$id[is_trans][trans_idx]
+            lod_trans <- list(
+                lod    = lod_scores_mod$lod[is_trans][trans_idx],
+                marker = lod_scores_mod$id[is_trans][trans_idx],
+                chr    = lod_scores_mod$chr[is_trans][trans_idx],
+                pos    = lod_scores_mod$pos[is_trans][trans_idx]
+            )
         }
     }
 
     # Return all results in a named list
     return(list(
-        max_lod = max_lod,
-        max_marker = max_marker,
-        cis_lod = cis_lod,
-        cis_marker = cis_marker,
-        distal_lod = distal_lod,
-        distal_marker = distal_marker,
-        trans_lod = trans_lod,
-        trans_marker = trans_marker
+        max    = lod_max,
+        cis    = lod_cis,
+        distal = lod_distal,
+        trans  = lod_trans
     ))
 }
 

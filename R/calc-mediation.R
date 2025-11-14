@@ -197,7 +197,7 @@ calc_mediation <- function(dataset, id, marker_id, dataset_mediate = NULL) {
         target     = ds$data[sample_names, id, drop = FALSE],
         mediator   = ds_mediate$data[sample_names,],
         annotation = annot,
-        covar      = covar_information$covar_matrix[sample_names, ],
+        covar      = covar_information$covar_matrix[sample_names, , drop = FALSE],
         qtl.geno   = filtered_genoprobs,
         verbose    = FALSE
     )
